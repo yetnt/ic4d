@@ -1,11 +1,11 @@
-# int4d
+# ic4d
 
 Interactions 4 Dummies
 
 # Installation
 
 ```
-npm i int4d
+npm i ic4d
 ```
 
 # Contents
@@ -24,7 +24,7 @@ require("dotenv").config();
 const { Client, IntentsBitField } = require("discord.js");
 const path = require("path");
 
-const { CommandHandler, ReadyHandler } = require("int4d");
+const { CommandHandler, ReadyHandler } = require("ic4d");
 
 const commandsPath = "commands";
 const readerOptions = {
@@ -72,7 +72,7 @@ Ready handler is a handler that runs a set of functions when the bot starts.
 -   `...functions`: Functions to run when the `execute()` method is called, and the ready event has been emitted. Functions may take one parameter (client) or none.
 
 ```js
-const { ReadyHandler } = require("int4d");
+const { ReadyHandler } = require("ic4d");
 
 const ready = new ReadyHandler(
     client,
@@ -125,7 +125,7 @@ module.exports = {
 -   `loaderOptions`**(optional)**: Command Loader Options
 
 ```js
-const { CommandHandler } = require("int4d");
+const { CommandHandler } = require("ic4d");
 const path = require("path");
 
 const handler = new CommandHandler(client, path.join(__dirname, "commands"));
@@ -329,6 +329,6 @@ Huge credit to [underctrl](https://github.com/notunderctrl), Code would've not b
 
 # Links
 
-[Github](https://github.com/YetNT/int4d)
-[NPM](https://www.npmjs.com/package/int4d)
+[Github](https://github.com/YetNT/ic4d)
+[NPM](https://www.npmjs.com/package/ic4d)
 [underctrl discord.js tutorials](https://www.youtube.com/playlist?list=PLpmb-7WxPhe0ZVpH9pxT5MtC4heqej8Es)
