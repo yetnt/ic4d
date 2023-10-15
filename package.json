@@ -1,7 +1,7 @@
 {
-    "name": "int4d",
+    "name": "ic4d",
     "version": "1.0.0",
-    "description": "Interaction and Command handler for dummies",
+    "description": "Discord.js Interaction and Command handler 4 Dummies",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -13,15 +13,27 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/YetNT/int4d.git"
+        "url": "git+https://github.com/YetNT/ic4d.git"
     },
-    "keywords": [],
+    "keywords": [
+        "bot",
+        "discord",
+        "discord.js",
+        "handler",
+        "simple",
+        "events",
+        "event",
+        "commands",
+        "v14",
+        "discord-bot",
+        "ic4d"
+    ],
     "author": "YetNT",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/YetNT/int4d/issues"
+        "url": "https://github.com/YetNT/ic4d/issues"
     },
-    "homepage": "https://github.com/YetNT/int4d#readme",
+    "homepage": "https://github.com/YetNT/ic4d#readme",
     "devDependencies": {
         "@types/node": "^20.8.5",
         "discord.js": "^14.13.0",

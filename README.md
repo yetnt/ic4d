@@ -2,6 +2,21 @@
 
 Interactions 4 Dummies
 
+# Installation
+
+```
+npm i int4d
+```
+
+# Contents
+
+-   [Quick Example](#quick-example)
+-   [ReadyHandler](#readyhandler)
+-   [CommandHandler](#commandhandler)
+-   [Command Layour](#command-layout)
+-   [Credit](#credits)
+-   [Links](#links)
+
 # Quick Example
 
 ```js
