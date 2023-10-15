@@ -1,7 +1,7 @@
 import { CoreHandler, Option } from "./coreHandler";
 import { Client, Interaction, PermissionFlags } from "discord.js";
-import * as fs from "fs";
-import * as path from "path";
+//@ts-ignore
+import * as clc from "cli-color";
 
 interface LoaderOptions {
     loaded: string;
@@ -70,10 +70,18 @@ export class CommandHandler extends CoreHandler {
         this.commandPath = path;
 
         this.options = {
-            loaded: loaderOptions?.loaded || this.options.loaded,
-            edited: loaderOptions?.edited || this.options.edited,
-            deleted: loaderOptions?.deleted || this.options.deleted,
-            skipped: loaderOptions?.skipped || this.options.skipped,
+            loaded: clc.green.bold(
+                loaderOptions?.loaded || this.options.loaded
+            ),
+            edited: clc.yellow.bold(
+                loaderOptions?.edited || this.options.edited
+            ),
+            deleted: clc.red.bold(
+                loaderOptions?.deleted || this.options.deleted
+            ),
+            skipped: clc.cyan.bold(
+                loaderOptions?.skipped || this.options.skipped
+            ),
         };
 
         this.readerOptions = {
