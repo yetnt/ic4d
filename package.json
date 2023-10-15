@@ -1,0 +1,34 @@
+{
+    "name": "int4d",
+    "version": "1.0.0",
+    "description": "Interaction and Command handler for dummies",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "/dist"
+    ],
+    "scripts": {
+        "test": "mocha src/index.test.js",
+        "build": "npx tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/YetNT/int4d.git"
+    },
+    "keywords": [],
+    "author": "YetNT",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/YetNT/int4d/issues"
+    },
+    "homepage": "https://github.com/YetNT/int4d#readme",
+    "devDependencies": {
+        "@types/node": "^20.8.5",
+        "discord.js": "^14.13.0",
+        "typescript": "^5.2.2"
+    },
+    "dependencies": {
+        "fs": "^0.0.1-security",
+        "path": "^0.12.7"
+    }
+}
