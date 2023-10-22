@@ -13,7 +13,9 @@ npm i ic4d
 -   [Quick Example](#quick-example)
 -   [ReadyHandler](#readyhandler)
 -   [CommandHandler](#commandhandler)
--   [Command Layour](#command-layout)
+-   [InteractionHandler](#interactionhandler)
+-   [Command Object](#command-object)
+-   [Interaction Object](#interaction-object)
 -   [Credit](#credits)
 -   [Links](#links)
 
@@ -103,7 +105,7 @@ Command Handler, which handles slash command creation, deletion, editing and run
 
 ## Pre-Read
 
-Before you use the CommandHandler class, make sure you have a `/commands/` folder with all the commands you'd like to import, they should export an object with these minimum parameters:
+Before you use the CommandHandler class, make sure you follow the [command layout](#command-object) or else the CommandHandler may not work properly. But these below are the minimum properties needed.
 
 ```js
 module.exports = {
@@ -260,11 +262,64 @@ const middleWare = (commandObject, interaction) => {
 handler.handleCommands(middleWare); // pass the function alone with brackets or its parameters, i'll do that magic
 ```
 
-# Command Layout
+# InteractionHandler
 
-This package requires your commands to be layed out specifically.
+Handler to handle interactions, right now currently supports:
+
+> -   buttons
+> -   (soon) select menus
+> -   (soon) context menus
+> -   (soon) modals
+
+## Pre-Read
+
+Make sure wherever your store your interaction objects they follow the export the [interactions object](#interaction-object) with the minimum requirements being
+
+```js
+module.exports = {
+    customId: "customId",
+    callback: (i) => {
+        i.update("wow!");
+    },
+};
+```
+
+## Constructor
+
+-   `client`: Discord.js client
+-   `path`: Path to where interactions are stored. (They can be stored in your commands folder to, as long as they meet with [interactions object](#interaction-object))
+-   `logErrors`**(optional)**: Log errors that occur when interactons take place.
+
+```js
+const { InteractionHandler } = require("ic4d");
+const path = require("path");
+
+const interactions = new InteractionHandler(
+    client,
+    path.join(__dirname, "commands"),
+    true
+);
+```
+
+## Methods
+
+### `buttons`
+
+Start listening for button interactions.
+
+```js
+interactions.buttons();
+```
+
+# remove this forcopy
+
+# Command Object
+
+This package requires your command object to be layed out specifically,
 
 ## Normal
+
+minimum requirements
 
 ```js
 module.exports = {
@@ -323,12 +378,41 @@ module.exports = {
 };
 ```
 
+# Interaction Object
+
+Package also requires that wherever you store your interaction object (buttons, select menus, context menus etc), they have thesse minimum requirements:
+
+## Normal
+
+```js
+module.exports = {
+    customId: "button1",
+    callback: (i) => {
+        // callback
+    },
+};
+```
+
+## Author Only
+
+Not required but is handy
+
+```js
+module.exports = {
+    customId: "button1",
+    authorOnly: true,
+    callback: (i) => {
+        // callback
+    },
+};
+```
+
 # Credits
 
-Huge credit to [underctrl](https://github.com/notunderctrl), Code would've not been possible if i did not watch his helpful discord.js tutorials!
+Huge credit to [underctrl](https://github.com/notunderctrl), Code would've not been possible if i did not watch his helpful discord.js tutorials! I had to give him credit because this package is based off moving all those files fform his tutorial into one package.
 
 # Links
 
-[Github](https://github.com/YetNT/ic4d)
-[NPM](https://www.npmjs.com/package/ic4d)
-[underctrl discord.js tutorials](https://www.youtube.com/playlist?list=PLpmb-7WxPhe0ZVpH9pxT5MtC4heqej8Es)
+-   [Github](https://github.com/YetNT/ic4d)
+-   [NPM](https://www.npmjs.com/package/ic4d)
+-   [underctrl discord.js tutorials](https://www.youtube.com/playlist?list=PLpmb-7WxPhe0ZVpH9pxT5MtC4heqej8Es)
