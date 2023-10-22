@@ -22,7 +22,6 @@ interface ReaderOptions {
 export interface CommandObject {
     name: string;
     description: string;
-    isCommand?: boolean;
     callback: (client: Client, interaction: Interaction) => void;
     options?: Option[];
     deleted?: undefined | boolean;

@@ -7,6 +7,7 @@ import {
 import * as path2 from "path";
 import * as fs from "fs";
 import { CommandObject } from "./commandHandler";
+import { InteractionObject } from "./interactionHandler";
 
 export interface Choice {
     name: string;
@@ -32,6 +33,59 @@ export class CoreHandler {
         this.client = client;
     }
 
+    getInteractions(path: string, commandName?: string): InteractionObject[] {
+        let interactions: InteractionObject[] = [];
+
+        const containsDirectories = (path: string): boolean => {
+            const items = fs.readdirSync(path);
+            let containsDirectories: boolean[] = [];
+
+            for (const item of items) {
+                const itemPath = path2.join(path, item);
+                const isDirectory = fs.statSync(itemPath).isDirectory();
+
+                containsDirectories.push(isDirectory);
+            }
+
+            return containsDirectories.reduce(
+                (acc, currentValue) => acc || currentValue,
+                false
+            );
+        };
+
+        const scanDirectory = (directory: string) => {
+            const items = fs.readdirSync(directory);
+            let arr: InteractionObject[] = [];
+
+            for (const item of items) {
+                const itemPath = path2.join(directory, item);
+                const isDirectory = fs.statSync(itemPath).isDirectory();
+
+                /* if (isDirectory && item !== commandName) {
+                    const result = containsDirectories(itemPath);
+                    if (!result) continue;
+                    arr = arr.concat(scanDirectory(itemPath));
+                } else */ if (isDirectory /*&& item == commandName*/) {
+                    arr = arr.concat(scanDirectory(itemPath));
+                    // break;
+                } else if (item.endsWith(".js")) {
+                    const interactionObject: InteractionObject = require(itemPath);
+
+                    if (!interactionObject.customId) {
+                        continue;
+                    }
+
+                    arr.push(interactionObject);
+                }
+            }
+
+            return arr;
+        };
+
+        interactions = scanDirectory(path);
+        return interactions;
+    }
+
     getLocalCommands(path: string, exceptions?: string[]): CommandObject[] {
         exceptions = exceptions !== undefined ? exceptions : [];
         let localCommands: CommandObject[] = [];
@@ -50,7 +104,9 @@ export class CoreHandler {
                     const commandObject: CommandObject = require(itemPath);
 
                     if (
-                        commandObject.isCommand == false ||
+                        !commandObject.name ||
+                        !commandObject.description ||
+                        !commandObject.callback ||
                         exceptions.includes(commandObject.name)
                     ) {
                         continue;
