@@ -11,7 +11,7 @@ export interface InteractionObject {
     description?: string;
     onlyAuthor?: boolean;
     callback: (
-        interaction: ButtonInteraction | StringSelectMenuInteraction
+        interaction: ButtonInteraction | StringSelectMenuInteraction, client?: Client
     ) => void;
 }
 
