@@ -33,7 +33,7 @@ export class CoreHandler {
         this.client = client;
     }
 
-    getInteractions(path: string, commandName?: string): InteractionObject[] {
+    protected getInteractions(path: string, commandName?: string): InteractionObject[] {
         let interactions: InteractionObject[] = [];
 
         const containsDirectories = (path: string): boolean => {
@@ -86,7 +86,7 @@ export class CoreHandler {
         return interactions;
     }
 
-    getLocalCommands(path: string, exceptions?: string[]): CommandObject[] {
+    protected getLocalCommands(path: string, exceptions?: string[]): CommandObject[] {
         exceptions = exceptions !== undefined ? exceptions : [];
         let localCommands: CommandObject[] = [];
 
@@ -123,7 +123,7 @@ export class CoreHandler {
         return localCommands;
     }
 
-    getAllFiles(directory: string, foldersOnly?: boolean) {
+    protected getAllFiles(directory: string, foldersOnly?: boolean) {
         foldersOnly = foldersOnly !== undefined ? foldersOnly : false;
         let fileNames: string[] = [];
 
@@ -146,7 +146,7 @@ export class CoreHandler {
         return fileNames;
     }
 
-    areCommandsDifferent(
+    protected areCommandsDifferent(
         existingCommand: CommandInteraction | any,
         localCommand: CommandObject
     ) {
@@ -216,7 +216,7 @@ export class CoreHandler {
         return false;
     }
 
-    async getApplicationCommands(client: Client, guildId?: string) {
+    protected async getApplicationCommands(client: Client, guildId?: string) {
         let applicationCommands:
             | ApplicationCommandManager
             | GuildApplicationCommandManager;

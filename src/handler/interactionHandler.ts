@@ -67,7 +67,7 @@ export class InteractionHandler extends CoreHandler {
                     });
                     return;
                 }
-                buttonObj.callback(interaction);
+                buttonObj.callback(interaction, this.client);
             } catch (error) {
                 if (this.logErrors) {
                     throw new Error(error);
