@@ -21,6 +21,8 @@ npm i ic4d
 
 # Quick Example
 
+[Here's the example bot](https://github.com/YetNT/ic4d-example-bot) if you don't like reading
+
 ```js
 require("dotenv").config();
 const { Client, IntentsBitField } = require("discord.js");
@@ -259,7 +261,7 @@ const middleWare = (commandObject, interaction) => {
     return 0;
 };
 
-handler.handleCommands(middleWare); // pass the function alone with brackets or its parameters, i'll do that magic
+handler.handleCommands(middleWare); // pass the function alone without brackets or its parameters, i'll do that magic
 ```
 
 # InteractionHandler
@@ -402,6 +404,19 @@ module.exports = {
     customId: "button1",
     authorOnly: true,
     callback: (i) => {
+        // callback
+    },
+};
+```
+
+## Takes in client
+
+Not required, but also handy
+
+```js
+module.exports = {
+    customId: "button1",
+    callback: (i, client) => {
         // callback
     },
 };
