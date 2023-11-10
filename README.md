@@ -253,7 +253,7 @@ const middleWare = (commandObject, interaction) => {
         isServerDisabled(commandObject.name)
     ) {
         interaction.reply({
-            content: this.readerOptions.onlyDev,
+            content: "This command is server disabled",
             ephemeral: true,
         });
         return 1;
