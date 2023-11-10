@@ -11,12 +11,12 @@ interface LoaderOptions {
 }
 
 interface ReaderOptions {
-    testGuildId?: string | undefined;
-    devs: string[] | [];
+    testGuildId?: string;
+    devs: string[];
 
-    onlyDev?: string | undefined;
-    botNoPerms?: string | undefined;
-    userNoPerms?: string | undefined;
+    onlyDev?: string;
+    botNoPerms?: string;
+    userNoPerms?: string;
 }
 
 export interface CommandObject {
@@ -24,11 +24,11 @@ export interface CommandObject {
     description: string;
     callback: (client: Client, interaction: Interaction) => void;
     options?: Option[];
-    deleted?: undefined | boolean;
-    devOnly?: undefined | boolean;
+    deleted?: boolean;
+    devOnly?: boolean;
 
-    permissionsRequired?: undefined | PermissionFlags[];
-    botPermissions?: undefined | PermissionFlags[];
+    permissionsRequired?: PermissionFlags[];
+    botPermissions?: PermissionFlags[];
 }
 
 /**
@@ -160,67 +160,74 @@ export class CommandHandler extends CoreHandler {
             interaction?: Interaction
         ) => number)[]
     ) {
-        this.client.on("interactionCreate", async (interaction) => {
-            if (!interaction.isChatInputCommand()) return;
+        this.client.on(
+            "interactionCreate",
+            async (interaction: Interaction) => {
+                if (!interaction.isChatInputCommand()) return;
 
-            const localCommands = this.getLocalCommands(this.commandPath);
+                const localCommands = this.getLocalCommands(this.commandPath);
 
-            try {
-                const commandObject: CommandObject = localCommands.find(
-                    (cmd: any) => cmd.name === interaction.commandName
-                );
+                try {
+                    const commandObject: CommandObject = localCommands.find(
+                        (cmd: any) => cmd.name === interaction.commandName
+                    );
 
-                if (!commandObject) return;
+                    if (!commandObject) return;
 
-                if (commandObject.devOnly) {
-                    if (
-                        //@ts-ignore
-                        !this.readerOptions.devs.includes(interaction.user.id)
-                    ) {
-                        interaction.reply({
-                            content: this.readerOptions.onlyDev,
-                            ephemeral: true,
-                        });
-                        return;
-                    }
-                }
-
-                if (commandObject.permissionsRequired?.length) {
-                    for (const permission of commandObject.permissionsRequired) {
-                        //@ts-ignore
-                        if (!interaction.member.permissions.has(permission)) {
+                    if (commandObject.devOnly) {
+                        if (
+                            //@ts-ignore
+                            !this.readerOptions.devs.includes(
+                                interaction.user.id
+                            )
+                        ) {
                             interaction.reply({
-                                content: this.readerOptions.userNoPerms,
+                                content: this.readerOptions.onlyDev,
                                 ephemeral: true,
                             });
                             return;
                         }
                     }
-                }
 
-                if (commandObject.botPermissions?.length) {
-                    for (const permission of commandObject.botPermissions) {
-                        const bot = interaction.guild.members.me;
-                        //@ts-ignore
-                        if (!bot.permissions.has(permission)) {
-                            interaction.reply({
-                                content: this.readerOptions.botNoPerms,
-                                ephemeral: true,
-                            });
-                            return;
+                    if (commandObject.permissionsRequired?.length) {
+                        for (const permission of commandObject.permissionsRequired) {
+                            if (
+                                //@ts-ignore
+                                !interaction.member.permissions.has(permission)
+                            ) {
+                                interaction.reply({
+                                    content: this.readerOptions.userNoPerms,
+                                    ephemeral: true,
+                                });
+                                return;
+                            }
                         }
                     }
-                }
 
-                for (const fn of middleWare) {
-                    let result = fn(commandObject, interaction);
-                    if (result == 1) return; // test condition is true
-                }
+                    if (commandObject.botPermissions?.length) {
+                        for (const permission of commandObject.botPermissions) {
+                            const bot = interaction.guild.members.me;
+                            //@ts-ignore
+                            if (!bot.permissions.has(permission)) {
+                                interaction.reply({
+                                    content: this.readerOptions.botNoPerms,
+                                    ephemeral: true,
+                                });
+                                return;
+                            }
+                        }
+                    }
 
-                await commandObject.callback(this.client, interaction);
-            } catch (error) {
-                throw new Error("Failed to run command!\n\n" + error);
+                    for (const fn of middleWare) {
+                        let result = await fn(commandObject, interaction);
+                        if (result == 1) return; // test condition is true
+                    }
+
+                    await commandObject.callback(this.client, interaction);
+                } catch (error) {
+                    throw new Error("Failed to run command!\n\n" + error);
+                }
             }
-        });
+        );
     }
 }
