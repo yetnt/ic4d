@@ -1,6 +1,6 @@
 {
     "name": "ic4d",
-    "version": "1.3.0",
+    "version": "1.3.0-alpha.1",
     "description": "Discord.js Interaction and Command handler 4 Dummies",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",

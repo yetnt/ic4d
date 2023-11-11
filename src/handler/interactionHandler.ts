@@ -4,6 +4,7 @@ import {
     Interaction,
     ButtonInteraction,
     StringSelectMenuInteraction,
+    AnySelectMenuInteraction,
 } from "discord.js";
 import { InteractionButtonError } from "./Errors";
 
@@ -12,8 +13,9 @@ export interface InteractionObject {
     description?: string;
     onlyAuthor?: boolean;
     filePath: string;
+    type: string;
     callback: (
-        interaction: ButtonInteraction | StringSelectMenuInteraction,
+        interaction: ButtonInteraction | AnySelectMenuInteraction,
         client?: Client
     ) => void;
 }
@@ -24,7 +26,10 @@ export interface InteractionObject {
  */
 export class InteractionHandler extends CoreHandler {
     interactionsPath: string;
-    interactions: Record<string, InteractionObject>;
+    interactions: {
+        buttons: Record<string, InteractionObject>;
+        selectMenu: Record<string, InteractionObject>;
+    };
     logErrors: boolean = false;
 
     /**
@@ -37,17 +42,39 @@ export class InteractionHandler extends CoreHandler {
         super(client);
         this.interactionsPath = path;
         const interactions = this.getInteractions(this.interactionsPath);
-        this.interactions = interactions.reduce<
-            Record<string, InteractionObject>
-        >((acc, obj) => {
-            acc[obj.customId] = {
-                callback: obj.callback,
-                onlyAuthor: obj.onlyAuthor,
-                filePath: obj.filePath,
-            };
-            return acc;
-        }, {});
+        this.interactions = this.sortInteractionObjects(interactions);
         this.logErrors = logErrors == true ? true : false;
+    }
+
+    private sortInteractionObjects(interactions: InteractionObject[]): {
+        buttons: Record<string, InteractionObject>;
+        selectMenu: Record<string, InteractionObject>;
+    } {
+        const buttons = interactions
+            .filter((obj) => obj.type === "button")
+            .reduce<Record<string, InteractionObject>>((acc, obj) => {
+                acc[obj.customId] = {
+                    callback: obj.callback,
+                    onlyAuthor: obj.onlyAuthor,
+                    filePath: obj.filePath,
+                    type: obj.type,
+                };
+                return acc;
+            }, {});
+
+        const selectMenu = interactions
+            .filter((obj) => obj.type === "selectMenu")
+            .reduce<Record<string, InteractionObject>>((acc, obj) => {
+                acc[obj.customId] = {
+                    callback: obj.callback,
+                    onlyAuthor: obj.onlyAuthor,
+                    filePath: obj.filePath,
+                    type: obj.type,
+                };
+                return acc;
+            }, {});
+
+        return { buttons, selectMenu };
     }
 
     /**
@@ -61,7 +88,7 @@ export class InteractionHandler extends CoreHandler {
                 : "This button is not for you";
         this.client.on("interactionCreate", (interaction) => {
             if (!interaction.isButton()) return;
-            const buttonObj = this.interactions[interaction.customId];
+            const buttonObj = this.interactions.buttons[interaction.customId];
 
             try {
                 if (buttonObj == undefined) return; // for buttons that don't need this package to respond to them.
@@ -82,6 +109,46 @@ export class InteractionHandler extends CoreHandler {
                     throw new InteractionButtonError(
                         "Button $NAME$ failed with the error:\n\n" + error,
                         buttonObj.filePath,
+                        interaction.customId
+                    );
+                }
+            }
+        });
+    }
+
+    /**
+     * Start listening for select menus (supports all types)
+     * @param authorOnlyMsg Message to be displayed when a different user clicks an author only button.
+     */
+    selectMenu(authorOnlyMsg?: string) {
+        authorOnlyMsg =
+            authorOnlyMsg !== undefined
+                ? authorOnlyMsg
+                : "This select menu is not for you";
+        this.client.on("interactionCreate", (interaction) => {
+            if (!interaction.isAnySelectMenu()) return;
+            const selectObj =
+                this.interactions.selectMenu[interaction.customId];
+
+            try {
+                if (selectObj == undefined) return; // for buttons that don't need this package to respond to them.
+
+                const author = interaction.message.interaction.user.id;
+                const buttonClicker = interaction.member.user.id;
+
+                if (selectObj.onlyAuthor == true && author !== buttonClicker) {
+                    interaction.followUp({
+                        content: authorOnlyMsg,
+                        ephemeral: true,
+                    });
+                    return;
+                }
+                selectObj.callback(interaction, this.client);
+            } catch (error) {
+                if (this.logErrors) {
+                    throw new InteractionButtonError(
+                        "Select Menu $NAME$ failed with the error:\n\n" + error,
+                        selectObj.filePath,
                         interaction.customId
                     );
                 }
