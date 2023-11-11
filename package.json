@@ -1,6 +1,6 @@
 {
     "name": "ic4d",
-    "version": "1.3.0-alpha.2",
+    "version": "1.3.0",
     "description": "Discord.js Interaction and Command handler 4 Dummies",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -24,6 +24,10 @@
         "events",
         "event",
         "commands",
+	"buttons",
+	"select",
+	"menus",
+	"context",
         "v14",
         "discord-bot",
         "ic4d"
