@@ -7,7 +7,30 @@ import {
 import * as path2 from "path";
 import * as fs from "fs";
 import { CommandObject } from "./commandHandler";
-import { InteractionObject } from "./interactionHandler";
+import { ContextMenuObject, InteractionObject } from "./interactionHandler";
+
+export interface LoaderOptions {
+    /**
+     * What to show for context menus/commands that load in
+     */
+    loaded: string;
+    /**
+     * What to show for context menus/commands that get edited.
+     */
+    edited: string;
+    /**
+     * What to show for context menus/commands that get deleted.
+     */
+    deleted: string;
+    /**
+     * What to show for context menus/commands that get skipped. (Deleted and still marked as deleted.)
+     */
+    skipped: string;
+    /**
+     * What to show for context menus/commands that get loaded, but have no changes
+     */
+    loadedNoChanges?: string;
+}
 
 export interface Choice {
     name: string;
@@ -35,30 +58,15 @@ export class CoreHandler {
 
     protected getInteractions(
         path: string,
-        commandName?: string
-    ): InteractionObject[] {
-        let interactions: InteractionObject[] = [];
-
-        const containsDirectories = (path: string): boolean => {
-            const items = fs.readdirSync(path);
-            let containsDirectories: boolean[] = [];
-
-            for (const item of items) {
-                const itemPath = path2.join(path, item);
-                const isDirectory = fs.statSync(itemPath).isDirectory();
-
-                containsDirectories.push(isDirectory);
-            }
-
-            return containsDirectories.reduce(
-                (acc, currentValue) => acc || currentValue,
-                false
-            );
-        };
+        getContextMenusOnly?: boolean
+    ): (ContextMenuObject | InteractionObject)[] | ContextMenuObject[] {
+        let interactions:
+            | (ContextMenuObject | InteractionObject)[]
+            | ContextMenuObject[] = [];
 
         const scanDirectory = (directory: string) => {
             const items = fs.readdirSync(directory);
-            let arr: InteractionObject[] = [];
+            let arr: (ContextMenuObject | InteractionObject)[] = [];
 
             for (const item of items) {
                 const itemPath = path2.join(directory, item);
@@ -67,18 +75,31 @@ export class CoreHandler {
                 if (isDirectory) {
                     arr = arr.concat(scanDirectory(itemPath));
                 } else if (item.endsWith(".js")) {
-                    const interactionObject: InteractionObject = require(itemPath);
+                    const interactionObject: InteractionObject & {
+                        name: string;
+                        type: string | number;
+                    } = require(itemPath);
 
-                    if (!interactionObject.customId) {
-                        continue;
+                    if (getContextMenusOnly) {
+                        if (
+                            !interactionObject.type ||
+                            !interactionObject.name ||
+                            typeof interactionObject.type !== "number"
+                        ) {
+                            continue;
+                        }
+                    } else {
+                        if (!interactionObject.customId) {
+                            continue;
+                        }
+                        interactionObject.filePath = itemPath;
+                        interactionObject.onlyAuthor =
+                            interactionObject.onlyAuthor == true
+                                ? true
+                                : interactionObject.authorOnly == true
+                                ? true
+                                : false;
                     }
-                    interactionObject.filePath = itemPath;
-                    interactionObject.onlyAuthor =
-                        interactionObject.onlyAuthor == true
-                            ? true
-                            : interactionObject.authorOnly == true
-                            ? true
-                            : false;
                     arr.push(interactionObject);
                 }
             }
@@ -109,17 +130,13 @@ export class CoreHandler {
                     arr = arr.concat(scanDirectory(itemPath));
                 } else if (item.endsWith(".js")) {
                     const commandObject: CommandObject & {
-                        isCommand: boolean;
-                        customId: string;
+                        isCommand?: boolean;
+                        customId?: string;
                     } = require(itemPath);
 
                     if (
-                        /*
-                        !commandObject.name ||
                         !commandObject.description ||
-                        !commandObject.callback ||
-                        */
-                        commandObject.isCommand == false ||
+                        commandObject.isCommand ||
                         commandObject.customId ||
                         exceptions.includes(commandObject.name)
                     ) {
@@ -230,6 +247,13 @@ export class CoreHandler {
         return false;
     }
 
+    protected areContextMenusDifferent(
+        existing: ContextMenuObject,
+        local: ContextMenuObject
+    ): boolean {
+        return existing.type == local.type;
+    }
+
     protected async getApplicationCommands(client: Client, guildId?: string) {
         let applicationCommands:
             | ApplicationCommandManager
@@ -243,7 +267,7 @@ export class CoreHandler {
         }
 
         //@ts-ignore
-        await applicationCommands.fetch();
+        await applicationCommands.fetch({ locale: "en-GB" });
         return applicationCommands;
     }
 }

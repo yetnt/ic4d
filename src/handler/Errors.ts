@@ -12,26 +12,48 @@ class ic4dError extends Error {
         super(message);
         this.message = message
             .replace("$PATH$", clc.bold.underline(file))
-            .replace("$NAME$", clc.italic.bold.underline(commandName));
+            .replace("$NAME$", clc.italic.bold.underline(commandName))
+            .replace(
+                "$NAMECONTEXT$",
+                clc.italic.bold.underline(commandName + " (context menu)")
+            );
         this.name = name;
         this.fileName = file; // Additional property to store the file name
     }
 }
 
-export class CommandLoaderError extends ic4dError {
+export class LoaderError extends ic4dError {
     constructor(message: string, file: string, commandName?: string) {
-        super("LoaderError", message, file, commandName);
+        super("CommandLoaderError", message, file, commandName);
     }
 }
 
-export class CommandHandlerError extends ic4dError {
+export class ContextLoaderError extends ic4dError {
     constructor(message: string, file?: string, commandName?: string) {
-        super("HandlerError", message, file, commandName);
+        super("ContextMenuLoaderError", message, file, commandName);
     }
 }
 
-export class InteractionButtonError extends ic4dError {
+export class ContextHandlerError extends ic4dError {
+    constructor(message: string, file?: string, commandName?: string) {
+        super("ContextMenuHandlerError", message, file, commandName);
+    }
+}
+
+export class HandlerError extends ic4dError {
+    constructor(message: string, file?: string, commandName?: string) {
+        super("CommandHandlerError", message, file, commandName);
+    }
+}
+
+export class ButtonError extends ic4dError {
     constructor(message: string, file?: string, commandName?: string) {
         super("InteractionButtonError", message, file, commandName);
+    }
+}
+
+export class SelectMenuError extends ic4dError {
+    constructor(message: string, file?: string, commandName?: string) {
+        super("InteractionSelectMenuError", message, file, commandName);
     }
 }

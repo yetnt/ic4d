@@ -2,13 +2,7 @@ import { CoreHandler, Option } from "./coreHandler";
 import { Client, Interaction, PermissionFlags } from "discord.js";
 import * as clc from "cli-color";
 import * as errs from "./Errors";
-
-interface LoaderOptions {
-    loaded: string;
-    edited: string;
-    deleted: string;
-    skipped: string;
-}
+import { LoaderOptions } from "./coreHandler";
 
 interface ReaderOptions {
     testGuildId?: string;
@@ -40,6 +34,7 @@ export class CommandHandler extends CoreHandler {
     client: Client;
     commandPath: string;
     options: LoaderOptions = {
+        loadedNoChanges: "NAME was loaded. No changes for NAME happened.",
         loaded: "NAME has been registered successfully.",
         edited: "NAME has been edited.",
         deleted: "NAME has been deleted.",
@@ -70,6 +65,9 @@ export class CommandHandler extends CoreHandler {
         this.commandPath = path;
 
         this.options = {
+            loadedNoChanges: clc.magenta.bold(
+                loaderOptions?.loadedNoChanges || this.options.loadedNoChanges
+            ),
             loaded: clc.green.bold(
                 loaderOptions?.loaded || this.options.loaded
             ),
@@ -97,9 +95,11 @@ export class CommandHandler extends CoreHandler {
 
     /**
      * Register Slash Commands
-     * @param serverId Server Id, Makes loaded command guild wide.
+     * @param logAll Log when loading a command and no changes are made
+     * @param serverId Server Id, Makes loaded commands guild wide.
      */
-    async registerCommands(serverId?: string) {
+    async registerCommands(logAll?: boolean, serverId?: string) {
+        logAll = logAll !== undefined ? logAll : true
         try {
             const localCommands = this.getLocalCommands(this.commandPath);
             const applicationCommands = await this.getApplicationCommands(
@@ -113,7 +113,7 @@ export class CommandHandler extends CoreHandler {
                     !localCommand.description ||
                     !localCommand.callback
                 ) {
-                    throw new errs.CommandLoaderError(
+                    throw new errs.LoaderError(
                         `Command $PATH$ does not export required properties: name, description or callback`,
                         localCommand.filePath
                     );
@@ -168,16 +168,20 @@ export class CommandHandler extends CoreHandler {
                         console.log(this.options.loaded.replace("NAME", name));
                     }
                 } catch (err) {
-                    throw new errs.CommandLoaderError(
+                    throw new errs.LoaderError(
                         `Command $NAME$ from $PATH$:` + err,
                         filePath,
                         name
                     );
                 }
+
+                if (logAll) {
+                    console.log(this.options.loadedNoChanges.replace("NAME", name))
+                }
             }
         } catch (error) {
             let msg = "Loading commands failed with the error: ";
-            if (error instanceof errs.CommandLoaderError) {
+            if (error instanceof errs.LoaderError) {
                 throw new Error(
                     `${clc.bold("(" + error.name + ")")} ` + msg + error.message
                 );
@@ -262,7 +266,7 @@ export class CommandHandler extends CoreHandler {
 
                     await commandObject.callback(this.client, interaction);
                 } catch (error) {
-                    throw new errs.CommandHandlerError(
+                    throw new errs.HandlerError(
                         `Failed to run command $NAME$ \n\n` + error,
                         commandObject.filePath,
                         commandObject.name
