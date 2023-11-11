@@ -242,10 +242,7 @@ export class InteractionHandler extends CoreHandler {
     contextMenus() {
         this.client.on(
             "interactionCreate",
-            (
-                // prettier-ignore
-                interaction: UserContextMenuCommandInteraction | MessageContextMenuCommandInteraction
-            ) => {
+            (interaction: UserContextMenuCommandInteraction | MessageContextMenuCommandInteraction) => {
                 if (!interaction.isContextMenuCommand()) return;
                 const contextObj =
                     this.interactions.contextMenus[interaction.commandName];
@@ -272,7 +269,7 @@ export class InteractionHandler extends CoreHandler {
      * Start listening for Select Menus, Context Menus and Buttons
      * @param authorOnlyMsg Message to be displayed when a different user clicks an author only button.
      */
-    start(authorOnlyMsg: string) {
+    start(authorOnlyMsg?: string) {
         this.buttons(authorOnlyMsg);
         this.selectMenus(authorOnlyMsg);
         this.contextMenus();

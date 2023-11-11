@@ -92,14 +92,14 @@ export class CoreHandler {
                         if (!interactionObject.customId) {
                             continue;
                         }
-                        interactionObject.filePath = itemPath;
-                        interactionObject.onlyAuthor =
+			interactionObject.onlyAuthor =
                             interactionObject.onlyAuthor == true
                                 ? true
                                 : interactionObject.authorOnly == true
                                 ? true
                                 : false;
                     }
+		    interactionObject.filePath = itemPath
                     arr.push(interactionObject);
                 }
             }
