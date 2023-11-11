@@ -58,10 +58,10 @@ const ready = new ReadyHandler(
     }
 );
 
-async () => {
+(async () => {
     await handler.handleCommands();
     ready.execute();
-};
+})();
 
 client.login(process.env.TOKEN);
 ```
