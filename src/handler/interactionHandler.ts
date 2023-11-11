@@ -5,13 +5,16 @@ import {
     ButtonInteraction,
     StringSelectMenuInteraction,
 } from "discord.js";
+import { InteractionButtonError } from "./Errors";
 
 export interface InteractionObject {
     customId?: string;
     description?: string;
     onlyAuthor?: boolean;
+    filePath: string;
     callback: (
-        interaction: ButtonInteraction | StringSelectMenuInteraction, client?: Client
+        interaction: ButtonInteraction | StringSelectMenuInteraction,
+        client?: Client
     ) => void;
 }
 
@@ -40,6 +43,7 @@ export class InteractionHandler extends CoreHandler {
             acc[obj.customId] = {
                 callback: obj.callback,
                 onlyAuthor: obj.onlyAuthor,
+                filePath: obj.filePath,
             };
             return acc;
         }, {});
@@ -48,21 +52,26 @@ export class InteractionHandler extends CoreHandler {
 
     /**
      * Start listening for buttons.
+     * @param authorOnlyMsg Message to be displayed when a different user clicks an author only button.
      */
-    buttons() {
+    buttons(authorOnlyMsg?: string) {
+        authorOnlyMsg =
+            authorOnlyMsg !== undefined
+                ? authorOnlyMsg
+                : "This button is not for you";
         this.client.on("interactionCreate", (interaction) => {
             if (!interaction.isButton()) return;
+            const buttonObj = this.interactions[interaction.customId];
 
             try {
-                const buttonObj = this.interactions[interaction.customId];
-                if (buttonObj == undefined) return;
+                if (buttonObj == undefined) return; // for buttons that don't need this package to respond to them.
 
                 const author = interaction.message.interaction.user.id;
                 const buttonClicker = interaction.member.user.id;
 
                 if (buttonObj.onlyAuthor == true && author !== buttonClicker) {
                     interaction.reply({
-                        content: "This button is not for you",
+                        content: authorOnlyMsg,
                         ephemeral: true,
                     });
                     return;
@@ -70,7 +79,11 @@ export class InteractionHandler extends CoreHandler {
                 buttonObj.callback(interaction, this.client);
             } catch (error) {
                 if (this.logErrors) {
-                    throw new Error(error);
+                    throw new InteractionButtonError(
+                        "Button $NAME$ failed with the error:\n\n" + error,
+                        buttonObj.filePath,
+                        interaction.customId
+                    );
                 }
             }
         });

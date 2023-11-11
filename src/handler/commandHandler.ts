@@ -1,7 +1,7 @@
 import { CoreHandler, Option } from "./coreHandler";
 import { Client, Interaction, PermissionFlags } from "discord.js";
-//@ts-ignore
 import * as clc from "cli-color";
+import * as errs from "./Errors";
 
 interface LoaderOptions {
     loaded: string;
@@ -26,6 +26,7 @@ export interface CommandObject {
     options?: Option[];
     deleted?: boolean;
     devOnly?: boolean;
+    filePath?: string;
 
     permissionsRequired?: PermissionFlags[];
     botPermissions?: PermissionFlags[];
@@ -107,46 +108,82 @@ export class CommandHandler extends CoreHandler {
             );
 
             for (const localCommand of localCommands) {
-                const { name, description, options } = localCommand;
+                if (
+                    !localCommand.name ||
+                    !localCommand.description ||
+                    !localCommand.callback
+                ) {
+                    throw new errs.CommandLoaderError(
+                        `Command $PATH$ does not export required properties: name, description or callback`,
+                        localCommand.filePath
+                    );
+                }
+                const { name, description, options, filePath } = localCommand;
+                try {
+                    const existingCommand =
+                        await applicationCommands.cache.find(
+                            (cmd) => cmd.name === name
+                        );
 
-                const existingCommand = await applicationCommands.cache.find(
-                    (cmd) => cmd.name === name
-                );
+                    if (existingCommand) {
+                        if (localCommand.deleted) {
+                            await applicationCommands.delete(
+                                existingCommand.id
+                            );
+                            console.log(
+                                this.options.deleted.replace("NAME", name)
+                            );
+                            continue;
+                        }
 
-                if (existingCommand) {
-                    if (localCommand.deleted) {
-                        await applicationCommands.delete(existingCommand.id);
-                        console.log(this.options.deleted.replace("NAME", name));
-                        continue;
-                    }
+                        if (
+                            this.areCommandsDifferent(
+                                existingCommand,
+                                localCommand
+                            )
+                        ) {
+                            await applicationCommands.edit(existingCommand.id, {
+                                description,
+                                options,
+                            });
 
-                    if (
-                        this.areCommandsDifferent(existingCommand, localCommand)
-                    ) {
-                        await applicationCommands.edit(existingCommand.id, {
+                            console.log(
+                                this.options.edited.replace("NAME", name)
+                            );
+                        }
+                    } else {
+                        if (localCommand.deleted) {
+                            console.log(
+                                this.options.skipped.replace("NAME", name)
+                            );
+                            continue;
+                        }
+
+                        await applicationCommands.create({
+                            name,
                             description,
                             options,
                         });
 
-                        console.log(this.options.edited.replace("NAME", name));
+                        console.log(this.options.loaded.replace("NAME", name));
                     }
-                } else {
-                    if (localCommand.deleted) {
-                        console.log(this.options.skipped.replace("NAME", name));
-                        continue;
-                    }
-
-                    await applicationCommands.create({
-                        name,
-                        description,
-                        options,
-                    });
-
-                    console.log(this.options.loaded.replace("NAME", name));
+                } catch (err) {
+                    throw new errs.CommandLoaderError(
+                        `Command $NAME$ from $PATH$:` + err,
+                        filePath,
+                        name
+                    );
                 }
             }
         } catch (error) {
-            throw new Error("Failed loading command.\n\n" + error);
+            let msg = "Loading commands failed with the error: ";
+            if (error instanceof errs.CommandLoaderError) {
+                throw new Error(
+                    `${clc.bold("(" + error.name + ")")} ` + msg + error.message
+                );
+            } else {
+                throw new Error(error);
+            }
         }
     }
 
@@ -167,11 +204,11 @@ export class CommandHandler extends CoreHandler {
 
                 const localCommands = this.getLocalCommands(this.commandPath);
 
-                try {
-                    const commandObject: CommandObject = localCommands.find(
-                        (cmd: any) => cmd.name === interaction.commandName
-                    );
+                const commandObject: CommandObject = localCommands.find(
+                    (cmd: any) => cmd.name === interaction.commandName
+                );
 
+                try {
                     if (!commandObject) return;
 
                     if (commandObject.devOnly) {
@@ -225,7 +262,11 @@ export class CommandHandler extends CoreHandler {
 
                     await commandObject.callback(this.client, interaction);
                 } catch (error) {
-                    throw new Error("Failed to run command!\n\n" + error);
+                    throw new errs.CommandHandlerError(
+                        `Failed to run command $NAME$ \n\n` + error,
+                        commandObject.filePath,
+                        commandObject.name
+                    );
                 }
             }
         );

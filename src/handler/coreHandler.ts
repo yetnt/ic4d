@@ -33,7 +33,10 @@ export class CoreHandler {
         this.client = client;
     }
 
-    protected getInteractions(path: string, commandName?: string): InteractionObject[] {
+    protected getInteractions(
+        path: string,
+        commandName?: string
+    ): InteractionObject[] {
         let interactions: InteractionObject[] = [];
 
         const containsDirectories = (path: string): boolean => {
@@ -61,20 +64,15 @@ export class CoreHandler {
                 const itemPath = path2.join(directory, item);
                 const isDirectory = fs.statSync(itemPath).isDirectory();
 
-                /* if (isDirectory && item !== commandName) {
-                    const result = containsDirectories(itemPath);
-                    if (!result) continue;
+                if (isDirectory) {
                     arr = arr.concat(scanDirectory(itemPath));
-                } else */ if (isDirectory /*&& item == commandName*/) {
-                    arr = arr.concat(scanDirectory(itemPath));
-                    // break;
                 } else if (item.endsWith(".js")) {
                     const interactionObject: InteractionObject = require(itemPath);
 
                     if (!interactionObject.customId) {
                         continue;
                     }
-
+                    interactionObject.filePath = itemPath;
                     arr.push(interactionObject);
                 }
             }
@@ -86,7 +84,10 @@ export class CoreHandler {
         return interactions;
     }
 
-    protected getLocalCommands(path: string, exceptions?: string[]): CommandObject[] {
+    protected getLocalCommands(
+        path: string,
+        exceptions?: string[]
+    ): CommandObject[] {
         exceptions = exceptions !== undefined ? exceptions : [];
         let localCommands: CommandObject[] = [];
 
@@ -101,17 +102,24 @@ export class CoreHandler {
                 if (isDirectory) {
                     arr = arr.concat(scanDirectory(itemPath));
                 } else if (item.endsWith(".js")) {
-                    const commandObject: CommandObject = require(itemPath);
+                    const commandObject: CommandObject & {
+                        isCommand: boolean;
+                        customId: string;
+                    } = require(itemPath);
 
                     if (
+                        /*
                         !commandObject.name ||
                         !commandObject.description ||
                         !commandObject.callback ||
+                        */
+                        commandObject.isCommand == false ||
+                        commandObject.customId ||
                         exceptions.includes(commandObject.name)
                     ) {
                         continue;
                     }
-
+                    commandObject.filePath = itemPath;
                     arr.push(commandObject);
                 }
             }
