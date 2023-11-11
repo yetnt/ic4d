@@ -309,11 +309,11 @@ const interactions = new InteractionHandler(
 
 Start listening for button interactions.
 
+-   `authorOnlyMsg`**(optional)**: Message to display when a user click's another user's button (onlyAuthor is set to true.)
+
 ```js
 interactions.buttons();
 ```
-
-# remove this forcopy
 
 # Command Object
 
@@ -424,10 +424,12 @@ module.exports = {
 
 # Credits
 
-Huge credit to [underctrl](https://github.com/notunderctrl), Code would've not been possible if i did not watch his helpful discord.js tutorials! I had to give him credit because this package is based off moving all those files fform his tutorial into one package.
+Huge credit to [underctrl](https://github.com/notunderctrl), Code would've not been possible if i did not watch his helpful discord.js tutorials! I had to give him credit because this package is based off moving all those files fromm his tutorial into one package.
+
+He probably has a way better package, so go check his out!
 
 # Links
 
 -   [Github](https://github.com/YetNT/ic4d)
 -   [NPM](https://www.npmjs.com/package/ic4d)
--   [underctrl discord.js tutorials](https://www.youtube.com/playlist?list=PLpmb-7WxPhe0ZVpH9pxT5MtC4heqej8Es)
+-   [underctrl Discord.js Tutorial](https://www.youtube.com/playlist?list=PLpmb-7WxPhe0ZVpH9pxT5MtC4heqej8Es)
