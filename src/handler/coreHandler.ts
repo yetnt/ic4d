@@ -73,6 +73,12 @@ export class CoreHandler {
                         continue;
                     }
                     interactionObject.filePath = itemPath;
+                    interactionObject.onlyAuthor =
+                        interactionObject.onlyAuthor == true
+                            ? true
+                            : interactionObject.authorOnly == true
+                            ? true
+                            : false;
                     arr.push(interactionObject);
                 }
             }

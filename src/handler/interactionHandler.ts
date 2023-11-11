@@ -12,6 +12,7 @@ export interface InteractionObject {
     customId?: string;
     description?: string;
     onlyAuthor?: boolean;
+    authorOnly?: boolean;
     filePath: string;
     type: string;
     callback: (
@@ -131,13 +132,16 @@ export class InteractionHandler extends CoreHandler {
                 this.interactions.selectMenu[interaction.customId];
 
             try {
-                if (selectObj == undefined) return; // for buttons that don't need this package to respond to them.
+                if (selectObj == undefined) return; // for selects that don't need this package to respond to them.
 
                 const author = interaction.message.interaction.user.id;
-                const buttonClicker = interaction.member.user.id;
+                const selectMenuClicker = interaction.member.user.id;
 
-                if (selectObj.onlyAuthor == true && author !== buttonClicker) {
-                    interaction.followUp({
+                if (
+                    selectObj.onlyAuthor == true &&
+                    author !== selectMenuClicker
+                ) {
+                    interaction.reply({
                         content: authorOnlyMsg,
                         ephemeral: true,
                     });
