@@ -160,6 +160,7 @@ If there is no log in the console for a specific command, then it has been loade
 
 ```js
 {
+        loadedNoChanges: "NAME was loaded. No changes were made to NAME."
         loaded: "NAME has been registered successfully.",
         edited: "NAME has been edited.",
         deleted: "NAME has been deleted.",
@@ -173,6 +174,7 @@ If there is no log in the console for a specific command, then it has been loade
 
 **(asynchronous function)**
 
+-   `logAll`**(optional)**: Log command even if no change was performed.
 -   `serverId`**(optional)**: Register all commands in a specific server. if not provided it will be application wide
 
 ```js
@@ -269,13 +271,13 @@ handler.handleCommands(middleWare); // pass the function alone without brackets 
 Handler to handle interactions, right now currently supports:
 
 > -   buttons
-> -   (soon) select menus
-> -   (soon) context menus
+> -   select menus
+> -   context menus
 > -   (soon) modals
 
 ## Pre-Read
 
-Make sure wherever your store your interaction objects they follow the export the [interactions object](#interaction-object) with the minimum requirements being
+Make sure wherever your store your interaction objects they follow the export the [interactions object](#interaction-object) with the minimum requirements being. **NOTE : This is the case for any interaction EXCEPT FOR [CONTEXT MENUS](#context-menu)**
 
 ```js
 module.exports = {
@@ -290,6 +292,7 @@ module.exports = {
 
 -   `client`: Discord.js client
 -   `path`: Path to where interactions are stored. (They can be stored in your commands folder to, as long as they meet with [interactions object](#interaction-object))
+-   `loaderOptions`**(optional)**: Context Menu [Loader Options](#loaderoptions)
 -   `logErrors`**(optional)**: Log errors that occur when interactons take place.
 
 ```js
@@ -298,12 +301,21 @@ const path = require("path");
 
 const interactions = new InteractionHandler(
     client,
-    path.join(__dirname, "commands"),
-    true
+    path.join(__dirname, "commands")
 );
 ```
 
 ## Methods
+
+### `start`
+
+Start listening for all available interactions. (Context Menu, Button and Select Menu)
+
+-   `authorOnlyMsg`**(optional)**: Message to display when a interacts with another user's interaction (onlyAuthor is set to true.)
+
+```js
+interactions.start();
+```
 
 ### `buttons`
 
@@ -313,6 +325,37 @@ Start listening for button interactions.
 
 ```js
 interactions.buttons();
+```
+
+### `selectMenus`
+
+Start listening for select menu interactions.
+
+-   `authorOnlyMsg`**(optional)**: Message to display when a user click's another user's select menu (onlyAuthor is set to true.)
+
+```js
+interactions.selectMenu();
+```
+
+### `contextMenus`
+
+Start listening for context menu interactions. (After their registered)
+
+```js
+interactions.contextMenus();
+```
+
+### `registerContextMenus`
+
+**(asynchronous function)**
+
+Register Context Menus. Make sure your [Context Menu object](#context-menu) looks like [this](#context-menu)
+
+-   `logAll`**(optional)**: Log context menu even if no change was performed.
+-   `serverId`**(optional)**: Register all commands in a specific server. if not provided it will be application wide
+
+```js
+await interactions.registerContextMenus();
 ```
 
 # Command Object
@@ -384,24 +427,26 @@ module.exports = {
 
 Package also requires that wherever you store your interaction object (buttons, select menus, context menus etc), they have thesse minimum requirements:
 
-## Normal
+## Normal (button)
 
 ```js
 module.exports = {
     customId: "button1",
+    type: "button",
     callback: (i) => {
         // callback
     },
 };
 ```
 
-## Author Only
+## Author Only (selectMenu)
 
 Not required but is handy
 
 ```js
 module.exports = {
-    customId: "button1",
+    customId: "selectMenu",
+    type: "selectMenu",
     authorOnly: true,
     callback: (i) => {
         // callback
@@ -418,6 +463,42 @@ module.exports = {
     customId: "button1",
     callback: (i, client) => {
         // callback
+    },
+};
+```
+
+## Context Menu
+
+This works a little differently to ones above, that's why it has it's own category lol.
+
+```js
+const { ApplicationCommandType } = require("discord.js");
+
+module.exports = {
+    name: "modla",
+    isCommand: false,
+    type: ApplicationCommandType.User,
+    callback: (interaction) => {
+        const user = interaction.targetUser;
+    },
+};
+```
+
+or
+
+```js
+const {
+    ContextMenuCommandBuilder,
+    ApplicationCommandType,
+} = require("discord.js");
+
+module.exports = {
+    ...new ContextMenuCommandBuilder()
+        .setName("Balls")
+        .setType(ApplicationCommandType.Message),
+    isCommand: false,
+    callback: (interaction) => {
+        const message = interaction.targetMessage;
     },
 };
 ```
