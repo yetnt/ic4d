@@ -136,7 +136,7 @@ export class InteractionHandler extends CoreHandler {
                 {}
             );
 
-        const contextMenus = interactions
+        const contextMenus = this.getInteractions(this.interactionsPath, true)
             .filter((obj) => typeof obj.type === "number") // if the type property is a number, then we know damn well it's a context menu. If not you're fucking yourself over.
             .reduce<Record<string, ContextMenuObject>>(
                 (acc, obj: ContextMenuObject) => {
