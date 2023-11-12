@@ -6,6 +6,7 @@ import {
     MessageContextMenuCommandInteraction,
     UserContextMenuCommandInteraction,
     ContextMenuCommandInteraction,
+    ModalSubmitInteraction,
 } from "discord.js";
 import * as clc from "cli-color";
 import * as errs from "./Errors";
@@ -23,7 +24,8 @@ export interface InteractionObject {
             | ButtonInteraction
             | AnySelectMenuInteraction
             | UserContextMenuCommandInteraction
-            | MessageContextMenuCommandInteraction,
+            | MessageContextMenuCommandInteraction
+            | ModalSubmitInteraction,
         client?: Client
     ) => void;
 }
@@ -51,6 +53,7 @@ export class InteractionHandler extends CoreHandler {
         buttons: Record<string, InteractionObject>;
         selectMenus: Record<string, InteractionObject>;
         contextMenus: Record<string, ContextMenuObject>;
+        modals: Record<string, InteractionObject>;
     };
     logErrors: boolean = false;
     options: LoaderOptions = {
@@ -105,6 +108,7 @@ export class InteractionHandler extends CoreHandler {
         buttons: Record<string, InteractionObject>;
         selectMenus: Record<string, InteractionObject>;
         contextMenus: Record<string, ContextMenuObject>;
+        modals: Record<string, InteractionObject>;
     } {
         const buttons = interactions
             .filter((obj) => obj.type === "button")
@@ -151,7 +155,21 @@ export class InteractionHandler extends CoreHandler {
                 {}
             );
 
-        return { buttons, selectMenus, contextMenus };
+        const modals = interactions
+            .filter((obj) => obj.type === "modal")
+            .reduce<Record<string, InteractionObject>>(
+                (acc, obj: InteractionObject) => {
+                    acc[obj.customId] = {
+                        callback: obj.callback,
+                        filePath: obj.filePath,
+                        type: obj.type,
+                    };
+                    return acc;
+                },
+                {}
+            );
+
+        return { buttons, selectMenus, contextMenus, modals };
     }
 
     /**
@@ -242,7 +260,11 @@ export class InteractionHandler extends CoreHandler {
     contextMenus() {
         this.client.on(
             "interactionCreate",
-            (interaction: UserContextMenuCommandInteraction | MessageContextMenuCommandInteraction) => {
+            (
+                interaction:
+                    | UserContextMenuCommandInteraction
+                    | MessageContextMenuCommandInteraction
+            ) => {
                 if (!interaction.isContextMenuCommand()) return;
                 const contextObj =
                     this.interactions.contextMenus[interaction.commandName];
@@ -266,6 +288,33 @@ export class InteractionHandler extends CoreHandler {
     }
 
     /**
+     * Start listening for modals
+     */
+    modals() {
+        this.client.on(
+            "interactionCreate",
+            (interaction: ModalSubmitInteraction) => {
+                if (!interaction.isModalSubmit()) return;
+                const modalObj = this.interactions.modals[interaction.customId];
+
+                try {
+                    if (modalObj == undefined) return;
+
+                    modalObj.callback(interaction, this.client);
+                } catch (error) {
+                    if (this.logErrors) {
+                        throw new errs.ModalError(
+                            "Modal $NAME$ failed with the error:\n\n" + error,
+                            modalObj.filePath,
+                            interaction.customId
+                        );
+                    }
+                }
+            }
+        );
+    }
+
+    /**
      * Start listening for Select Menus, Context Menus and Buttons
      * @param authorOnlyMsg Message to be displayed when a different user clicks an author only button.
      */
@@ -273,6 +322,7 @@ export class InteractionHandler extends CoreHandler {
         this.buttons(authorOnlyMsg);
         this.selectMenus(authorOnlyMsg);
         this.contextMenus();
+        this.modals();
     }
 
     /**

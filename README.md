@@ -268,12 +268,7 @@ handler.handleCommands(middleWare); // pass the function alone without brackets 
 
 # InteractionHandler
 
-Handler to handle interactions, right now currently supports:
-
-> -   buttons
-> -   select menus
-> -   context menus
-> -   (soon) modals
+Handler to handle interactions.
 
 ## Pre-Read
 
@@ -309,7 +304,7 @@ const interactions = new InteractionHandler(
 
 ### `start`
 
-Start listening for all available interactions. (Context Menu, Button and Select Menu)
+Start listening for all the available interactions. (Context Menus, Buttons, Select Menus and Modals)
 
 -   `authorOnlyMsg`**(optional)**: Message to display when a interacts with another user's interaction (onlyAuthor is set to true.)
 
@@ -335,6 +330,14 @@ Start listening for select menu interactions.
 
 ```js
 interactions.selectMenu();
+```
+
+### `modals`
+
+Start listening for modal interactions. (After their registered)
+
+```js
+interactions.modals();
 ```
 
 ### `contextMenus`
@@ -454,13 +457,14 @@ module.exports = {
 };
 ```
 
-## Takes in client
+## Takes in client (modal)
 
 Not required, but also handy
 
 ```js
 module.exports = {
     customId: "button1",
+    type: "modal",
     callback: (i, client) => {
         // callback
     },

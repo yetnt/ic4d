@@ -52,6 +52,12 @@ export class ButtonError extends ic4dError {
     }
 }
 
+export class ModalError extends ic4dError {
+    constructor(message: string, file?: string, commandName?: string) {
+        super("InteractionModalError", message, file, commandName);
+    }
+}
+
 export class SelectMenuError extends ic4dError {
     constructor(message: string, file?: string, commandName?: string) {
         super("InteractionSelectMenuError", message, file, commandName);
