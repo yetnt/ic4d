@@ -99,7 +99,7 @@ export class CommandHandler extends CoreHandler {
      * @param serverId Server Id, Makes loaded commands guild wide.
      */
     async registerCommands(logAll?: boolean, serverId?: string) {
-        logAll = logAll !== undefined ? logAll : true
+        logAll = logAll !== undefined ? logAll : true;
         try {
             const localCommands = this.getLocalCommands(this.commandPath);
             const applicationCommands = await this.getApplicationCommands(
@@ -144,6 +144,7 @@ export class CommandHandler extends CoreHandler {
                         ) {
                             await applicationCommands.edit(existingCommand.id, {
                                 description,
+                                // @ts-ignore
                                 options,
                             });
 
@@ -162,6 +163,7 @@ export class CommandHandler extends CoreHandler {
                         await applicationCommands.create({
                             name,
                             description,
+                            // @ts-ignore
                             options,
                         });
 
@@ -176,7 +178,9 @@ export class CommandHandler extends CoreHandler {
                 }
 
                 if (logAll) {
-                    console.log(this.options.loadedNoChanges.replace("NAME", name))
+                    console.log(
+                        this.options.loadedNoChanges.replace("NAME", name)
+                    );
                 }
             }
         } catch (error) {

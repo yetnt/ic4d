@@ -14,7 +14,6 @@ import { LoaderOptions } from "./coreHandler";
 
 export interface InteractionObject {
     customId?: string;
-    description?: string;
     onlyAuthor?: boolean;
     authorOnly?: boolean;
     filePath: string;

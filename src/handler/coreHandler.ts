@@ -3,11 +3,13 @@ import {
     CommandInteraction,
     ApplicationCommandManager,
     GuildApplicationCommandManager,
+    ApplicationCommandOptionType,
 } from "discord.js";
 import * as path2 from "path";
 import * as fs from "fs";
 import { CommandObject } from "./commandHandler";
 import { ContextMenuObject, InteractionObject } from "./interactionHandler";
+import { Interactions, CommandInteractionObject } from "./builders";
 
 export interface LoaderOptions {
     /**
@@ -32,18 +34,92 @@ export interface LoaderOptions {
     loadedNoChanges?: string;
 }
 
+/**
+ * Represents a choice
+ */
 export interface Choice {
+    /**
+     * Choice name
+     */
     name: string;
+    /**
+     * Choice value
+     */
     value: any;
 }
 
+/**
+ * Represents an option for a slash command
+ */
 export interface Option {
+    /**
+     * The name of the  option
+     */
     name: string;
+    /**
+     * Description of the option
+     */
     description: string;
-    required: boolean;
-    choices: [Choice] | [];
-    type: number;
+    /**
+     * Whether the option is required or not
+     */
+    required?: boolean;
+    /**
+     * An array of predefined choices.
+     */
+    choices?: Choice[];
+    /**
+     * Type of option
+     */
+    type: ApplicationCommandOptionType;
 }
+
+/**
+ * Switches the type from a command interaciton object to the interaction object the code uses.
+ * @param cI CommandInteractionObject
+ * @returns
+ */
+function change(cI: CommandInteractionObject): InteractionObject {
+    const a: InteractionObject = {
+        customId: cI.customId,
+        type: cI.type,
+        callback: cI.callback,
+        filePath: undefined,
+        onlyAuthor: cI.onlyAuthor,
+    };
+
+    return a;
+}
+
+/**
+ * Extract all interactions from a command into one array full of them.
+ * @param interactionsObject Object at which the interactions are stored as CommandObjectInteraction
+ * @param filePath appends filepath.
+ * @returns
+ */
+export function extractAllInteractions(
+    interactionsObject: Interactions,
+    filePath: string
+): InteractionObject[] {
+    const allInteractions: InteractionObject[] = [];
+
+    for (const key in interactionsObject) {
+        if (interactionsObject.hasOwnProperty(key)) {
+            const objects = interactionsObject[key as keyof Interactions]; // Type assertion here
+            const keys = Object.keys(objects) as (keyof typeof objects)[];
+
+            for (const objKey of keys) {
+                const current = objects[objKey];
+                current.filePath = filePath;
+                allInteractions.push(change(current));
+            }
+        }
+    }
+
+    return allInteractions;
+}
+
+const isEmpty = (obj: Record<string, any>) => !Object.keys(obj).length;
 
 /**
  * @class
@@ -78,6 +154,7 @@ export class CoreHandler {
                     const interactionObject: InteractionObject & {
                         name: string;
                         type: string | number;
+                        interactions?: Interactions;
                     } = require(itemPath);
 
                     if (getContextMenusOnly) {
@@ -89,18 +166,29 @@ export class CoreHandler {
                             continue;
                         }
                     } else {
-                        if (!interactionObject.customId) {
-                            continue;
+                        if (
+                            interactionObject.interactions &&
+                            !isEmpty(interactionObject.interactions)
+                        ) {
+                            let interactions = extractAllInteractions(
+                                interactionObject.interactions,
+                                itemPath
+                            );
+                            arr.push(...interactions);
+                        } else {
+                            if (!interactionObject.customId) {
+                                continue;
+                            }
+                            interactionObject.onlyAuthor =
+                                interactionObject.onlyAuthor == true
+                                    ? true
+                                    : interactionObject.authorOnly == true
+                                    ? true
+                                    : false;
+                            interactionObject.filePath = itemPath;
+                            arr.push(interactionObject);
                         }
-			interactionObject.onlyAuthor =
-                            interactionObject.onlyAuthor == true
-                                ? true
-                                : interactionObject.authorOnly == true
-                                ? true
-                                : false;
                     }
-		    interactionObject.filePath = itemPath
-                    arr.push(interactionObject);
                 }
             }
 
