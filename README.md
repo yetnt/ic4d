@@ -1,6 +1,6 @@
 # ic4d
 
-Interactions 4 Dummies
+**I**nteractions and **C**ommand handler **4** **D**ummies
 
 # Installation
 
@@ -16,6 +16,7 @@ npm i ic4d
 -   [InteractionHandler](#interactionhandler)
 -   [Command Object](#command-object)
 -   [Interaction Object](#interaction-object)
+-   [Same file Command and Interactions](#command-and-interactions-in-the-same-file)
 -   [Credit](#credits)
 -   [Links](#links)
 
@@ -365,6 +366,31 @@ await interactions.registerContextMenus();
 
 This package requires your command object to be layed out specifically,
 
+## Using Class
+
+You can use the class to build the command. (see [SlashCommandObject](#slashcommandobject))
+
+```js
+const { SlashCommandObject } = require("ic4d");
+
+const rob = new SlashCommandObject({
+    name: "rob",
+    description: "Rob a user for coins bro",
+    callback: async (client, interaction) => {
+        interaction.reply("yooooo");
+    },
+});
+
+module.exports = rob;
+```
+
+and when you need to add a new property (to get other stuff below) just
+
+```js
+rob.deleted = true; // it's as simple as that!
+rob.devOnly = true;
+```
+
 ## Normal
 
 minimum requirements
@@ -506,6 +532,122 @@ module.exports = {
     },
 };
 ```
+
+# Command and Interactions in the same file
+
+If you do not like having random buttons everywhere in different files, don't worry the following classess are here to help you!
+
+here's a quick example for yall quickers
+
+```js
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { SlashCommandObject, CommandInteractionObject } = require("ic4d");
+
+const ok = new CommandInteractionObject({
+    customId: "ok",
+    type: "button",
+    authorOnly: true,
+
+    callback: async (i) => {
+        i.update({ content: "this is from the same file", components: [] });
+    },
+});
+
+const random = new SlashCommandObject(
+    {
+        name: "random",
+        description: "random thing",
+
+        callback: async (client, interaction) => {
+            await interaction.reply({
+                content: "ok",
+                components: [
+                    new ActionRowBuilder().addComponents(
+                        new ButtonBuilder()
+                            .setCustomId("ok")
+                            .setLabel("ok")
+                            .setStyle(ButtonStyle.Danger)
+                    ),
+                ],
+            });
+        },
+    },
+    ok
+);
+
+module.exports = random;
+```
+
+## CommandInteractionObject
+
+### Constructor
+
+Represents an interaction object **(NOT FOR CONTEXT MENUS)**
+
+This is layed out exactly as [Interaction Object](#interaction-object), just in extra code.
+
+-   `intObj`: Object with properties associated with the interaction
+
+```js
+const intObj = {
+    customId: "mySelect", // the custom id of the interaction
+    type: "selectMenu", // the type of interaction. can be "selectMenu", "button" or "modal"
+    callback: (i) => {
+        // do something
+    },
+    onlyAuthor: false,
+};
+
+const mySelect = new CommandInteractionObject(intObj);
+```
+
+### Methods
+
+#### `referenceCommand`
+
+Refrences the command object with it's properties. (Bassically shares variables with it)
+
+-   `command` - Command to make a refrence to (Type of [SlashCommandObject](#slashcommandobject))
+
+```js
+const cmd = new SlashCommandObject(/* ... */, mySelect)
+
+mySelect.referenceCommand(cmd)
+```
+
+and to call any properties in the command, call:
+
+```js
+mySelect.cmd; // the command's name
+```
+
+## SlashCommandObject
+
+Represents a slash command object.
+
+This is layed out exactly as [Command Object](#command-object), just in extra code.
+
+-   `commandObject`: Object with properties associated with the command
+-   `...interactions`: An array of [CommandInteractionObject](#commandinteractionobject) that is associated with this file.
+
+```js
+// we'll be using mySelect from above
+
+const commandObject = {
+    name: "showselect",
+    description: "shows you a cool select menu",
+    callback: async (client, interaction) => {
+        // show it
+    },
+};
+
+module.exports = new SlashCommandObject(
+    commandObject,
+    mySelect /* add you can just keep adding more interactions seprated by a comma.*/
+);
+```
+
+and that's mostly it!
 
 # Credits
 
