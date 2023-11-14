@@ -159,7 +159,7 @@ export class CoreHandler {
                         interactions?: Interactions;
                     } = require(itemPath);
 
-                    if (getContextMenusOnly) {
+                    if (getContextMenusOnly == true) {
                         if (
                             !interactionObject.type ||
                             !interactionObject.name ||
@@ -167,6 +167,8 @@ export class CoreHandler {
                         ) {
                             continue;
                         }
+                        interactionObject.filePath = itemPath;
+                        arr.push(interactionObject);
                     } else {
                         if (
                             interactionObject.interactions &&

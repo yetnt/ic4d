@@ -34,7 +34,7 @@ export class CommandHandler extends CoreHandler {
     client: Client;
     commandPath: string;
     options: LoaderOptions = {
-        loadedNoChanges: "NAME was loaded. No changes for NAME happened.",
+        loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
         edited: "NAME has been edited.",
         deleted: "NAME has been deleted.",
@@ -108,6 +108,7 @@ export class CommandHandler extends CoreHandler {
             );
 
             for (const localCommand of localCommands) {
+                let noChanges = true;
                 if (
                     !localCommand.name ||
                     !localCommand.description ||
@@ -130,6 +131,7 @@ export class CommandHandler extends CoreHandler {
                             await applicationCommands.delete(
                                 existingCommand.id
                             );
+                            noChanges = false;
                             console.log(
                                 this.options.deleted.replace("NAME", name)
                             );
@@ -147,6 +149,7 @@ export class CommandHandler extends CoreHandler {
                                 // @ts-ignore
                                 options,
                             });
+                            noChanges = false;
 
                             console.log(
                                 this.options.edited.replace("NAME", name)
@@ -154,6 +157,7 @@ export class CommandHandler extends CoreHandler {
                         }
                     } else {
                         if (localCommand.deleted) {
+                            noChanges = false;
                             console.log(
                                 this.options.skipped.replace("NAME", name)
                             );
@@ -166,6 +170,7 @@ export class CommandHandler extends CoreHandler {
                             // @ts-ignore
                             options,
                         });
+                        noChanges = false;
 
                         console.log(this.options.loaded.replace("NAME", name));
                     }
@@ -177,7 +182,7 @@ export class CommandHandler extends CoreHandler {
                     );
                 }
 
-                if (logAll) {
+                if (logAll && noChanges == true) {
                     console.log(
                         this.options.loadedNoChanges.replace("NAME", name)
                     );

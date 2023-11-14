@@ -60,7 +60,7 @@ export class InteractionHandler extends CoreHandler {
     };
     logErrors: boolean = false;
     options: LoaderOptions = {
-        loadedNoChanges: "NAME was loaded. No changes for NAME happened.",
+        loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
         edited: "NAME has been edited.",
         deleted: "NAME has been deleted.",
@@ -388,6 +388,7 @@ export class InteractionHandler extends CoreHandler {
             );
 
             for (const localContext of localContexts as ContextMenuObject[]) {
+                let noChanges = true;
                 const { name, type, filePath } = localContext;
                 try {
                     const existingContext =
@@ -400,6 +401,7 @@ export class InteractionHandler extends CoreHandler {
                             await applicationCommands.delete(
                                 existingContext.id
                             );
+                            noChanges = false;
                             console.log(
                                 this.options.deleted.replace("NAME", name)
                             );
@@ -416,6 +418,7 @@ export class InteractionHandler extends CoreHandler {
                             await applicationCommands.edit(existingContext.id, {
                                 type,
                             });
+                            noChanges = false;
 
                             console.log(
                                 this.options.edited.replace("NAME", name)
@@ -423,6 +426,7 @@ export class InteractionHandler extends CoreHandler {
                         }
                     } else {
                         if (localContext.deleted) {
+                            noChanges = false;
                             console.log(
                                 this.options.skipped.replace("NAME", name)
                             );
@@ -433,6 +437,7 @@ export class InteractionHandler extends CoreHandler {
                             name,
                             type,
                         });
+                        noChanges = false;
 
                         console.log(this.options.loaded.replace("NAME", name));
                     }
@@ -441,6 +446,12 @@ export class InteractionHandler extends CoreHandler {
                         `Command $NAMECONTEXT$ from $PATH$:` + err,
                         filePath,
                         name
+                    );
+                }
+
+                if (logAll && noChanges == true) {
+                    console.log(
+                        this.options.loadedNoChanges.replace("NAME", name)
                     );
                 }
             }
