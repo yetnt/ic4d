@@ -11,12 +11,16 @@ npm i ic4d
 # Contents
 
 -   [Quick Example](#quick-example)
--   [ReadyHandler](#readyhandler)
--   [CommandHandler](#commandhandler)
--   [InteractionHandler](#interactionhandler)
--   [Command Object](#command-object)
--   [Interaction Object](#interaction-object)
+-   Handlers
+-   -   [ReadyHandler](#readyhandler)
+-   -   [CommandHandler](#commandhandler)
+-   -   [InteractionHandler](#interactionhandler)
+-   Objects
+-   -   [Command Object](#command-object)
+-   -   [Interaction Object](#interaction-object)
 -   [Same file Command and Interactions](#command-and-interactions-in-the-same-file)
+-   -   [CommandInteractionObject](#commandinteractionobject)
+-   -   [SlashCommandObject](#slashcommandobject)
 -   [Credit](#credits)
 -   [Links](#links)
 
