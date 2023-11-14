@@ -474,7 +474,7 @@ Not required but is handy
 
 ```js
 module.exports = {
-    customId: "selectMenu",
+    customId: "coolSelectMenu",
     type: "selectMenu",
     authorOnly: true,
     callback: (i) => {
@@ -489,9 +489,25 @@ Not required, but also handy
 
 ```js
 module.exports = {
-    customId: "button1",
+    customId: "myEpicModal",
     type: "modal",
     callback: (i, client) => {
+        // callback
+    },
+};
+```
+
+## Timeout parameter
+
+This parameter makes it so that after (foo) milliseconds, the action row will be cleared and the original message will be edited to (bar). Effectively making a button click or select menu selection have a limited time window. **(Only for **Buttons** and **Select Menus**)**
+
+```js
+module.exports = {
+    customId: "button5",
+    type: "button",
+    timeout: 10_000,
+    timeoutMsg: "You're too slow!!",
+    callback: (i) => {
         // callback
     },
 };
@@ -505,7 +521,7 @@ This works a little differently to ones above, that's why it has it's own catego
 const { ApplicationCommandType } = require("discord.js");
 
 module.exports = {
-    name: "modla",
+    name: "context",
     isCommand: false,
     type: ApplicationCommandType.User,
     callback: (interaction) => {
@@ -547,7 +563,8 @@ const ok = new CommandInteractionObject({
     customId: "ok",
     type: "button",
     authorOnly: true,
-
+    timeout: 20_000, // 20 seconds
+    timeoutMsg: "You're too slow!",
     callback: async (i) => {
         i.update({ content: "this is from the same file", components: [] });
     },
@@ -592,6 +609,7 @@ This is layed out exactly as [Interaction Object](#interaction-object), just in 
 const intObj = {
     customId: "mySelect", // the custom id of the interaction
     type: "selectMenu", // the type of interaction. can be "selectMenu", "button" or "modal"
+    timeout: 10_000,
     callback: (i) => {
         // do something
     },
@@ -599,26 +617,6 @@ const intObj = {
 };
 
 const mySelect = new CommandInteractionObject(intObj);
-```
-
-### Methods
-
-#### `referenceCommand`
-
-Refrences the command object with it's properties. (Bassically shares variables with it)
-
--   `command` - Command to make a refrence to (Type of [SlashCommandObject](#slashcommandobject))
-
-```js
-const cmd = new SlashCommandObject(/* ... */, mySelect)
-
-mySelect.referenceCommand(cmd)
-```
-
-and to call any properties in the command, call:
-
-```js
-mySelect.cmd; // the command's name
 ```
 
 ## SlashCommandObject
