@@ -6,6 +6,23 @@
 
 ```
 npm i ic4d
+sudo npm i install ic4d
+yarn add ic4d
+```
+
+
+```js
+const ic4d = require("ic4d") 
+// or
+const { /* Classess you need seprated by a comma */ } = require("ic4d")
+```
+
+and for yall ts lovers
+
+```ts
+import * as ic4d from "ic4d"
+// or
+import {} from "ic4d"
 ```
 
 # Contents
