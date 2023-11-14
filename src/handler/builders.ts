@@ -51,18 +51,31 @@ export class CommandInteractionObject {
      */
     filePath: string;
     /**
-     * Refrenced command
-     */
-    command: SlashCommandObject;
-    /**
      * Build the actual interaction
      * @param intObject Interaction Object (see github) with properties
      */
     constructor(intObject: {
+        /**
+         * Type of interaction. Either "selectMenu", "modal" or "button"
+         */
         type: InteractionType;
+        /**
+         * The interaction's custom identifier
+         */
         customId: string;
+        /**
+         * Function run when this interaction is called.
+         * @param interaction Interaction. (Interacton given by the "InteractionCreate" event listener.)
+         * @param client Client
+         */
         callback: (interaction: DjsInteractionTypes, client?: Client) => void;
+        /**
+         * Set the only author status of the button. (The correct property is onlyAuthor, but this is for yall who also accidenatally type this)
+         */
         authorOnly?: boolean;
+        /**
+         * Set the only author status of the button.
+         */
         onlyAuthor?: boolean;
     }) {
         this.customId = intObject.customId;
@@ -74,14 +87,6 @@ export class CommandInteractionObject {
                 : intObject.onlyAuthor !== undefined
                 ? intObject.onlyAuthor
                 : false;
-    }
-
-    /**
-     * Refrences the command object with it's properties. (Bassically shares variables with it)
-     * @param command Command to make a refrence to.
-     */
-    referenceCommand(command: SlashCommandObject) {
-        this.command = command;
     }
 }
 
@@ -134,14 +139,34 @@ export class SlashCommandObject {
      */
     constructor(
         commandObject: {
+            /**
+             * The name of the command
+             */
             name: string;
+            /**
+             * The description of the command
+             */
             description: string;
+            /**
+             * Function run when this command is called
+             */
             callback: (client: Client, interaction: Interaction) => void;
+            /**
+             * An array of options
+             */
             options?: Option[];
+            /**
+             * Permission required by the user to proceed with the command
+             */
             permissionsRequired?: PermissionFlags[];
+            /**
+             * Permission required by the bot to proceed with the command
+             */
             botPermissions?: PermissionFlags[];
+            /**
+             * Whether the command is deleted or not
+             */
             deleted?: boolean;
-            initFunc?: (t: SlashCommandObject) => void;
         },
         ...interaction: CommandInteractionObject[]
     ) {
