@@ -51,6 +51,14 @@ export class CommandInteractionObject {
      */
     filePath: string;
     /**
+     * Time out (Select menu and Button) after given MILLISECONDS
+     */
+    timeout?: number;
+    /**
+     * Message to display when interaction times out.
+     */
+    timeoutMsg?: string;
+    /**
      * Build the actual interaction
      * @param intObject Interaction Object (see github) with properties
      */
@@ -77,6 +85,14 @@ export class CommandInteractionObject {
          * Set the only author status of the button.
          */
         onlyAuthor?: boolean;
+        /**
+         * Time out (Select menu and Button) after given MILLISECONDS
+         */
+        timeout?: number;
+        /**
+         * Message to display when interaction times out.
+         */
+        timeoutMsg?: string;
     }) {
         this.customId = intObject.customId;
         this.type = intObject.type;
@@ -87,6 +103,11 @@ export class CommandInteractionObject {
                 : intObject.onlyAuthor !== undefined
                 ? intObject.onlyAuthor
                 : false;
+        this.timeout = intObject.timeout !== undefined ? intObject.timeout : 0;
+        this.timeoutMsg =
+            intObject.timeoutMsg !== undefined
+                ? intObject.timeoutMsg
+                : "Interaction timed out. You didn't click in time!";
     }
 }
 

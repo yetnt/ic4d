@@ -18,6 +18,8 @@ export interface InteractionObject {
     authorOnly?: boolean;
     filePath: string;
     type: string;
+    timeout?: number;
+    timeoutMsg?: string;
     callback: (
         interaction:
             | ButtonInteraction
@@ -28,7 +30,9 @@ export interface InteractionObject {
         client?: Client
     ) => void;
 }
-
+const Default = {
+    timeout: "Interaction timed out. You didn't click in time!",
+};
 export interface ContextMenuObject {
     name: string;
     type: number;
@@ -118,6 +122,8 @@ export class InteractionHandler extends CoreHandler {
                         onlyAuthor: obj.onlyAuthor,
                         filePath: obj.filePath,
                         type: obj.type,
+                        timeout: obj.timeout,
+                        timeoutMsg: obj.timeoutMsg,
                     };
                     return acc;
                 },
@@ -133,6 +139,8 @@ export class InteractionHandler extends CoreHandler {
                         onlyAuthor: obj.onlyAuthor,
                         filePath: obj.filePath,
                         type: obj.type,
+                        timeout: obj.timeout,
+                        timeoutMsg: obj.timeoutMsg,
                     };
                     return acc;
                 },
@@ -197,6 +205,24 @@ export class InteractionHandler extends CoreHandler {
                     });
                     return;
                 }
+                if (
+                    buttonObj.timeout !== 0 &&
+                    buttonObj.timeout !== undefined
+                ) {
+                    const created = new Date(
+                        interaction.message.createdTimestamp + buttonObj.timeout
+                    );
+                    if (created < new Date()) {
+                        interaction.update({
+                            content:
+                                buttonObj.timeoutMsg !== undefined
+                                    ? buttonObj.timeoutMsg
+                                    : Default.timeout,
+                            components: [],
+                        });
+                        return;
+                    }
+                }
                 buttonObj.callback(interaction, this.client);
             } catch (error) {
                 if (this.logErrors) {
@@ -240,6 +266,26 @@ export class InteractionHandler extends CoreHandler {
                     });
                     return;
                 }
+
+                if (
+                    selectObj.timeout !== 0 &&
+                    selectObj.timeout !== undefined
+                ) {
+                    const created = new Date(
+                        interaction.message.createdTimestamp + selectObj.timeout
+                    );
+                    if (created < new Date()) {
+                        interaction.update({
+                            content:
+                                selectObj.timeoutMsg !== undefined
+                                    ? selectObj.timeoutMsg
+                                    : Default.timeout,
+                            components: [],
+                        });
+                        return;
+                    }
+                }
+
                 selectObj.callback(interaction, this.client);
             } catch (error) {
                 if (this.logErrors) {

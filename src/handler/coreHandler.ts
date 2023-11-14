@@ -86,6 +86,8 @@ function change(cI: CommandInteractionObject): InteractionObject {
         callback: cI.callback,
         filePath: undefined,
         onlyAuthor: cI.onlyAuthor,
+        timeout: cI.timeout,
+        timeoutMsg: cI.timeoutMsg,
     };
 
     return a;
@@ -109,7 +111,7 @@ export function extractAllInteractions(
             const keys = Object.keys(objects) as (keyof typeof objects)[];
 
             for (const objKey of keys) {
-                const current = objects[objKey];
+                let current = objects[objKey];
                 current.filePath = filePath;
                 allInteractions.push(change(current));
             }
