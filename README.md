@@ -10,19 +10,20 @@ sudo npm i install ic4d
 yarn add ic4d
 ```
 
-
 ```js
-const ic4d = require("ic4d") 
+const ic4d = require("ic4d");
 // or
-const { /* Classess you need seprated by a comma */ } = require("ic4d")
+const {
+    /* Classess you need seprated by a comma */
+} = require("ic4d");
 ```
 
 and for yall ts lovers
 
 ```ts
-import * as ic4d from "ic4d"
+import * as ic4d from "ic4d";
 // or
-import {} from "ic4d"
+import /* Class you need separated by a comma */ "ic4d";
 ```
 
 # Contents
@@ -35,7 +36,7 @@ import {} from "ic4d"
 -   Objects
 -   -   [Command Object](#command-object)
 -   -   [Interaction Object](#interaction-object)
--   [Same file Command and Interactions](#command-and-interactions-in-the-same-file)
+-   [Same file Command and Interactions (Class builders)](#command-and-interactions-in-the-same-file)
 -   -   [CommandInteractionObject](#commandinteractionobject)
 -   -   [SlashCommandObject](#slashcommandobject)
 -   [Credit](#credits)
@@ -272,6 +273,7 @@ const isServerDisabled = (name) => {
 };
 
 const middleWare = (commandObject, interaction) => {
+    // you can name the parameters whatever you want, ass long as you remember which one is which.
     if (
         commandObject.canBeServerDisabled &&
         isServerDisabled(commandObject.name)
@@ -329,6 +331,7 @@ const interactions = new InteractionHandler(
 Start listening for all the available interactions. (Context Menus, Buttons, Select Menus and Modals)
 
 -   `authorOnlyMsg`**(optional)**: Message to display when a interacts with another user's interaction (onlyAuthor is set to true.)
+-   `...middleWare`: Functions to run before an interaction is run.
 
 ```js
 interactions.start();
@@ -339,6 +342,7 @@ interactions.start();
 Start listening for button interactions.
 
 -   `authorOnlyMsg`**(optional)**: Message to display when a user click's another user's button (onlyAuthor is set to true.)
+-   `...middleWare`: Functions to run before a button is run.
 
 ```js
 interactions.buttons();
@@ -349,6 +353,7 @@ interactions.buttons();
 Start listening for select menu interactions.
 
 -   `authorOnlyMsg`**(optional)**: Message to display when a user click's another user's select menu (onlyAuthor is set to true.)
+-   `...middleWare`: Functions to run before a select menu is run.
 
 ```js
 interactions.selectMenu();
@@ -358,6 +363,8 @@ interactions.selectMenu();
 
 Start listening for modal interactions. (After their registered)
 
+-   `...middleWare`: Functions to run before a modal is shown.
+
 ```js
 interactions.modals();
 ```
@@ -366,8 +373,35 @@ interactions.modals();
 
 Start listening for context menu interactions. (After their registered)
 
+-   `...middleWare`: Functions to run before a context menu is run.
+
 ```js
 interactions.contextMenus();
+```
+
+#### Interactions Middleware
+
+Exactly like [Command Middleware](#middleware-parameters-and-use), where 1 will return and any number will continue execution. Only difference is here the only parameter you get is interaction.
+
+#### Example
+
+```js
+function isAuthor(interaction) {
+    // the handler does this for you (check the InteractionObject) but im writing this as an example only.
+    const author = interaction.message.interaction.user.id;
+    const clicker = interaction.member.user.id;
+
+    return clicker === author ? 1 : 0;
+}
+function lucky(interaction) {
+    // randdom one
+    return 1 == 1 ? 1 : 0; // will always return 1.
+}
+
+// some other code
+
+interactions.buttons("This isn't your button!", isAuthor); // this will only run for buttons.
+interactions.start(undefined, lucky); // will run for every interactions
 ```
 
 ### `registerContextMenus`
@@ -385,7 +419,7 @@ await interactions.registerContextMenus();
 
 # Command Object
 
-This package requires your command object to be layed out specifically,
+This package requires your command object to be layed out specifically, (If you're coming from a normal discord.js handler that uses the execute and data properties, skip to [Tradtional discord.js object](#tradtional-discordjs-object))
 
 ## Using Class
 
@@ -409,7 +443,7 @@ and when you need to add a new property (to get other stuff below) just
 
 ```js
 rob.deleted = true; // it's as simple as that!
-rob.devOnly = true;
+rob.devOnly = true; // or you can add it to the object directly. Just showing this can work.
 ```
 
 ## Normal
@@ -471,6 +505,26 @@ module.exports = {
         interaction.reply("yooooo");
     },
 };
+```
+
+## Tradtional Discord.js Object
+
+If you're user the `data` property which exports the class `SlashCommandBuidler` and the `execute` property. Like the discord.js docs have it, you can implement it here! (Although you have to use [SlashCommandObject](#slashcommandobject))
+
+```js
+const { SlashCommandObject } = require("ic4d");
+const { SlashCommandBuilder } = require("discord.js");
+
+module.exports = new SlashCommandObject({
+    data: new SlashCommandBuilder()
+        .setName("rob")
+        .setDescription("ROb a user for coins bro."),
+    async execute(interaction, client) {
+        // client is an optional parameter.
+        interaction.reply("balls");
+    },
+    deleted: false, // add these properties above if you have to.
+});
 ```
 
 # Interaction Object
