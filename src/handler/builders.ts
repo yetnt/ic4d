@@ -1,21 +1,10 @@
 import {
     Interaction,
     Client,
-    ButtonInteraction,
-    AnySelectMenuInteraction,
-    UserContextMenuCommandInteraction,
-    MessageContextMenuCommandInteraction,
-    ModalSubmitInteraction,
     PermissionFlags,
+    SlashCommandBuilder,
 } from "discord.js";
 import { Option } from "./coreHandler";
-
-type DjsInteractionTypes =
-    | ButtonInteraction
-    | AnySelectMenuInteraction
-    | UserContextMenuCommandInteraction
-    | MessageContextMenuCommandInteraction
-    | ModalSubmitInteraction;
 
 export enum InteractionType {
     selectMenu = "selectMenu",
@@ -33,7 +22,7 @@ export class CommandInteractionObject {
      * @param interaction Interaction
      * @param client Client
      */
-    callback: (interaction: DjsInteractionTypes, client?: Client) => void;
+    callback: (interaction: Interaction, client?: Client) => void;
     /**
      * The interaction's custom identifier
      */
@@ -76,7 +65,7 @@ export class CommandInteractionObject {
          * @param interaction Interaction. (Interacton given by the "InteractionCreate" event listener.)
          * @param client Client
          */
-        callback: (interaction: DjsInteractionTypes, client?: Client) => void;
+        callback: (interaction: Interaction, client?: Client) => void;
         /**
          * Set the only author status of the button. (The correct property is onlyAuthor, but this is for yall who also accidenatally type this)
          */
@@ -154,10 +143,11 @@ export class SlashCommandObject {
      */
     deleted: boolean;
     /**
-     * Build the actual command
+     * Build the actual command. Either Via CommandObject or entering the tradiontial method in the `commandObject` parameter
      * @param commandObject Command Object with properties
      * @param interaction Interactions associated with the command
      */
+
     constructor(
         commandObject: {
             /**
@@ -190,12 +180,70 @@ export class SlashCommandObject {
             deleted?: boolean;
         },
         ...interaction: CommandInteractionObject[]
+    );
+    constructor(
+        commandObject: {
+            /**
+             * Slash Command data.
+             */
+            data: SlashCommandBuilder;
+            /**
+             * Function run when this command is called
+             */
+            execute: (interaction: Interaction, client?: Client) => void;
+            /**
+             * Permission required by the user to proceed with the command
+             */
+            permissionsRequired?: PermissionFlags[];
+            /**
+             * Permission required by the bot to proceed with the command
+             */
+            botPermissions?: PermissionFlags[];
+            /**
+             * Whether the command is deleted or not
+             */
+            deleted?: boolean;
+        },
+        ...interaction: CommandInteractionObject[]
+    );
+    constructor(
+        commandObject:
+            | {
+                  name: string;
+                  description: string;
+                  callback: (client: Client, interaction: Interaction) => void;
+                  options?: Option[];
+                  permissionsRequired?: PermissionFlags[];
+                  botPermissions?: PermissionFlags[];
+                  deleted?: boolean;
+              }
+            | {
+                  data: SlashCommandBuilder;
+                  execute: (interaction: Interaction, client?: Client) => void;
+                  permissionsRequired?: PermissionFlags[];
+                  botPermissions?: PermissionFlags[];
+                  deleted?: boolean;
+              },
+        ...interaction: CommandInteractionObject[]
     ) {
-        this.name = commandObject.name;
-        this.description = commandObject.description;
-        this.callback = commandObject.callback;
-        this.options =
-            commandObject.options !== undefined ? commandObject.options : [];
+        if ("data" in commandObject) {
+            this.name = commandObject.data.name;
+            this.description = commandObject.data.description;
+            this.options =
+                commandObject.data.options.map((option) => option.toJSON()) ||
+                [];
+            this.callback = function command(
+                client: Client,
+                interaction: Interaction
+            ) {
+                commandObject.execute(interaction, client);
+            };
+        } else {
+            this.name = commandObject.name;
+            this.description = commandObject.description;
+            this.options = commandObject.options || [];
+            this.callback = commandObject.callback;
+        }
         this.permissionsRequired =
             commandObject.permissionsRequired !== undefined
                 ? commandObject.permissionsRequired
