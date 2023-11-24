@@ -6,6 +6,7 @@ import {
     MessageContextMenuCommandInteraction,
     UserContextMenuCommandInteraction,
     ContextMenuCommandInteraction,
+    Interaction,
     ModalSubmitInteraction,
 } from "discord.js";
 import * as clc from "cli-color";
@@ -182,8 +183,12 @@ export class InteractionHandler extends CoreHandler {
     /**
      * Start listening for buttons.
      * @param authorOnlyMsg Message to be displayed when a different user clicks an author only button.
+     * @param middleWare Functions to run before the buttons execute.
      */
-    buttons(authorOnlyMsg?: string) {
+    buttons(
+        authorOnlyMsg: string,
+        ...middleWare: ((interaction?: Interaction) => number)[]
+    ) {
         authorOnlyMsg =
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
@@ -223,6 +228,10 @@ export class InteractionHandler extends CoreHandler {
                         return;
                     }
                 }
+                for (const fn of middleWare) {
+                    let result = fn(interaction);
+                    if (result == 1) return; // test condition is true
+                }
                 buttonObj.callback(interaction, this.client);
             } catch (error) {
                 if (this.logErrors) {
@@ -239,8 +248,12 @@ export class InteractionHandler extends CoreHandler {
     /**
      * Start listening for select menus (supports all types)
      * @param authorOnlyMsg Message to be displayed when a different user clicks an author only button.
+     * @param middleWare Functions to run before the selectMenus execute.
      */
-    selectMenus(authorOnlyMsg?: string) {
+    selectMenus(
+        authorOnlyMsg?: string,
+        ...middleWare: ((interaction?: Interaction) => number)[]
+    ) {
         authorOnlyMsg =
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
@@ -285,7 +298,10 @@ export class InteractionHandler extends CoreHandler {
                         return;
                     }
                 }
-
+                for (const fn of middleWare) {
+                    let result = fn(interaction);
+                    if (result == 1) return; // test condition is true
+                }
                 selectObj.callback(interaction, this.client);
             } catch (error) {
                 if (this.logErrors) {
@@ -301,8 +317,9 @@ export class InteractionHandler extends CoreHandler {
 
     /**
      * Start listening for context menus (supports all types)
+     * @param middleWare Functions to run before the buttons contextMenus execute.
      */
-    contextMenus() {
+    contextMenus(...middleWare: ((interaction?: Interaction) => number)[]) {
         this.client.on(
             "interactionCreate",
             (
@@ -316,7 +333,10 @@ export class InteractionHandler extends CoreHandler {
 
                 try {
                     if (contextObj == undefined) return;
-
+                    for (const fn of middleWare) {
+                        let result = fn(interaction);
+                        if (result == 1) return; // test condition is true
+                    }
                     contextObj.callback(interaction, this.client);
                 } catch (error) {
                     if (this.logErrors) {
@@ -334,8 +354,9 @@ export class InteractionHandler extends CoreHandler {
 
     /**
      * Start listening for modals
+     * @param middleWare Functions to run before the modals execute.
      */
-    modals() {
+    modals(...middleWare: ((interaction?: Interaction) => number)[]) {
         this.client.on(
             "interactionCreate",
             (interaction: ModalSubmitInteraction) => {
@@ -344,7 +365,10 @@ export class InteractionHandler extends CoreHandler {
 
                 try {
                     if (modalObj == undefined) return;
-
+                    for (const fn of middleWare) {
+                        let result = fn(interaction);
+                        if (result == 1) return; // test condition is true
+                    }
                     modalObj.callback(interaction, this.client);
                 } catch (error) {
                     if (this.logErrors) {
@@ -362,12 +386,16 @@ export class InteractionHandler extends CoreHandler {
     /**
      * Start listening for Select Menus, Context Menus and Buttons
      * @param authorOnlyMsg Message to be displayed when a different user clicks an author only button.
+     * @param middleWare Functions to run before the every interaction executes..
      */
-    start(authorOnlyMsg?: string) {
-        this.buttons(authorOnlyMsg);
-        this.selectMenus(authorOnlyMsg);
-        this.contextMenus();
-        this.modals();
+    start(
+        authorOnlyMsg?: string,
+        ...middleWare: ((interaction?: Interaction) => 1 | number)[]
+    ) {
+        this.buttons(authorOnlyMsg, ...middleWare);
+        this.selectMenus(authorOnlyMsg, ...middleWare);
+        this.contextMenus(...middleWare);
+        this.modals(...middleWare);
     }
 
     /**
