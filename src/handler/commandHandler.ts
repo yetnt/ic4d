@@ -1,5 +1,11 @@
 import { CoreHandler, Option } from "./coreHandler";
-import { Client, Interaction, PermissionFlags } from "discord.js";
+import {
+    ChatInputCommandInteraction,
+    Client,
+    Interaction,
+    PermissionFlags,
+    SlashCommandBuilder,
+} from "discord.js";
 import * as clc from "cli-color";
 import * as errs from "./Errors";
 import { LoaderOptions } from "./coreHandler";
@@ -16,7 +22,10 @@ interface ReaderOptions {
 export interface CommandObject {
     name: string;
     description: string;
-    callback: (client: Client, interaction: Interaction) => void;
+    callback: (
+        client: Client,
+        interaction: ChatInputCommandInteraction
+    ) => void;
     options?: Option[];
     deleted?: boolean;
     devOnly?: boolean;
@@ -40,7 +49,7 @@ export class CommandHandler extends CoreHandler {
         deleted: "NAME has been deleted.",
         skipped: "NAME was skipped. (Command deleted or set to delete.)",
     };
-    readerOptions: ReaderOptions | undefined = {
+    readerOptions: ReaderOptions = {
         testGuildId: undefined,
         devs: [],
         onlyDev: "Only developers are allowed to run this command.",
@@ -207,18 +216,18 @@ export class CommandHandler extends CoreHandler {
     async handleCommands(
         ...middleWare: ((
             commandObject: CommandObject,
-            interaction?: Interaction
+            interaction?: ChatInputCommandInteraction
         ) => number)[]
     ) {
         this.client.on(
             "interactionCreate",
-            async (interaction: Interaction) => {
+            async (interaction: ChatInputCommandInteraction) => {
                 if (!interaction.isChatInputCommand()) return;
 
                 const localCommands = this.getLocalCommands(this.commandPath);
 
                 const commandObject: CommandObject = localCommands.find(
-                    (cmd: any) => cmd.name === interaction.commandName
+                    (cmd: CommandObject) => cmd.name === interaction.commandName
                 );
 
                 try {
@@ -226,7 +235,6 @@ export class CommandHandler extends CoreHandler {
 
                     if (commandObject.devOnly) {
                         if (
-                            //@ts-ignore
                             !this.readerOptions.devs.includes(
                                 interaction.user.id
                             )
