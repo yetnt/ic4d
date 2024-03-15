@@ -7,7 +7,7 @@
     "files": [
         "/dist"
     ],
-    "scripts": {
+    "scripts": { 
         "test": "mocha src/index.test.js",
         "build": "npx tsc",
         "deps": "npm i"
