@@ -1,5 +1,6 @@
 import { CoreHandler } from "./coreHandler";
 import { Client } from "discord.js";
+import clc = require("cli-color");
 
 export class ReadyHandler extends CoreHandler {
     client: Client;
@@ -24,7 +25,17 @@ export class ReadyHandler extends CoreHandler {
                 try {
                     await fn(this.client);
                 } catch (error) {
-                    throw new Error("Error running function\n\n" + error);
+                    let str = fn
+                        .toString()
+                        .replace(/\s+/g, " ")
+                        .substring(0, 80);
+                    throw new Error(
+                        `Error running function ${this.functionsToRun.indexOf(
+                            fn
+                        )} ${clc.underline.italic(
+                            str[str.length - 1] != "}" ? str + " ...}" : str
+                        )} \n\n` + error
+                    );
                 }
             }
         });
