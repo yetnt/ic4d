@@ -4,6 +4,7 @@ import clc = require("cli-color");
 
 export class ReadyHandler extends CoreHandler {
     client: Client;
+    emitErr: boolean = false;
     private functionsToRun: ((client?: Client) => void)[] = [];
 
     /**
@@ -14,6 +15,14 @@ export class ReadyHandler extends CoreHandler {
     constructor(client: Client, ...functions: ((client?: Client) => void)[]) {
         super(client);
         this.functionsToRun = functions;
+    }
+
+    /**
+     * Set whether the command handler should throw or emit errors. Defaults to false.
+     * @param bool Boolean value
+     */
+    emitErrors(bool: boolean): void {
+        this.emitErr = bool == true ? true : false;
     }
 
     /**
@@ -29,13 +38,19 @@ export class ReadyHandler extends CoreHandler {
                         .toString()
                         .replace(/\s+/g, " ")
                         .substring(0, 80);
-                    throw new Error(
+
+                    let msg =
                         `Error running function ${this.functionsToRun.indexOf(
                             fn
                         )} ${clc.underline.italic(
                             str[str.length - 1] != "}" ? str + " ...}" : str
-                        )} \n\n` + error
-                    );
+                        )} \n\n` + error;
+
+                    if (this.emitErr) {
+                        this.emit("error", msg);
+                    } else {
+                        throw new Error(msg);
+                    }
                 }
             }
         });

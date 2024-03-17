@@ -10,6 +10,7 @@ import * as fs from "fs";
 import { CommandObject } from "./commandHandler";
 import { ContextMenuObject, InteractionObject } from "./interactionHandler";
 import { Interactions, CommandInteractionObject } from "./builders";
+import { EventEmitter } from "events";
 
 export interface LoaderOptions {
     /**
@@ -127,10 +128,11 @@ const isEmpty = (obj: Record<string, any>) => !Object.keys(obj).length;
  * @class
  * Core handler, contains
  */
-export class CoreHandler {
+export class CoreHandler extends EventEmitter {
     client: Client;
 
     constructor(client: Client) {
+        super();
         this.client = client;
     }
 

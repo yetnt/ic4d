@@ -42,6 +42,7 @@ export interface CommandObject {
 export class CommandHandler extends CoreHandler {
     client: Client;
     commandPath: string;
+    private emitErr: boolean = false;
     options: LoaderOptions = {
         loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
@@ -100,6 +101,14 @@ export class CommandHandler extends CoreHandler {
             botNoPerms:
                 readerOptions?.botNoPerms || this.readerOptions.botNoPerms,
         };
+    }
+
+    /**
+     * Set whether the command handler should throw or emit errors. Defaults to false.
+     * @param bool Boolean value
+     */
+    emitErrors(bool: boolean): void {
+        this.emitErr = bool == true ? true : false;
     }
 
     /**
@@ -199,12 +208,17 @@ export class CommandHandler extends CoreHandler {
             }
         } catch (error) {
             let msg = "Loading commands failed with the error: ";
-            if (error instanceof errs.LoaderError) {
-                throw new Error(
-                    `${clc.bold("(" + error.name + ")")} ` + msg + error.message
-                );
+            let Lerr =
+                error instanceof errs.LoaderError
+                    ? `${clc.bold("(" + error.name + ")")} ` +
+                      msg +
+                      error.message
+                    : msg;
+
+            if (this.emitErr == true) {
+                this.emit("error", Lerr);
             } else {
-                throw new Error(error);
+                throw new Error(Lerr);
             }
         }
     }
@@ -283,11 +297,16 @@ export class CommandHandler extends CoreHandler {
 
                     await commandObject.callback(this.client, interaction);
                 } catch (error) {
-                    throw new errs.HandlerError(
+                    let err = new errs.HandlerError(
                         `Failed to run command $NAME$ \n\n` + error,
                         commandObject.filePath,
                         commandObject.name
                     );
+                    if (this.emitErr) {
+                        this.emit("error", err.message);
+                    } else {
+                        throw err;
+                    }
                 }
             }
         );

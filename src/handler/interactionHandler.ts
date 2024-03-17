@@ -59,7 +59,7 @@ export class InteractionHandler extends CoreHandler {
         contextMenus: Record<string, ContextMenuObject>;
         modals: Record<string, InteractionObject>;
     };
-    logErrors: boolean = false;
+    emitErrors: boolean | null = null;
     options: LoaderOptions = {
         loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
@@ -73,19 +73,19 @@ export class InteractionHandler extends CoreHandler {
      * @param client Discord.js Client
      * @param path Path to where the interaction objects are stored
      * @param loaderOptions Loader options (for context menus)
-     * @param logErrors Log any occuring errors
+     * @param emitErrors Log any errors that occur. True will emit errors, false will throw errors and null will not log any errors.
      */
     constructor(
         client: Client,
         path: string,
         loaderOptions?: LoaderOptions,
-        logErrors?: boolean
+        emitErrors?: boolean | null
     ) {
         super(client);
         this.interactionsPath = path;
         const interactions = this.getInteractions(this.interactionsPath);
         this.interactions = this.sortInteractionObjects(interactions);
-        this.logErrors = logErrors == true ? true : false;
+        this.emitErrors = emitErrors;
 
         this.options = {
             loadedNoChanges: clc.magenta.bold(
@@ -234,12 +234,16 @@ export class InteractionHandler extends CoreHandler {
                 }
                 buttonObj.callback(interaction, this.client);
             } catch (error) {
-                if (this.logErrors) {
-                    throw new errs.ButtonError(
-                        "Button $NAME$ failed with the error:\n\n" + error,
-                        buttonObj.filePath,
-                        interaction.customId
-                    );
+                let err = new errs.ButtonError(
+                    "Button $NAME$ failed with the error:\n\n" + error,
+                    buttonObj.filePath,
+                    interaction.customId
+                );
+
+                if (this.emitErrors) {
+                    this.emit("error", err.message);
+                } else if (this.emitErrors == false) {
+                    throw err;
                 }
             }
         });
@@ -304,12 +308,16 @@ export class InteractionHandler extends CoreHandler {
                 }
                 selectObj.callback(interaction, this.client);
             } catch (error) {
-                if (this.logErrors) {
-                    throw new errs.ButtonError(
-                        "Select Menu $NAME$ failed with the error:\n\n" + error,
-                        selectObj.filePath,
-                        interaction.customId
-                    );
+                let err = new errs.ButtonError(
+                    "Select Menu $NAME$ failed with the error:\n\n" + error,
+                    selectObj.filePath,
+                    interaction.customId
+                );
+
+                if (this.emitErrors) {
+                    this.emit("error", err.message);
+                } else if (this.emitErrors == false) {
+                    throw err;
                 }
             }
         });
@@ -339,13 +347,17 @@ export class InteractionHandler extends CoreHandler {
                     }
                     contextObj.callback(interaction, this.client);
                 } catch (error) {
-                    if (this.logErrors) {
-                        throw new errs.ContextHandlerError(
-                            "Context Menu $NAME$ failed with the error:\n\n" +
-                                error,
-                            contextObj.filePath,
-                            interaction.commandName
-                        );
+                    let err = new errs.ContextHandlerError(
+                        "Context Menu $NAME$ failed with the error:\n\n" +
+                            error,
+                        contextObj.filePath,
+                        interaction.commandName
+                    );
+
+                    if (this.emitErrors) {
+                        this.emit("error", err.message);
+                    } else if (this.emitErrors == false) {
+                        throw err;
                     }
                 }
             }
@@ -371,12 +383,16 @@ export class InteractionHandler extends CoreHandler {
                     }
                     modalObj.callback(interaction, this.client);
                 } catch (error) {
-                    if (this.logErrors) {
-                        throw new errs.ModalError(
-                            "Modal $NAME$ failed with the error:\n\n" + error,
-                            modalObj.filePath,
-                            interaction.customId
-                        );
+                    let err = new errs.ModalError(
+                        "Modal $NAME$ failed with the error:\n\n" + error,
+                        modalObj.filePath,
+                        interaction.customId
+                    );
+
+                    if (this.emitErrors) {
+                        this.emit("error", err.message);
+                    } else if (this.emitErrors == false) {
+                        throw err;
                     }
                 }
             }
@@ -485,12 +501,17 @@ export class InteractionHandler extends CoreHandler {
             }
         } catch (error) {
             let msg = "Loading context menus failed with the error: ";
-            if (error instanceof errs.ContextLoaderError) {
-                throw new Error(
-                    `${clc.bold("(" + error.name + ")")} ` + msg + error.message
-                );
-            } else {
-                throw new Error(error);
+            let Lmsg =
+                error instanceof errs.ContextLoaderError
+                    ? `${clc.bold("(" + error.name + ")")} ` +
+                      msg +
+                      error.message
+                    : msg;
+
+            if (this.emitErrors) {
+                this.emit("error", Lmsg);
+            } else if (this.emitErrors == false) {
+                throw new Error(Lmsg);
             }
         }
     }
