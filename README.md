@@ -124,6 +124,19 @@ const ready = new ReadyHandler(client, ...)
 ready.execute()
 ```
 
+### `emitErrors()`
+
+Set whether the ready handler should throw or emit errors. Defaults to false.
+
+```js
+const ready = new ReadyHandler(client, ...).emitErrors(true);
+
+// Listen for the error
+ready.on("error", (msg) => {
+    // do something with the error message
+})
+```
+
 # CommandHandler
 
 Command Handler, which handles slash command creation, deletion, editing and running of slash commands
@@ -193,7 +206,7 @@ If there is no log in the console for a specific command, then it has been loade
 
 ## Methods
 
-### registerCommands()
+### `registerCommands()`
 
 **(asynchronous function)**
 
@@ -208,7 +221,7 @@ async () => {
 };
 ```
 
-### handleCommands()
+### `handleCommands()`
 
 **(asynchronous function)**
 
@@ -290,6 +303,22 @@ const middleWare = (commandObject, interaction) => {
 handler.handleCommands(middleWare); // pass the function alone without brackets or its parameters, i'll do that magic
 ```
 
+### `emitErrors()`
+
+Set whether the ready handler should throw or emit errors. Defaults to false.
+
+```js
+const handler = new CommandHandler(
+    client,
+    path.join(__dirname, "commands")
+).emitErrors(true);
+
+// Listen for the error
+handler.on("error", (msg) => {
+    // do something with the error message
+});
+```
+
 # InteractionHandler
 
 Handler to handle interactions.
@@ -312,7 +341,7 @@ module.exports = {
 -   `client`: Discord.js client
 -   `path`: Path to where interactions are stored. (They can be stored in your commands folder to, as long as they meet with [interactions object](#interaction-object))
 -   `loaderOptions`**(optional)**: Context Menu [Loader Options](#loaderoptions)
--   `logErrors`**(optional)**: Log errors that occur when interactons take place.
+-   `emitErrors`**(optional)**: Log any errors that occur. True will emit errors, false will throw errors and null will not log any errors.
 
 ```js
 const { InteractionHandler } = require("ic4d");
@@ -326,7 +355,7 @@ const interactions = new InteractionHandler(
 
 ## Methods
 
-### `start`
+### `start()`
 
 Start listening for all the available interactions. (Context Menus, Buttons, Select Menus and Modals)
 
@@ -337,7 +366,7 @@ Start listening for all the available interactions. (Context Menus, Buttons, Sel
 interactions.start();
 ```
 
-### `buttons`
+### `buttons()`
 
 Start listening for button interactions.
 
@@ -348,7 +377,7 @@ Start listening for button interactions.
 interactions.buttons();
 ```
 
-### `selectMenus`
+### `selectMenus()`
 
 Start listening for select menu interactions.
 
@@ -359,7 +388,7 @@ Start listening for select menu interactions.
 interactions.selectMenu();
 ```
 
-### `modals`
+### `modals()`
 
 Start listening for modal interactions. (After their registered)
 
@@ -369,7 +398,7 @@ Start listening for modal interactions. (After their registered)
 interactions.modals();
 ```
 
-### `contextMenus`
+### `contextMenus()`
 
 Start listening for context menu interactions. (After their registered)
 
@@ -404,7 +433,7 @@ interactions.buttons("This isn't your button!", isAuthor); // this will only run
 interactions.start(undefined, lucky); // will run for every interactions
 ```
 
-### `registerContextMenus`
+### `registerContextMenus()`
 
 **(asynchronous function)**
 

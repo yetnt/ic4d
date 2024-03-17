@@ -4,7 +4,7 @@ import clc = require("cli-color");
 
 export class ReadyHandler extends CoreHandler {
     client: Client;
-    emitErr: boolean = false;
+    private emitErr: boolean = false;
     private functionsToRun: ((client?: Client) => void)[] = [];
 
     /**
@@ -18,7 +18,7 @@ export class ReadyHandler extends CoreHandler {
     }
 
     /**
-     * Set whether the command handler should throw or emit errors. Defaults to false.
+     * Set whether the ready handler should throw or emit errors. Defaults to false.
      * @param bool Boolean value
      */
     emitErrors(bool: boolean): void {
