@@ -604,14 +604,19 @@ module.exports = {
 
 This parameter makes it so that after (foo) milliseconds, the action row will be cleared and the original message will be edited to (bar). Effectively making a button click or select menu selection have a limited time window. **(Only for **Buttons** and **Select Menus**)**
 
+The `onTimeout` parameter takes in a function and is invoked when the interaction times out, of course. But if you set both timeoutMsg and onTimeout, onTimeout will run.
+
 ```js
 module.exports = {
     customId: "button5",
     type: "button",
-    timeout: 10_000,
-    timeoutMsg: "You're too slow!!",
     callback: (i) => {
         // callback
+    },
+    timeout: 10_000,
+    timeoutMsg: "You're too slow!!",
+    onTimeout: (i) => {
+        i.update("yup");
     },
 };
 ```
@@ -666,10 +671,12 @@ const ok = new CommandInteractionObject({
     customId: "ok",
     type: "button",
     authorOnly: true,
-    timeout: 20_000, // 20 seconds
-    timeoutMsg: "You're too slow!",
     callback: async (i) => {
         i.update({ content: "this is from the same file", components: [] });
+    },
+    timeout: 20_000, // 20 seconds
+    onTimeout: (i) => {
+        i.update({ content: "You're too slow!" });
     },
 });
 
@@ -713,6 +720,9 @@ const intObj = {
     customId: "mySelect", // the custom id of the interaction
     type: "selectMenu", // the type of interaction. can be "selectMenu", "button" or "modal"
     timeout: 10_000,
+    onTimeout: (i) => {
+        i.update("too slow.");
+    },
     callback: (i) => {
         // do something
     },

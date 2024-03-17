@@ -48,6 +48,10 @@ export class CommandInteractionObject {
      */
     timeoutMsg?: string;
     /**
+     * Function to run when interaction times out. If this is set, timeoutMsg property is ignored.
+     */
+    onTimeout?: (interaction: Interaction, client?: Client) => void;
+    /**
      * Build the actual interaction
      * @param intObject Interaction Object (see github) with properties
      */
@@ -82,6 +86,10 @@ export class CommandInteractionObject {
          * Message to display when interaction times out.
          */
         timeoutMsg?: string;
+        /**
+         * Function to run when interaction times out. If this is set, timeoutMsg property is ignored.
+         */
+        onTimeout?: (interaction: Interaction, client?: Client) => void;
     }) {
         this.customId = intObject.customId;
         this.type = intObject.type;
@@ -96,7 +104,10 @@ export class CommandInteractionObject {
         this.timeoutMsg =
             intObject.timeoutMsg !== undefined
                 ? intObject.timeoutMsg
-                : "Interaction timed out. You didn't click in time!";
+                : intObject.onTimeout == undefined
+                ? "Interaction timed out. You didn't click in time!"
+                : undefined;
+        this.onTimeout = intObject.onTimeout;
     }
 }
 
