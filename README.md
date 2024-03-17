@@ -129,7 +129,8 @@ ready.execute()
 Set whether the ready handler should throw or emit errors. Defaults to false.
 
 ```js
-const ready = new ReadyHandler(client, ...).emitErrors(true);
+const ready = new ReadyHandler(client, ...);
+ready.emitErrors(true);
 
 // Listen for the error
 ready.on("error", (msg) => {
@@ -308,10 +309,8 @@ handler.handleCommands(middleWare); // pass the function alone without brackets 
 Set whether the ready handler should throw or emit errors. Defaults to false.
 
 ```js
-const handler = new CommandHandler(
-    client,
-    path.join(__dirname, "commands")
-).emitErrors(true);
+const handler = new CommandHandler(client, path.join(__dirname, "commands"));
+handler.emitErrors(true);
 
 // Listen for the error
 handler.on("error", (msg) => {
