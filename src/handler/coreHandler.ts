@@ -88,7 +88,7 @@ function change(cI: CommandInteractionObject): InteractionObject {
         filePath: undefined,
         onlyAuthor: cI.onlyAuthor,
         timeout: cI.timeout,
-        timeoutMsg: cI.timeoutMsg,
+        onTimeout: cI.onTimeout,
     };
 
     return a;

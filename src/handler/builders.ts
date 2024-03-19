@@ -45,10 +45,6 @@ export class CommandInteractionObject {
      */
     timeout?: number;
     /**
-     * Message to display when interaction times out.
-     */
-    timeoutMsg?: string;
-    /**
      * Function to run when interaction times out. If this is set, timeoutMsg property is ignored.
      */
     onTimeout?: (interaction: Interaction, client?: Client) => void;
@@ -84,6 +80,7 @@ export class CommandInteractionObject {
          */
         timeout?: number;
         /**
+         * @deprecated Timeout message is deprecated and will no longer work. use `onTimeout` function instead.
          * Message to display when interaction times out.
          */
         timeoutMsg?: string;
@@ -102,13 +99,7 @@ export class CommandInteractionObject {
                 ? intObject.onlyAuthor
                 : false;
         this.timeout = intObject.timeout !== undefined ? intObject.timeout : 0;
-        this.timeoutMsg =
-            intObject.timeoutMsg !== undefined
-                ? intObject.timeoutMsg
-                : intObject.onTimeout == undefined
-                ? "Interaction timed out. You didn't click in time!"
-                : undefined;
-        this.onTimeout = intObject.onTimeout;
+        this.onTimeout = intObject.onTimeout || undefined;
     }
 }
 

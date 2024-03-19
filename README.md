@@ -604,7 +604,7 @@ module.exports = {
 
 This parameter makes it so that after (foo) milliseconds, the action row will be cleared and the original message will be edited to (bar). Effectively making a button click or select menu selection have a limited time window. **(Only for **Buttons** and **Select Menus**)**
 
-The `onTimeout` parameter takes in a function and is invoked when the interaction times out, of course. But if you set both timeoutMsg and onTimeout, onTimeout will run.
+The `onTimeout` parameter takes in a function and is invoked when the interaction times out, of course.
 
 ```js
 module.exports = {
@@ -614,7 +614,6 @@ module.exports = {
         // callback
     },
     timeout: 10_000,
-    timeoutMsg: "You're too slow!!",
     onTimeout: (i) => {
         i.update("yup");
     },
