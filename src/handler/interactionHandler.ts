@@ -215,6 +215,7 @@ export class InteractionHandler extends CoreHandler {
                     });
                     return;
                 }
+
                 if (
                     buttonObj.timeout !== 0 &&
                     buttonObj.timeout !== undefined
@@ -227,6 +228,7 @@ export class InteractionHandler extends CoreHandler {
                         return;
                     }
                 }
+
                 for (const fn of middleWare) {
                     let result = fn(interaction);
                     if (result == 1) return; // test condition is true
