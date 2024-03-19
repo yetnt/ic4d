@@ -3,6 +3,7 @@ import {
     Client,
     PermissionFlags,
     SlashCommandBuilder,
+    ChatInputCommandInteraction,
 } from "discord.js";
 import { Option } from "./coreHandler";
 
@@ -132,7 +133,10 @@ export class SlashCommandObject {
     /**
      * Function run when this command is called
      */
-    callback: (client: Client, interaction: Interaction) => void;
+    callback: (
+        client: Client,
+        interaction: ChatInputCommandInteraction
+    ) => void;
     /**
      * An array of options
      */
@@ -172,7 +176,10 @@ export class SlashCommandObject {
             /**
              * Function run when this command is called
              */
-            callback: (client: Client, interaction: Interaction) => void;
+            callback: (
+                client: Client,
+                interaction: ChatInputCommandInteraction
+            ) => void;
             /**
              * An array of options
              */
@@ -201,7 +208,10 @@ export class SlashCommandObject {
             /**
              * Function run when this command is called
              */
-            execute: (interaction: Interaction, client?: Client) => void;
+            execute: (
+                interaction: ChatInputCommandInteraction,
+                client?: Client
+            ) => void;
             /**
              * Permission required by the user to proceed with the command
              */
@@ -222,7 +232,10 @@ export class SlashCommandObject {
             | {
                   name: string;
                   description: string;
-                  callback: (client: Client, interaction: Interaction) => void;
+                  callback: (
+                      client: Client,
+                      interaction: ChatInputCommandInteraction
+                  ) => void;
                   options?: Option[];
                   permissionsRequired?: PermissionFlags[];
                   botPermissions?: PermissionFlags[];
@@ -230,7 +243,10 @@ export class SlashCommandObject {
               }
             | {
                   data: SlashCommandBuilder;
-                  execute: (interaction: Interaction, client?: Client) => void;
+                  execute: (
+                      interaction: ChatInputCommandInteraction,
+                      client?: Client
+                  ) => void;
                   permissionsRequired?: PermissionFlags[];
                   botPermissions?: PermissionFlags[];
                   deleted?: boolean;
@@ -245,7 +261,7 @@ export class SlashCommandObject {
                 [];
             this.callback = function command(
                 client: Client,
-                interaction: Interaction
+                interaction: ChatInputCommandInteraction
             ) {
                 commandObject.execute(interaction, client);
             };
