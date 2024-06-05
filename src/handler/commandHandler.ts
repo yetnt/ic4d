@@ -302,6 +302,7 @@ export class CommandHandler extends CoreHandler {
                         commandObject.filePath,
                         commandObject.name
                     );
+                    console.error(error);
                     if (this.emitErr) {
                         this.emit("error", err.message);
                     } else {

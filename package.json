@@ -41,13 +41,13 @@
     },
     "homepage": "https://github.com/YetNT/ic4d#readme",
     "devDependencies": {
-        "@types/node": "^20.8.5",
-        "discord.js": "^14.14.1",
-        "typescript": "^5.2.2"
+        "@types/node": "^20.14.2",
+        "discord.js": "^14.15.3",
+        "typescript": "^5.4.5"
     },
     "dependencies": {
-        "@types/cli-color": "^2.0.5",
-        "cli-color": "^2.0.3",
+        "@types/cli-color": "^2.0.6",
+        "cli-color": "^2.0.4",
         "path": "^0.12.7"
     }
 }
