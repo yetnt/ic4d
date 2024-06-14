@@ -56,32 +56,38 @@ export class InteractionBuilder {
      * Set the custom ID of the interaction.
      * @param id The Custom ID of the interaction.
      */
-    setCustomId(id: string): void {
+    setCustomId(id: string): InteractionBuilder {
         this.customId = id;
+        return this;
     }
 
     /**
      * Set the type of the interaction.
      * @param type Type of interaction, Either "selectMenu", "modal" or "button"
      */
-    setType(type: InteractionType): void {
+    setType(type: InteractionType): InteractionBuilder {
         this.type = type;
+        return this;
     }
 
     /**
      * Callback function to be called when the interaction is called.
      * @param f Function to be called, taking the interaction as argument and client is an optional
      */
-    setCallback(f: (interaction: Interaction, client?: Client) => void): void {
+    setCallback(
+        f: (interaction: Interaction, client?: Client) => void
+    ): InteractionBuilder {
         this.callback = f;
+        return this;
     }
 
     /**
      * Set the interaction to only accept the author's input.
      * @param bool If true, the interaction will only accept the author's input.
      */
-    setOnlyAuthor(bool: boolean): void {
+    setOnlyAuthor(bool: boolean): InteractionBuilder {
         this.onlyAuthor = bool;
+        return this;
     }
 
     /**
@@ -92,9 +98,10 @@ export class InteractionBuilder {
     setTimeout(
         func: (interaction: Interaction, client?: Client) => void,
         timeout?: number
-    ): void {
+    ): InteractionBuilder {
         this.onTimeout = func;
         this.timeout = timeout != undefined ? timeout : this.defaultTimeout;
+        return this;
     }
 }
 

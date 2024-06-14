@@ -92,35 +92,41 @@ export class SlashCommandManager {
      * Set the permissions required by the user to use this command.
      * @param perms Array of PermissionFlags
      */
-    setUserPermissions(...perms: bigint[]): void {
+    setUserPermissions(...perms: bigint[]): SlashCommandManager {
         this.permissionsRequired = perms;
+        return this;
     }
 
     /**
      * Set the permissions required by the bot for this command to execute.
      * @param perms Array of PermissionFlags
      */
-    setBotPermissions(...perms: bigint[]): void {
+    setBotPermissions(...perms: bigint[]): SlashCommandManager {
         this.botPermissions = perms;
+        return this;
     }
 
     /**
      * Set whether or not this command is deleted. If deleted and loader tries to load it, it will be skipped.
      * @param bool If true, command is marked as deleted.
      */
-    setDeleted(bool: boolean): void {
+    setDeleted(bool: boolean): SlashCommandManager {
         this.deleted = bool;
+        return this;
     }
 
     /**
      * Append all the interactions associated with this command, here if you'd like.
      * @param interactions
      */
-    addInteractions(...interactions: InteractionBuilder[]): void {
+    addInteractions(
+        ...interactions: InteractionBuilder[]
+    ): SlashCommandManager {
         interactions.forEach((inter) => {
             this.interactions[inter.type] ||= {};
             this.interactions[inter.type]![inter.customId] = inter;
         });
+        return this;
     }
 }
 
