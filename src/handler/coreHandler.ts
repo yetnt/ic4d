@@ -9,7 +9,7 @@ import * as path2 from "path";
 import * as fs from "fs";
 import { CommandObject } from "./commandHandler";
 import { ContextMenuObject, InteractionObject } from "./interactionHandler";
-import { Interactions, CommandInteractionObject } from "./builders";
+import { Interactions, CommandInteractionObject } from "./builders/builders";
 import { EventEmitter } from "events";
 
 export interface LoaderOptions {
