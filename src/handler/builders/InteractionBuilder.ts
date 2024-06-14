@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import { InteractionType } from "./builders";
 
-type InteractionTypeMap<U extends string> = U extends "modal"
+export type InteractionTypeMap<U extends string> = U extends "modal"
     ? ModalSubmitInteraction
     : U extends "selectMenu"
     ? AnySelectMenuInteraction
@@ -17,7 +17,7 @@ type InteractionTypeMap<U extends string> = U extends "modal"
 
 /**
  * @class
- * Represents an interaction object.
+ * Represents an interaction object. (DOES NOT INCLUDE CONTEXT MENUS)
  */
 export class InteractionBuilder {
     private defaultTimeout: number = 15000;
@@ -59,7 +59,6 @@ export class InteractionBuilder {
     ) => void;
     /**
      * Build the actual interaction
-     * @param intObject Interaction Object (see github) with properties
      */
     constructor() {
         this.customId = undefined;

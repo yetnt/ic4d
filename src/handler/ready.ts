@@ -46,6 +46,8 @@ export class ReadyHandler extends CoreHandler {
                             str[str.length - 1] != "}" ? str + " ...}" : str
                         )} \n\n` + error;
 
+                    console.error(error);
+
                     if (this.emitErr) {
                         this.emit("error", msg);
                     } else {
