@@ -17,10 +17,25 @@ import {
 import { EventEmitter } from "events";
 
 export interface LoaderOptions {
+    /**
+     * What to show for context menus/commands that load in
+     */
     loaded: string;
+    /**
+     * What to show for context menus/commands that get edited.
+     */
     edited: string;
+    /**
+     * What to show for context menus/commands that get deleted.
+     */
     deleted: string;
+    /**
+     * What to show for context menus/commands that get skipped. (Deleted and still marked as deleted.)
+     */
     skipped: string;
+    /**
+     * What to show for context menus/commands that get loaded, but have no changes
+     */
     loadedNoChanges?: string;
 }
 
