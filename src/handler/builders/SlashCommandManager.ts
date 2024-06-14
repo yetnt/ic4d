@@ -117,12 +117,10 @@ export class SlashCommandManager {
      * @param interactions
      */
     addInteractions(...interactions: InteractionBuilder[]): void {
-        for (const inter of interactions) {
-            if (!this.interactions[inter.type]) {
-                this.interactions[inter.type] = {};
-            }
+        interactions.forEach((inter) => {
+            this.interactions[inter.type] ||= {};
             this.interactions[inter.type]![inter.customId] = inter;
-        }
+        });
     }
 }
 
