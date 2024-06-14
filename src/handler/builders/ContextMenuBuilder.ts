@@ -13,7 +13,10 @@ export class ContextMenuBuilder {
     isCommand: boolean = false; // This is so that when it's read by th command handler, it's skipped. And because it's its own interaction like slash commands, the interaction handler reads it seprately.
     type: ApplicationCommandType;
     name: string;
-    callback: (interaction: ContextMenuCommandInteraction) => void;
+    callback: (
+        interaction: ContextMenuCommandInteraction,
+        client?: Client
+    ) => void;
     deleted: boolean;
 
     /**
@@ -41,6 +44,21 @@ export class ContextMenuBuilder {
      */
     setDeleted(deleted: boolean): ContextMenuBuilder {
         this.deleted = deleted;
+        return this;
+    }
+
+    /**
+     * Sets the callback function of the context menu.
+     * @param fn Function to call when the menu is clicked.
+     * @returns
+     */
+    setCallback(
+        fn: (
+            interaction: ContextMenuCommandInteraction,
+            client?: Client
+        ) => void
+    ): ContextMenuBuilder {
+        this.callback = fn;
         return this;
     }
 }
