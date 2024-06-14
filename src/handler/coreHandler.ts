@@ -17,77 +17,30 @@ import {
 import { EventEmitter } from "events";
 
 export interface LoaderOptions {
-    /**
-     * What to show for context menus/commands that load in
-     */
     loaded: string;
-    /**
-     * What to show for context menus/commands that get edited.
-     */
     edited: string;
-    /**
-     * What to show for context menus/commands that get deleted.
-     */
     deleted: string;
-    /**
-     * What to show for context menus/commands that get skipped. (Deleted and still marked as deleted.)
-     */
     skipped: string;
-    /**
-     * What to show for context menus/commands that get loaded, but have no changes
-     */
     loadedNoChanges?: string;
 }
 
-/**
- * Represents a choice
- */
 export interface Choice {
-    /**
-     * Choice name
-     */
     name: string;
-    /**
-     * Choice value
-     */
     value: any;
 }
 
-/**
- * Represents an option for a slash command
- */
 export interface Option {
-    /**
-     * The name of the  option
-     */
     name: string;
-    /**
-     * Description of the option
-     */
     description: string;
-    /**
-     * Whether the option is required or not
-     */
     required?: boolean;
-    /**
-     * An array of predefined choices.
-     */
     choices?: Choice[];
-    /**
-     * Type of option
-     */
     type: ApplicationCommandOptionType;
 }
 
-/**
- * Switches the type from a command interaciton object to the interaction object the code uses.
- * @param cI InteractionBuilder
- * @returns
- */
 function change(
     cI: CommandInteractionObject | InteractionBuilder
 ): InteractionObject {
-    const a: InteractionObject = {
+    return {
         customId: cI.customId,
         type: cI.type,
         callback: cI.callback,
@@ -96,44 +49,22 @@ function change(
         timeout: cI.timeout,
         onTimeout: cI.onTimeout,
     };
-
-    return a;
 }
 
-/**
- * Extract all interactions from a command into one array full of them.
- * @param interactionsObject Object at which the interactions are stored as CommandObjectInteraction
- * @param filePath appends filepath.
- * @returns
- */
 export function extractAllInteractions(
     interactionsObject: Interactions,
     filePath: string
 ): InteractionObject[] {
-    const allInteractions: InteractionObject[] = [];
-
-    for (const key in interactionsObject) {
-        if (interactionsObject.hasOwnProperty(key)) {
-            const objects = interactionsObject[key as keyof Interactions]; // Type assertion here
-            const keys = Object.keys(objects) as (keyof typeof objects)[];
-
-            for (const objKey of keys) {
-                let current = objects[objKey];
-                current.filePath = filePath;
-                allInteractions.push(change(current));
-            }
-        }
-    }
-
-    return allInteractions;
+    return Object.values(interactionsObject).flatMap((objects) =>
+        Object.values(objects).map((current) => {
+            current.filePath = filePath;
+            return change(current);
+        })
+    );
 }
 
-const isEmpty = (obj: Record<string, any>) => !Object.keys(obj).length;
+const isEmpty = (obj: Record<string, any>) => Object.keys(obj).length === 0;
 
-/**
- * @class
- * Core handler, contains
- */
 export class CoreHandler extends EventEmitter {
     client: Client;
 
@@ -146,20 +77,15 @@ export class CoreHandler extends EventEmitter {
         path: string,
         getContextMenusOnly?: boolean
     ): (ContextMenuObject | InteractionObject)[] | ContextMenuObject[] {
-        let interactions:
-            | (ContextMenuObject | InteractionObject)[]
-            | ContextMenuObject[] = [];
-
-        const scanDirectory = (directory: string) => {
-            const items = fs.readdirSync(directory);
-            let arr: (ContextMenuObject | InteractionObject)[] = [];
-
-            for (const item of items) {
+        const scanDirectory = (
+            directory: string
+        ): (ContextMenuObject | InteractionObject)[] => {
+            return fs.readdirSync(directory).flatMap((item) => {
                 const itemPath = path2.join(directory, item);
                 const isDirectory = fs.statSync(itemPath).isDirectory();
 
                 if (isDirectory) {
-                    arr = arr.concat(scanDirectory(itemPath));
+                    return scanDirectory(itemPath);
                 } else if (item.endsWith(".js")) {
                     const interactionObject: InteractionObject & {
                         name: string;
@@ -167,67 +93,55 @@ export class CoreHandler extends EventEmitter {
                         interactions?: Interactions;
                     } = require(itemPath);
 
-                    if (getContextMenusOnly == true) {
+                    if (getContextMenusOnly === true) {
                         if (
                             !interactionObject.type ||
                             !interactionObject.name ||
                             typeof interactionObject.type !== "number"
                         ) {
-                            continue;
+                            return [];
                         }
                         interactionObject.filePath = itemPath;
-                        arr.push(interactionObject);
+                        return [interactionObject];
                     } else {
                         if (
                             interactionObject.interactions &&
                             !isEmpty(interactionObject.interactions)
                         ) {
-                            let interactions = extractAllInteractions(
+                            return extractAllInteractions(
                                 interactionObject.interactions,
                                 itemPath
                             );
-                            arr.push(...interactions);
                         } else {
                             if (!interactionObject.customId) {
-                                continue;
+                                return [];
                             }
                             interactionObject.onlyAuthor =
-                                interactionObject.onlyAuthor == true
-                                    ? true
-                                    : interactionObject.authorOnly == true
-                                    ? true
-                                    : false;
+                                interactionObject.onlyAuthor ||
+                                interactionObject.authorOnly === true;
                             interactionObject.filePath = itemPath;
-                            arr.push(interactionObject);
+                            return [interactionObject];
                         }
                     }
                 }
-            }
-
-            return arr;
+                return [];
+            });
         };
 
-        interactions = scanDirectory(path);
-        return interactions;
+        return scanDirectory(path);
     }
 
     protected getLocalCommands(
         path: string,
-        exceptions?: string[]
+        exceptions: string[] = []
     ): CommandObject[] {
-        exceptions = exceptions !== undefined ? exceptions : [];
-        let localCommands: CommandObject[] = [];
-
-        const scanDirectory = (directory: string) => {
-            const items = fs.readdirSync(directory);
-            let arr: CommandObject[] = [];
-
-            for (const item of items) {
+        const scanDirectory = (directory: string): CommandObject[] => {
+            return fs.readdirSync(directory).flatMap((item) => {
                 const itemPath = path2.join(directory, item);
                 const isDirectory = fs.statSync(itemPath).isDirectory();
 
                 if (isDirectory) {
-                    arr = arr.concat(scanDirectory(itemPath));
+                    return scanDirectory(itemPath);
                 } else if (item.endsWith(".js")) {
                     const commandObject: CommandObject & {
                         isCommand?: boolean;
@@ -240,84 +154,59 @@ export class CoreHandler extends EventEmitter {
                         commandObject.customId ||
                         exceptions.includes(commandObject.name)
                     ) {
-                        continue;
+                        return [];
                     }
                     commandObject.filePath = itemPath;
-                    arr.push(commandObject);
+                    return [commandObject];
                 }
-            }
-
-            return arr;
+                return [];
+            });
         };
 
-        localCommands = scanDirectory(path);
-        return localCommands;
+        return scanDirectory(path);
     }
 
-    protected getAllFiles(directory: string, foldersOnly?: boolean) {
-        foldersOnly = foldersOnly !== undefined ? foldersOnly : false;
-        let fileNames: string[] = [];
-
-        const files = fs.readdirSync(directory, { withFileTypes: true });
-
-        for (const file of files) {
-            const filePath = path2.join(directory, file.name);
-
-            if (foldersOnly) {
-                if (file.isDirectory()) {
-                    fileNames.push(filePath);
-                }
-            } else {
-                if (file.isFile()) {
-                    fileNames.push(filePath);
-                }
-            }
-        }
-
-        return fileNames;
+    protected getAllFiles(
+        directory: string,
+        foldersOnly: boolean = false
+    ): string[] {
+        return fs
+            .readdirSync(directory, { withFileTypes: true })
+            .filter((file) =>
+                foldersOnly ? file.isDirectory() : file.isFile()
+            )
+            .map((file) => path2.join(directory, file.name));
     }
 
     protected areCommandsDifferent(
         existingCommand: CommandInteraction | any,
         localCommand: CommandObject
-    ) {
+    ): boolean {
         const areChoicesDifferent = (
-            existingChoices: Choice[] | [],
-            localChoices: Choice[] | []
-        ) => {
-            for (const localChoice of localChoices) {
-                const existingChoice = existingChoices?.find(
-                    //@ts-ignore
+            existingChoices: Choice[] = [],
+            localChoices: Choice[] = []
+        ): boolean => {
+            return localChoices.some((localChoice) => {
+                const existingChoice = existingChoices.find(
                     (choice) => choice.name === localChoice.name
                 );
-
-                if (!existingChoice) {
-                    return true;
-                }
-
-                if (localChoice.value !== existingChoice.value) {
-                    return true;
-                }
-            }
-            return false;
+                return (
+                    !existingChoice ||
+                    localChoice.value !== existingChoice.value
+                );
+            });
         };
 
         const areOptionsDifferent = (
-            existingOptions: Option[] | [],
-            localOptions: Option[] | []
-        ) => {
-            localOptions = localOptions !== undefined ? localOptions : [];
-            for (const localOption of localOptions) {
-                const existingOption = existingOptions?.find(
-                    // @ts-ignore
+            existingOptions: Option[] = [],
+            localOptions: Option[] = []
+        ): boolean => {
+            return localOptions.some((localOption) => {
+                const existingOption = existingOptions.find(
                     (option) => option.name === localOption.name
                 );
-
-                if (!existingOption) {
-                    return true;
-                }
-
-                if (
+                return (
+                    !existingOption ||
                     localOption.description !== existingOption.description ||
                     localOption.type !== existingOption.type ||
                     (localOption.required || false) !==
@@ -325,33 +214,26 @@ export class CoreHandler extends EventEmitter {
                     (localOption.choices?.length || 0) !==
                         (existingOption.choices?.length || 0) ||
                     areChoicesDifferent(
-                        localOption.choices || [],
-                        existingOption.choices || []
+                        localOption.choices,
+                        existingOption.choices
                     )
-                ) {
-                    return true;
-                }
-            }
-            return false;
+                );
+            });
         };
 
-        if (
+        return (
             existingCommand.description !== localCommand.description ||
-            existingCommand.options?.length !==
+            (existingCommand.options?.length || 0) !==
                 (localCommand.options?.length || 0) ||
             areOptionsDifferent(existingCommand.options, localCommand.options)
-        ) {
-            return true;
-        }
-
-        return false;
+        );
     }
 
     protected areContextMenusDifferent(
         existing: ContextMenuObject,
         local: ContextMenuObject
     ): boolean {
-        return existing.type == local.type;
+        return existing.type !== local.type;
     }
 
     protected async getApplicationCommands(client: Client, guildId?: string) {
