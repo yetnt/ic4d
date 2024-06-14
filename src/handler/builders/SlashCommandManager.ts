@@ -47,11 +47,11 @@ export class SlashCommandManager {
     /**
      * Permission required by the user to proceed with the command
      */
-    permissionsRequired?: PermissionFlags[] = [];
+    permissionsRequired?: bigint[] = [];
     /**
      * Permission required by the bot to proceed with the command
      */
-    botPermissions?: PermissionFlags[] = [];
+    botPermissions?: bigint[] = [];
     /**
      * Whether the command is deleted or not
      */
@@ -69,18 +69,6 @@ export class SlashCommandManager {
             interaction: ChatInputCommandInteraction,
             client?: Client
         ) => void;
-        /**
-         * Permission required by the user to proceed with the command
-         */
-        permissionsRequired?: PermissionFlags[];
-        /**
-         * Permission required by the bot to proceed with the command
-         */
-        botPermissions?: PermissionFlags[];
-        /**
-         * Whether the command is deleted or not
-         */
-        deleted?: boolean;
     });
     constructor(obj: {
         data: SlashCommandBuilder;
@@ -88,9 +76,6 @@ export class SlashCommandManager {
             interaction: ChatInputCommandInteraction,
             client?: Client
         ) => void;
-        permissionsRequired?: PermissionFlags[];
-        botPermissions?: PermissionFlags[];
-        deleted?: boolean;
     }) {
         this.name = obj.data.name;
         this.description = obj.data.description;
@@ -101,21 +86,13 @@ export class SlashCommandManager {
         ) {
             obj.execute(interaction, client);
         };
-
-        this.permissionsRequired =
-            obj.permissionsRequired !== undefined
-                ? obj.permissionsRequired
-                : [];
-        this.botPermissions =
-            obj.botPermissions !== undefined ? obj.botPermissions : [];
-        this.deleted = obj.deleted !== undefined ? obj.deleted : false;
     }
 
     /**
      * Set the permissions required by the user to use this command.
      * @param perms Array of PermissionFlags
      */
-    setUserPermissions(...perms: PermissionFlags[]): void {
+    setUserPermissions(...perms: bigint[]): void {
         this.permissionsRequired = perms;
     }
 
@@ -123,7 +100,7 @@ export class SlashCommandManager {
      * Set the permissions required by the bot for this command to execute.
      * @param perms Array of PermissionFlags
      */
-    setBotPermissions(...perms: PermissionFlags[]): void {
+    setBotPermissions(...perms: bigint[]): void {
         this.botPermissions = perms;
     }
 
