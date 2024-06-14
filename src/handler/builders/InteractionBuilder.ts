@@ -75,8 +75,8 @@ export class InteractionBuilder {
      * Set the custom ID of the interaction.
      * @param id The Custom ID of the interaction.
      */
-    setCustomId(id: string): InteractionBuilder {
-        this.customId = id;
+    setCustomId(customId: string): InteractionBuilder {
+        this.customId = customId;
         return this;
     }
 
@@ -94,9 +94,12 @@ export class InteractionBuilder {
      * @param f Function to be called, taking the interaction as argument and client is an optional
      */
     setCallback(
-        f: (interaction: Interaction, client?: Client) => void
+        fn: (
+            interaction: InteractionTypeMap<InteractionType>,
+            client?: Client
+        ) => void
     ): InteractionBuilder {
-        this.callback = f;
+        this.callback = fn;
         return this;
     }
 
@@ -115,10 +118,13 @@ export class InteractionBuilder {
      * @param timeout How long to wait for the interaction timeout. (ms)
      */
     setTimeout(
-        func: (interaction: Interaction, client?: Client) => void,
+        fn: (
+            interaction: InteractionTypeMap<InteractionType>,
+            client?: Client
+        ) => void,
         timeout?: number
     ): InteractionBuilder {
-        this.onTimeout = func;
+        this.onTimeout = fn;
         this.timeout = timeout != undefined ? timeout : this.defaultTimeout;
         return this;
     }
