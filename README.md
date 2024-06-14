@@ -33,14 +33,19 @@ import /* Class you need separated by a comma */ "ic4d";
 -   -   [ReadyHandler](#readyhandler)
 -   -   [CommandHandler](#commandhandler)
 -   -   [InteractionHandler](#interactionhandler)
+-   -   [SlashCommandManager](#slashcommandmanager)
+-   -   [InteractionBuilder](#interactionbuilder)
+-   [Credit](#credits)
+-   [Links](#links)
+
+Deprecated Classes and Documentation.
+
 -   Objects
 -   -   [Command Object](#command-object)
 -   -   [Interaction Object](#interaction-object)
 -   [Same file Command and Interactions (Class builders)](#command-and-interactions-in-the-same-file)
 -   -   [CommandInteractionObject](#commandinteractionobject)
 -   -   [SlashCommandObject](#slashcommandobject)
--   [Credit](#credits)
--   [Links](#links)
 
 # Quick Example
 
@@ -445,6 +450,125 @@ Register Context Menus. Make sure your [Context Menu object](#context-menu) look
 await interactions.registerContextMenus();
 ```
 
+# SlashCommandManager
+
+This class represents a single command that is immediately exported from a file in the `"commands"` directory of your choosing
+
+Exmaple:
+
+```js
+const { SlashCommandManager } = require("ic4d");
+
+const command = new SlashCommandManager();
+
+module.exports = command;
+```
+
+## Constructor
+
+-   `obj`: Command's data, Only takes in 2 properties: `data` property which contains the command's data from the discord.js provided class `SlashCommandBuilder` and the `execute` property which takes in a function with the `interaction` and `client` parameter.
+
+Example:
+
+```js
+const { SlashCommandManager } = require("ic4d");
+
+const command = new SlashCommandManager({
+    data: new SlashCommandBuilder()
+        .setName("ping")
+        .setDescription("Pong!")
+        .addAttachmentOption((option) =>
+            option.setName("user").setDescription("Ping a user for no reason.")
+        ),
+    execute: (interaction, client) => {
+        interaction.reply("pong!!");
+    },
+});
+
+module.exports = command;
+```
+
+## Methods
+
+### `setUserPermissions`
+
+Sets the permissions required by the user to execute the command.
+
+-   `...perms`: Rest paramter of `bitInt`s provided by discord.js (class `PermissionFlagsBits`)
+
+Example:
+
+```js
+const { SlashCommandManager } = require("ic4d");
+
+const command = new SlashCommandManager(/* command cofig */).setUserPermissions(
+    PermissionFlagsBits.Administrator
+);
+module.exports = command;
+```
+
+## `setBotPermissions`
+
+Sets the permissions needed for the bot to execute the command.
+
+-   `...perms`: Rest paramter of `bitInt`s provided by discord.js (class `PermissionFlagsBits`)
+
+Example:
+
+```js
+const { SlashCommandManager } = require("ic4d");
+
+const command = new SlashCommandManager(/* command cofig */).setBotPermissions(
+    PermissionFlagsBits.Administrator
+);
+module.exports = command;
+```
+
+## `setDeleted`
+
+Sets the commmand to be deleted, If command has already been deleted, it will be skipped when loaded again.
+
+-   `bool`: Boolean param
+
+Example:
+
+```js
+const { SlashCommandManager } = require("ic4d");
+
+const command = new SlashCommandManager(/* command cofig */).setDeleted(true);
+module.exports = command;
+```
+
+## `addInteractions`
+
+Appends related interactions to the slash command, only way for slash commands and other interactions to appear in the same file.
+
+-   `...interactions`: Rest paramater of [InteractionBuilder](#interactionbuilder)s
+
+```js
+const { SlashCommandManager, InteractionBuilder } = require("ic4d");
+
+const command = new SlashCommandManager(/* command cofig */).addInteractions(
+    new InteractionBuilder() /*...*/
+);
+module.exports = command;
+```
+
+# Credits
+
+Huge credit to [underctrl](https://github.com/notunderctrl), Code would've not been possible if i did not watch his helpful discord.js tutorials! I had to give him credit because this package is based off moving all those files fromm his tutorial into one package.
+
+He probably has a way better package, so go check his out!
+
+# Links
+
+-   [Github](https://github.com/YetNT/ic4d)
+-   [NPM](https://www.npmjs.com/package/ic4d)
+-   [underctrl Discord.js Tutorial](https://www.youtube.com/playlist?list=PLpmb-7WxPhe0ZVpH9pxT5MtC4heqej8Es)
+
+> [!NOTE]
+> The following is deprecated in favor of other functions.
+
 # Command Object
 
 This package requires your command object to be layed out specifically, (If you're coming from a normal discord.js handler that uses the execute and data properties, skip to [Tradtional discord.js object](#tradtional-discordjs-object))
@@ -758,15 +882,3 @@ module.exports = new SlashCommandObject(
 ```
 
 and that's mostly it!
-
-# Credits
-
-Huge credit to [underctrl](https://github.com/notunderctrl), Code would've not been possible if i did not watch his helpful discord.js tutorials! I had to give him credit because this package is based off moving all those files fromm his tutorial into one package.
-
-He probably has a way better package, so go check his out!
-
-# Links
-
--   [Github](https://github.com/YetNT/ic4d)
--   [NPM](https://www.npmjs.com/package/ic4d)
--   [underctrl Discord.js Tutorial](https://www.youtube.com/playlist?list=PLpmb-7WxPhe0ZVpH9pxT5MtC4heqej8Es)
