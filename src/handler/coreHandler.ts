@@ -9,7 +9,11 @@ import * as path2 from "path";
 import * as fs from "fs";
 import { CommandObject } from "./commandHandler";
 import { ContextMenuObject, InteractionObject } from "./interactionHandler";
-import { Interactions, CommandInteractionObject } from "./builders/builders";
+import {
+    Interactions,
+    CommandInteractionObject,
+    InteractionBuilder,
+} from "./builders/builders";
 import { EventEmitter } from "events";
 
 export interface LoaderOptions {
@@ -77,15 +81,17 @@ export interface Option {
 
 /**
  * Switches the type from a command interaciton object to the interaction object the code uses.
- * @param cI CommandInteractionObject
+ * @param cI InteractionBuilder
  * @returns
  */
-function change(cI: CommandInteractionObject): InteractionObject {
+function change(
+    cI: CommandInteractionObject | InteractionBuilder
+): InteractionObject {
     const a: InteractionObject = {
         customId: cI.customId,
         type: cI.type,
         callback: cI.callback,
-        filePath: undefined,
+        filePath: cI.filePath,
         onlyAuthor: cI.onlyAuthor,
         timeout: cI.timeout,
         onTimeout: cI.onTimeout,
