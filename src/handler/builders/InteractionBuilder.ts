@@ -1,5 +1,19 @@
-import { Interaction, Client } from "discord.js";
+import {
+    Interaction,
+    Client,
+    AnySelectMenuInteraction,
+    ButtonInteraction,
+    ModalSubmitInteraction,
+} from "discord.js";
 import { InteractionType } from "./builders";
+
+type InteractionTypeMap<U extends string> = U extends "modal"
+    ? ModalSubmitInteraction
+    : U extends "selectMenu"
+    ? AnySelectMenuInteraction
+    : U extends "button"
+    ? ButtonInteraction
+    : never;
 
 /**
  * @class
@@ -12,7 +26,10 @@ export class InteractionBuilder {
      * @param interaction Interaction
      * @param client Client
      */
-    callback: (interaction: Interaction, client?: Client) => void;
+    callback: (
+        interaction: InteractionTypeMap<InteractionType>,
+        client?: Client
+    ) => void;
     /**
      * The interaction's custom identifier
      */
@@ -36,7 +53,10 @@ export class InteractionBuilder {
     /**
      * Function to run when interaction times out. If this is set, timeoutMsg property is ignored.
      */
-    onTimeout?: (interaction: Interaction, client?: Client) => void;
+    onTimeout?: (
+        interaction: InteractionTypeMap<InteractionType>,
+        client?: Client
+    ) => void;
     /**
      * Build the actual interaction
      * @param intObject Interaction Object (see github) with properties
