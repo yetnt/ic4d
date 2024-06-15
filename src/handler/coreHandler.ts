@@ -247,7 +247,11 @@ export class CoreHandler extends EventEmitter {
                 localCommand.options
             ) ||
             existingCommand.nsfw !==
-                (localCommand.data ? localCommand.data?.nsfw : false)
+                (localCommand.data
+                    ? localCommand.data?.nsfw
+                        ? localCommand.data?.nsfw
+                        : false
+                    : false)
         );
     }
 
