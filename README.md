@@ -454,6 +454,8 @@ await interactions.registerContextMenus();
 
 This class represents a single command that is immediately exported from a file in the `"commands"` directory of your choosing
 
+> [!NOTE] Methods can be chained together
+
 Exmaple:
 
 ```js
@@ -507,7 +509,7 @@ const command = new SlashCommandManager(/* command cofig */).setUserPermissions(
 module.exports = command;
 ```
 
-## `setBotPermissions`
+### `setBotPermissions`
 
 Sets the permissions needed for the bot to execute the command.
 
@@ -524,7 +526,7 @@ const command = new SlashCommandManager(/* command cofig */).setBotPermissions(
 module.exports = command;
 ```
 
-## `setDeleted`
+### `setDeleted`
 
 Sets the commmand to be deleted, If command has already been deleted, it will be skipped when loaded again.
 
@@ -539,7 +541,7 @@ const command = new SlashCommandManager(/* command cofig */).setDeleted(true);
 module.exports = command;
 ```
 
-## `addInteractions`
+### `addInteractions`
 
 Appends related interactions to the slash command, only way for slash commands and other interactions to appear in the same file.
 
@@ -553,6 +555,94 @@ const command = new SlashCommandManager(/* command cofig */).addInteractions(
 );
 module.exports = command;
 ```
+
+# InteractionBuilder
+
+Represents a single itneraction that isn't a chat input (slash command) or context menu. (This class can however be passed into a rest parameter in [SlashCommandManager](#slashcommandmanager) or in it's own separate file by itself.)
+Builder for Context Menus: [ContextMenuBuilder](#contextmenubuilder)
+
+> [!NOTE] Methods can be chained together
+
+Example:
+
+```js
+const { InteractionBuilder } = require("ic4d");
+
+const button = new InteractionBuilder()
+    .setCustomId("button-1")
+    .setType("button")
+    .setCallback((i) => {
+        i.update("whats up");
+    })
+    .setOnlyAuthor(true);
+```
+
+## Constructor
+
+No parameters are passed, so no documentation :)
+
+## Methods
+
+### `setCustomId`
+
+Sets the custom ID of the interaction.
+
+-   `customId`: Custom ID of the interaction.
+
+```js
+const button = new InteractionBuilder().setCustomId("my-cool-button");
+```
+
+### `setType`
+
+Sets the type of the interaction. (Either "selectMenu", "button" or "modal")
+
+-   `type`: Type of the interaction.
+
+```js
+const selectMenu = new InteractionBuilder().setType("selectMenu");
+```
+
+### `setCallback`
+
+Function to be called when the interaction is called. (Is that how you say it?)
+
+-   `fn`: The function to be called (Parameters: `(interaction, client)`)
+
+```js
+const selectMenu = new InteractionBuilder().setCallback((i) => {
+    i.update("Client parameter is optional");
+});
+```
+
+### `setOnlyAuthor`
+
+Set whether or not the interaction can only be interacted with by the author of the interaction.
+
+-   `bool`: If true, the interaction only accepts the author's input.
+
+```js
+const button = new InteractionBuilder().setOnlyAuthor(true);
+```
+
+### `setTimeout`
+
+Sets the interaction to have a timeout.
+
+-   `fn`: Function to call when the interaction time expires.
+-   `timeout`: How long to wait for the interaction to timeout. (in ms)
+
+```js
+const a = new InteractionBuilder().setTimeout((i) => {
+    i.update("Damn the time expired brodie");
+}, 10_000);
+```
+
+# ContextMenuBuilder
+
+Builder for context menus
+
+> [!NOTE] TODO: Docs for context menus.
 
 # Credits
 
