@@ -3,6 +3,7 @@ import {
     Client,
     ApplicationCommandType,
     ContextMenuCommandBuilder,
+    RESTPostAPIContextMenuApplicationCommandsJSONBody,
 } from "discord.js";
 
 /**
@@ -12,6 +13,7 @@ import {
 export class ContextMenuBuilder {
     isCommand: boolean = false; // This is so that when it's read by th command handler, it's skipped. And because it's its own interaction like slash commands, the interaction handler reads it seprately.
     type: ApplicationCommandType;
+    data: RESTPostAPIContextMenuApplicationCommandsJSONBody;
     name: string;
     callback: (
         interaction: ContextMenuCommandInteraction,
@@ -30,6 +32,7 @@ export class ContextMenuBuilder {
             client?: Client
         ) => void;
     }) {
+        this.data = context.data.toJSON();
         this.name = context.data.toJSON().name;
         this.type = context.data.toJSON().type;
         this.callback = context.execute;

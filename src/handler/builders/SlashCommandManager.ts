@@ -3,6 +3,7 @@ import {
     PermissionFlags,
     SlashCommandBuilder,
     ChatInputCommandInteraction,
+    RESTPostAPIApplicationCommandsJSONBody,
 } from "discord.js";
 import { Option } from "../coreHandler";
 import {
@@ -21,6 +22,10 @@ export type Interactions = {
  * Represents a single slash command.
  */
 export class SlashCommandManager {
+    /**
+     *
+     */
+    data: RESTPostAPIApplicationCommandsJSONBody;
     /**
      * The name of the command
      */
@@ -77,6 +82,7 @@ export class SlashCommandManager {
             client?: Client
         ) => void;
     }) {
+        this.data = obj.data.toJSON();
         this.name = obj.data.name;
         this.description = obj.data.description;
         this.options = obj.data.options.map((option) => option.toJSON()) || [];
