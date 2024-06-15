@@ -33,7 +33,7 @@ import /* Class you need separated by a comma */ "ic4d";
 -   -   [ReadyHandler](#readyhandler)
 -   -   [CommandHandler](#commandhandler)
 -   -   [InteractionHandler](#interactionhandler)
-        Builders
+-   Builders
 -   -   [SlashCommandManager](#slashcommandmanager)
 -   -   [InteractionBuilder](#interactionbuilder)
 -   -   [ContextMenuBuilder](#contextmenubuilder)
@@ -637,7 +637,7 @@ Builder for context menus, since they are special.
 
 ## Constructor
 
--   `context`: Object with 2 prperties, a `data` property that is an instance of `ContextMenuBuilder` provided by discord.js and a function called `execute` to execute when the context menu is called.
+-   `context`: Object with 2 properties, a `data` property that is an instance of `ContextMenuBuilder` provided by discord.js and a function called `execute` to execute when the context menu is called.
 
 ```js
 const {
