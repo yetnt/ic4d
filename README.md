@@ -18,7 +18,7 @@ const {
 } = require("ic4d");
 ```
 
-and for yall ts lovers
+and for yall ts lovers (I tried using this in ts and damn is it hard work.)
 
 ```ts
 import * as ic4d from "ic4d";
