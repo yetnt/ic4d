@@ -33,8 +33,10 @@ import /* Class you need separated by a comma */ "ic4d";
 -   -   [ReadyHandler](#readyhandler)
 -   -   [CommandHandler](#commandhandler)
 -   -   [InteractionHandler](#interactionhandler)
+        Builders
 -   -   [SlashCommandManager](#slashcommandmanager)
 -   -   [InteractionBuilder](#interactionbuilder)
+-   -   [ContextMenuBuilder](#contextmenubuilder)
 -   [Credit](#credits)
 -   [Links](#links)
 
@@ -329,16 +331,7 @@ Handler to handle interactions.
 
 ## Pre-Read
 
-Make sure wherever your store your interaction objects they follow the export the [interactions object](#interaction-object) with the minimum requirements being. **NOTE : This is the case for any interaction EXCEPT FOR [CONTEXT MENUS](#context-menu)**
-
-```js
-module.exports = {
-    customId: "customId",
-    callback: (i) => {
-        i.update("wow!");
-    },
-};
-```
+Context Menus work a bit differently then the other interactions, please refer to [registerContextMenus()](#registercontextmenus)
 
 ## Constructor
 
@@ -441,7 +434,7 @@ interactions.start(undefined, lucky); // will run for every interactions
 
 **(asynchronous function)**
 
-Register Context Menus. Make sure your [Context Menu object](#context-menu) looks like [this](#context-menu)
+Registers Context Menus that are found in the path given tot he InteractionHandler.
 
 -   `logAll`**(optional)**: Log context menu even if no change was performed.
 -   `serverId`**(optional)**: Register all commands in a specific server. if not provided it will be application wide
@@ -640,9 +633,45 @@ const a = new InteractionBuilder().setTimeout((i) => {
 
 # ContextMenuBuilder
 
-Builder for context menus
+Builder for context menus, since they are special.
 
-> [!NOTE] TODO: Docs for context menus.
+## Constructor
+
+-   `context`: Object with 2 prperties, a `data` property that is an instance of `ContextMenuBuilder` provided by discord.js and a function called `execute` to execute when the context menu is called.
+
+```js
+const {
+    ApplicationCommandType,
+    ContextMenuCommandBuilder,
+} = require("discord.js");
+const { ContextMenuBuilder } = require("ic4d");
+
+const user = new ContextMenuBuilder({
+    data: new ContextMenuCommandBuilder()
+        .setName("Get User Avatar")
+        .setType(ApplicationCommandType.User),
+    execute: (interaction, client) => {
+        const user = interaction.targetUser;
+
+        interaction.reply({
+            ephemeral: true,
+            content: user.displayAvatarURL(),
+        });
+    },
+});
+
+module.exports = user;
+```
+
+## Methods
+
+### `setDeleted`
+
+Sets the context menu to be deleted, If context menu has already been deleted, it will be skipped when loaded again.
+
+```js
+const user = new ContextMenuBuilder().setDeleted(true);
+```
 
 # Credits
 
@@ -656,8 +685,12 @@ He probably has a way better package, so go check his out!
 -   [NPM](https://www.npmjs.com/package/ic4d)
 -   [underctrl Discord.js Tutorial](https://www.youtube.com/playlist?list=PLpmb-7WxPhe0ZVpH9pxT5MtC4heqej8Es)
 
-> [!NOTE]
-> The following is deprecated in favor of other functions.
+---
+
+---
+
+> [!IMPORTANT]
+> The following is deprecated in favor of other classes.
 
 # Command Object
 
