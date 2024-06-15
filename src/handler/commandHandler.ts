@@ -4,6 +4,7 @@ import {
     Client,
     Interaction,
     PermissionFlags,
+    RESTPostAPIApplicationCommandsJSONBody,
     SlashCommandBuilder,
 } from "discord.js";
 import * as clc from "cli-color";
@@ -22,6 +23,7 @@ interface ReaderOptions {
 export interface CommandObject {
     name: string;
     description: string;
+    data: RESTPostAPIApplicationCommandsJSONBody;
     callback: (
         client: Client,
         interaction: ChatInputCommandInteraction
@@ -137,7 +139,8 @@ export class CommandHandler extends CoreHandler {
                         localCommand.filePath
                     );
                 }
-                const { name, description, options, filePath } = localCommand;
+                let { name, description, options, filePath, data } =
+                    localCommand;
                 try {
                     const existingCommand =
                         await applicationCommands.cache.find(
@@ -146,6 +149,7 @@ export class CommandHandler extends CoreHandler {
 
                     if (existingCommand) {
                         if (localCommand.deleted) {
+                            // Delete Command
                             await applicationCommands.delete(
                                 existingCommand.id
                             );
@@ -162,11 +166,18 @@ export class CommandHandler extends CoreHandler {
                                 localCommand
                             )
                         ) {
-                            await applicationCommands.edit(existingCommand.id, {
+                            // Command was edited.
+                            // TO-DO: Remove the object in here and just pass the data object.
+                            data ||= {
                                 description,
                                 // @ts-ignore
                                 options,
-                            });
+                            };
+                            await applicationCommands.edit(
+                                existingCommand.id,
+                                // @ts-ignore
+                                data
+                            );
                             noChanges = false;
 
                             console.log(
@@ -175,6 +186,7 @@ export class CommandHandler extends CoreHandler {
                         }
                     } else {
                         if (localCommand.deleted) {
+                            // Command was previously deleted
                             noChanges = false;
                             console.log(
                                 this.options.skipped.replace("NAME", name)
@@ -182,12 +194,16 @@ export class CommandHandler extends CoreHandler {
                             continue;
                         }
 
-                        await applicationCommands.create({
+                        // Create new command.
+
+                        data ||= {
                             name,
                             description,
                             // @ts-ignore
                             options,
-                        });
+                        };
+
+                        await applicationCommands.create(data);
                         noChanges = false;
 
                         console.log(this.options.loaded.replace("NAME", name));

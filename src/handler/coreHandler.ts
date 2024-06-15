@@ -4,6 +4,7 @@ import {
     ApplicationCommandManager,
     GuildApplicationCommandManager,
     ApplicationCommandOptionType,
+    ApplicationCommand,
 } from "discord.js";
 import * as path2 from "path";
 import * as fs from "fs";
@@ -194,7 +195,7 @@ export class CoreHandler extends EventEmitter {
     }
 
     protected areCommandsDifferent(
-        existingCommand: CommandInteraction | any,
+        existingCommand: ApplicationCommand,
         localCommand: CommandObject
     ): boolean {
         const areChoicesDifferent = (
@@ -240,12 +241,17 @@ export class CoreHandler extends EventEmitter {
             existingCommand.description !== localCommand.description ||
             (existingCommand.options?.length || 0) !==
                 (localCommand.options?.length || 0) ||
-            areOptionsDifferent(existingCommand.options, localCommand.options)
+            areOptionsDifferent(
+                //@ts-ignore
+                existingCommand.options,
+                localCommand.options
+            ) ||
+            existingCommand.nsfw !== localCommand.data.nsfw
         );
     }
 
     protected areContextMenusDifferent(
-        existing: ContextMenuObject,
+        existing: ApplicationCommand,
         local: ContextMenuObject
     ): boolean {
         return existing.type !== local.type;

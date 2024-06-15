@@ -5,7 +5,7 @@ import {
     AnySelectMenuInteraction,
     MessageContextMenuCommandInteraction,
     UserContextMenuCommandInteraction,
-    ContextMenuCommandInteraction,
+    RESTPostAPIApplicationCommandsJSONBody,
     Interaction,
     ModalSubmitInteraction,
 } from "discord.js";
@@ -44,6 +44,7 @@ export interface ContextMenuObject {
     type: number;
     deleted?: boolean;
     filePath?: string;
+    data: RESTPostAPIApplicationCommandsJSONBody;
     callback: (
         interaction:
             | UserContextMenuCommandInteraction
@@ -160,6 +161,7 @@ export class InteractionHandler extends CoreHandler {
                     acc[obj.name] = {
                         name: obj.name,
                         type: obj.type,
+                        data: obj.data,
                         filePath: obj.filePath,
                         callback: obj.callback,
                     };
@@ -428,7 +430,7 @@ export class InteractionHandler extends CoreHandler {
 
             for (const localContext of localContexts as ContextMenuObject[]) {
                 let noChanges = true;
-                const { name, type, filePath } = localContext;
+                let { name, type, filePath, data } = localContext;
                 try {
                     const existingContext =
                         await applicationCommands.cache.find(
@@ -454,9 +456,15 @@ export class InteractionHandler extends CoreHandler {
                                 localContext
                             )
                         ) {
-                            await applicationCommands.edit(existingContext.id, {
+                            // TO-DO: Remove later.
+                            data ||= {
+                                name,
                                 type,
-                            });
+                            };
+                            await applicationCommands.edit(
+                                existingContext.id,
+                                data
+                            );
                             noChanges = false;
 
                             console.log(
@@ -472,10 +480,12 @@ export class InteractionHandler extends CoreHandler {
                             continue;
                         }
 
-                        await applicationCommands.create({
+                        data ||= {
                             name,
                             type,
-                        });
+                        };
+
+                        await applicationCommands.create(data);
                         noChanges = false;
 
                         console.log(this.options.loaded.replace("NAME", name));
