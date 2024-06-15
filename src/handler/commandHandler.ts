@@ -23,7 +23,7 @@ interface ReaderOptions {
 export interface CommandObject {
     name: string;
     description: string;
-    data: RESTPostAPIApplicationCommandsJSONBody;
+    data?: RESTPostAPIApplicationCommandsJSONBody;
     callback: (
         client: Client,
         interaction: ChatInputCommandInteraction
