@@ -68,33 +68,29 @@ export class SlashCommandManager {
 
     constructor(commandObject: {
         /**
-         * Slash Command data.
+         * Slash Command Data
          */
         data: SlashCommandBuilder;
         /**
-         * Function run when this command is called
+         * Function to run when this command is called.
+         * @param interaction Interaction associated with the command
+         * @param client Bot's client object.
          */
-        execute: (
-            interaction: ChatInputCommandInteraction,
-            client?: Client
-        ) => void;
-    });
-    constructor(obj: {
-        data: SlashCommandBuilder;
         execute: (
             interaction: ChatInputCommandInteraction,
             client?: Client
         ) => void | Promise<void>;
     }) {
-        this.data = obj.data.toJSON();
-        this.name = obj.data.name;
-        this.description = obj.data.description;
-        this.options = obj.data.options.map((option) => option.toJSON()) || [];
+        this.data = commandObject.data.toJSON();
+        this.name = commandObject.data.name;
+        this.description = commandObject.data.description;
+        this.options =
+            commandObject.data.options.map((option) => option.toJSON()) || [];
         this.callback = async function command(
             client: Client,
             interaction: ChatInputCommandInteraction
         ) {
-            await obj.execute(interaction, client);
+            await commandObject.execute(interaction, client);
         };
     }
 
