@@ -61,6 +61,10 @@ export class SlashCommandManager {
      * Whether the command is deleted or not
      */
     deleted: boolean;
+    /**
+     *
+     */
+    protected isOld: boolean = false;
 
     constructor(commandObject: {
         /**
