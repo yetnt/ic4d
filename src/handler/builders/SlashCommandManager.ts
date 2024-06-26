@@ -40,7 +40,7 @@ export class SlashCommandManager {
     callback: (
         client: Client,
         interaction: ChatInputCommandInteraction
-    ) => void;
+    ) => void | Promise<void>;
     /**
      * An array of options
      */
@@ -84,17 +84,17 @@ export class SlashCommandManager {
         execute: (
             interaction: ChatInputCommandInteraction,
             client?: Client
-        ) => void;
+        ) => void | Promise<void>;
     }) {
         this.data = obj.data.toJSON();
         this.name = obj.data.name;
         this.description = obj.data.description;
         this.options = obj.data.options.map((option) => option.toJSON()) || [];
-        this.callback = function command(
+        this.callback = async function command(
             client: Client,
             interaction: ChatInputCommandInteraction
         ) {
-            obj.execute(interaction, client);
+            await obj.execute(interaction, client);
         };
     }
 

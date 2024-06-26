@@ -29,7 +29,7 @@ export class InteractionBuilder {
     callback: (
         interaction: InteractionTypeMap<InteractionType>,
         client?: Client
-    ) => void;
+    ) => void | Promise<void>;
     /**
      * The interaction's custom identifier
      */
@@ -56,7 +56,7 @@ export class InteractionBuilder {
     onTimeout?: (
         interaction: InteractionTypeMap<InteractionType>,
         client?: Client
-    ) => void;
+    ) => void | Promise<void>;
     /**
      * Build the actual interaction
      */
@@ -97,7 +97,7 @@ export class InteractionBuilder {
         fn: (
             interaction: InteractionTypeMap<InteractionType>,
             client?: Client
-        ) => void
+        ) => void | Promise<void>
     ): InteractionBuilder {
         this.callback = fn;
         return this;
@@ -121,7 +121,7 @@ export class InteractionBuilder {
         fn: (
             interaction: InteractionTypeMap<InteractionType>,
             client?: Client
-        ) => void,
+        ) => void | Promise<void>,
         timeout?: number
     ): InteractionBuilder {
         this.onTimeout = fn;
