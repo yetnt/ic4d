@@ -52,6 +52,8 @@ export function getLocalCommands(
  */
 export function deprecated(txt: string, isOld: boolean) {
     return isOld
-        ? txt + clc.bold.bgRedBright.white(" (Command uses deprecated syntax!)")
+        ? txt +
+              " " +
+              clc.bold.bgRedBright.white("(Command uses deprecated syntax!)")
         : txt;
 }
