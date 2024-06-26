@@ -10,6 +10,7 @@ import {
 import * as clc from "cli-color";
 import * as errs from "./Errors";
 import { LoaderOptions } from "./coreHandler";
+import { deprecated } from "../funcs";
 
 interface ReaderOptions {
     testGuildId?: string;
@@ -32,6 +33,7 @@ export interface CommandObject {
     deleted?: boolean;
     devOnly?: boolean;
     filePath?: string;
+    isOld?: boolean;
 
     permissionsRequired?: PermissionFlags[];
     botPermissions?: PermissionFlags[];
@@ -44,7 +46,6 @@ export interface CommandObject {
 export class CommandHandler extends CoreHandler {
     client: Client;
     commandPath: string;
-    private emitErr: boolean = false;
     options: LoaderOptions = {
         loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
@@ -106,14 +107,6 @@ export class CommandHandler extends CoreHandler {
     }
 
     /**
-     * Set whether the command handler should throw or emit errors. Defaults to false.
-     * @param bool Boolean value
-     */
-    emitErrors(bool: boolean): void {
-        this.emitErr = bool == true ? true : false;
-    }
-
-    /**
      * Register Slash Commands
      * @param logAll Log when loading a command and no changes are made
      * @param serverId Server Id, Makes loaded commands guild wide.
@@ -139,7 +132,7 @@ export class CommandHandler extends CoreHandler {
                         localCommand.filePath
                     );
                 }
-                let { name, description, options, filePath, data } =
+                let { name, description, options, filePath, isOld, data } =
                     localCommand;
                 try {
                     const existingCommand =
@@ -181,7 +174,10 @@ export class CommandHandler extends CoreHandler {
                             noChanges = false;
 
                             console.log(
-                                this.options.edited.replace("NAME", name)
+                                deprecated(
+                                    this.options.edited.replace("NAME", name),
+                                    isOld
+                                )
                             );
                         }
                     } else {
@@ -189,7 +185,10 @@ export class CommandHandler extends CoreHandler {
                             // Command was previously deleted
                             noChanges = false;
                             console.log(
-                                this.options.skipped.replace("NAME", name)
+                                deprecated(
+                                    this.options.skipped.replace("NAME", name),
+                                    isOld
+                                )
                             );
                             continue;
                         }
@@ -206,7 +205,12 @@ export class CommandHandler extends CoreHandler {
                         await applicationCommands.create(data);
                         noChanges = false;
 
-                        console.log(this.options.loaded.replace("NAME", name));
+                        console.log(
+                            deprecated(
+                                this.options.loaded.replace("NAME", name),
+                                isOld
+                            )
+                        );
                     }
                 } catch (err) {
                     throw new errs.LoaderError(
@@ -218,7 +222,10 @@ export class CommandHandler extends CoreHandler {
 
                 if (logAll && noChanges == true) {
                     console.log(
-                        this.options.loadedNoChanges.replace("NAME", name)
+                        deprecated(
+                            this.options.loadedNoChanges.replace("NAME", name),
+                            isOld
+                        )
                     );
                 }
             }
@@ -231,11 +238,7 @@ export class CommandHandler extends CoreHandler {
                       error.message
                     : msg;
 
-            if (this.emitErr == true) {
-                this.emit("error", Lerr);
-            } else {
-                throw new Error(Lerr);
-            }
+            throw new Error(Lerr);
         }
     }
 
@@ -247,7 +250,7 @@ export class CommandHandler extends CoreHandler {
         ...middleWare: ((
             commandObject: CommandObject,
             interaction?: ChatInputCommandInteraction
-        ) => number)[]
+        ) => number | Promise<number>)[]
     ) {
         this.client.on(
             "interactionCreate",
@@ -319,11 +322,7 @@ export class CommandHandler extends CoreHandler {
                         commandObject.name
                     );
                     console.error(error);
-                    if (this.emitErr) {
-                        this.emit("error", err.message);
-                    } else {
-                        throw err;
-                    }
+                    throw err;
                 }
             }
         );

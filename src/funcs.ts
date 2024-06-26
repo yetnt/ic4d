@@ -1,30 +1,27 @@
 import { CommandObject } from "./handler/commandHandler";
 import * as fs from "fs";
 import * as path2 from "path";
+import * as clc from "cli-color";
 
 /**
- * Get't  All the command objects. This is the same function inhereted from the CoreHandler used by the CommandHandler
- * @param path Path to the commands
- * @param exceptions Commands to not get
+ * Get all the command objects. This is the same function inherited from the CoreHandler used by the CommandHandler.
+ * @param path Path to the commands.
+ * @param exceptions Commands to not get.
  * @returns CommandObject[]
  */
 export function getLocalCommands(
     path: string,
-    exceptions?: string[]
+    exceptions: string[] = []
 ): CommandObject[] {
-    exceptions = exceptions !== undefined ? exceptions : [];
-    let localCommands: CommandObject[] = [];
-
-    const scanDirectory = (directory: string) => {
+    const scanDirectory = (directory: string): CommandObject[] => {
         const items = fs.readdirSync(directory);
-        let arr: CommandObject[] = [];
 
-        for (const item of items) {
+        return items.flatMap((item) => {
             const itemPath = path2.join(directory, item);
             const isDirectory = fs.statSync(itemPath).isDirectory();
 
             if (isDirectory) {
-                arr = arr.concat(scanDirectory(itemPath));
+                return scanDirectory(itemPath);
             } else if (item.endsWith(".js")) {
                 const commandObject: CommandObject & {
                     isCommand?: boolean;
@@ -37,16 +34,24 @@ export function getLocalCommands(
                     commandObject.customId ||
                     exceptions.includes(commandObject.name)
                 ) {
-                    continue;
+                    return [];
                 }
                 commandObject.filePath = itemPath;
-                arr.push(commandObject);
+                return [commandObject];
             }
-        }
-
-        return arr;
+            return [];
+        });
     };
 
-    localCommands = scanDirectory(path);
-    return localCommands;
+    return scanDirectory(path);
+}
+
+/**
+ * Add deprecated string.
+ * @param isOld
+ */
+export function deprecated(txt: string, isOld: boolean) {
+    return isOld
+        ? txt + clc.bold.bgRedBright.white(" (Command uses deprecated syntax!)")
+        : txt;
 }
