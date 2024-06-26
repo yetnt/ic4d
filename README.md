@@ -4,9 +4,15 @@
 
 # Installation
 
+With npm
+
 ```
 npm i ic4d
-sudo npm i install ic4d
+```
+
+With yarn
+
+```
 yarn add ic4d
 ```
 
@@ -37,6 +43,7 @@ import /* Class you need separated by a comma */ "ic4d";
 -   -   [SlashCommandManager](#slashcommandmanager)
 -   -   [InteractionBuilder](#interactionbuilder)
 -   -   [ContextMenuBuilder](#contextmenubuilder)
+-   [Common Problems](#common-problems)
 -   [Credit](#credits)
 -   [Links](#links)
 
@@ -148,20 +155,6 @@ ready.on("error", (msg) => {
 # CommandHandler
 
 Command Handler, which handles slash command creation, deletion, editing and running of slash commands
-
-## Pre-Read
-
-Before you use the CommandHandler class, make sure you follow the [command layout](#command-object) or else the CommandHandler may not work properly. But these below are the minimum properties needed.
-
-```js
-module.exports = {
-    name: "command-name",
-    description: "Command Description that looks cool",
-    callback: async (client, interaction) => {
-        interaction.reply("Wow!");
-    },
-};
-```
 
 ## Constructor
 
@@ -276,14 +269,21 @@ And should always return 1 or another number. If it returns 1 it counts as a fai
 Here i define a command with the custom property `canBeServerDisabled`
 
 ```js
-module.exports = {
-    name: "rob",
-    description: "Rob users",
-    canBeServerDisabled: true,
-    callback: async (client, interaction) => {
+const {SlashCommandManager} = require("ic4d");
+const {SlashCommandBuilder} = require("discord.js");
+
+const rob = new SlashCommandManager({
+    data: new SlashCommandBuilder()
+        .setName("rob")
+        .setDescription("Rob users")
+    execute: (interaction, client) => {
         interaction.reply("bang bang!");
     },
-};
+});
+
+rob.canBeServerDisabled = true;
+
+module.exports = rob
 ```
 
 And in my middleware function i check if the command has been server disabled, if the property is enabled.
@@ -673,6 +673,32 @@ Sets the context menu to be deleted, If context menu has already been deleted, i
 const user = new ContextMenuBuilder().setDeleted(true);
 ```
 
+# Common Problems
+
+1.  _Files in the `commands` directory trying to be read as slash commmands by the `CommandHandler` class._
+
+    -   Example: This function is in the `commands` direcotory as it is used by multiple commands, but is not a commands itself.
+
+    ```js
+    const function a(userBalance) {
+        return userBalance > 0 ? true : false;
+    }
+
+    module.exports = a;
+    ```
+
+    -   The Command Reader will try to read it but error as it is not a command it can read, to avoid this, make sure you export the `isCommand` (Set to false) property with the function.
+
+    ```js
+    const function a(userBalance) {
+        return userBalance > 0 ? true : false;
+    }
+
+    module.exports = {a, isCommand = false};
+    ```
+
+    -   Usually, the reader should skip over anything it can read, but if needed, this will immediately make it skip.
+
 # Credits
 
 Huge credit to [underctrl](https://github.com/notunderctrl), Code would've not been possible if i did not watch his helpful discord.js tutorials! I had to give him credit because this package is based off moving all those files fromm his tutorial into one package.
@@ -693,6 +719,9 @@ He probably has a way better package, so go check his out!
 > The following is deprecated in favor of other classes.
 
 # Command Object
+
+> [!IMPORTANT]
+> This can still be used and will work as intended (if the following is used correctly) but it's encouraged to use the [SlashCommandManager](#slashcommandmanager) class instead.
 
 This package requires your command object to be layed out specifically, (If you're coming from a normal discord.js handler that uses the execute and data properties, skip to [Tradtional discord.js object](#tradtional-discordjs-object))
 
@@ -804,6 +833,9 @@ module.exports = new SlashCommandObject({
 
 # Interaction Object
 
+> [!IMPORTANT]
+> This can still be used and will work as intended (if the following is used correctly) but it's encouraged to use the [InteractionBuilder](#interactionbuilder) class instead.
+
 Package also requires that wherever you store your interaction object (buttons, select menus, context menus etc), they have thesse minimum requirements:
 
 ## Normal (button)
@@ -869,6 +901,9 @@ module.exports = {
 
 ## Context Menu
 
+> [!IMPORTANT]
+> This is deprecated, use [ContextMenuBuilder](#contextmenubuilder) class instead.
+
 This works a little differently to ones above, that's why it has it's own category lol.
 
 ```js
@@ -904,6 +939,9 @@ module.exports = {
 ```
 
 # Command and Interactions in the same file
+
+> [!IMPORTANT]
+> This is deprecated, use [addInteractions()](#addinteractions) method in the [SlashCommandManager](#slashcommandmanager) class instead.
 
 If you do not like having random buttons everywhere in different files, don't worry the following classess are here to help you!
 
@@ -953,6 +991,9 @@ module.exports = random;
 
 ## CommandInteractionObject
 
+> [!IMPORTANT]
+> This is deprecated, use [InteractionBuilder](#interactionbuilder) class instead.
+
 ### Constructor
 
 Represents an interaction object **(NOT FOR CONTEXT MENUS)**
@@ -979,6 +1020,9 @@ const mySelect = new CommandInteractionObject(intObj);
 ```
 
 ## SlashCommandObject
+
+> [!IMPORTANT]
+> This is deprecated, use [SlashCommandManager](#slashcommandmanager) class instead.
 
 Represents a slash command object.
 
