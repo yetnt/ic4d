@@ -5,14 +5,17 @@ import clc = require("cli-color");
 export class ReadyHandler extends CoreHandler {
     client: Client;
     private emitErr: boolean = false;
-    private functionsToRun: ((client?: Client) => void)[] = [];
+    private functionsToRun: ((client?: Client) => Promise<void> | void)[] = [];
 
     /**
      * Call the ReadyHandler.execute() method to run functions.
      * @param client Discord.js Client
      * @param functions Functions to be run when the bot is ready.
      */
-    constructor(client: Client, ...functions: ((client?: Client) => void)[]) {
+    constructor(
+        client: Client,
+        ...functions: ((client?: Client) => Promise<void> | void)[]
+    ) {
         super(client);
         this.functionsToRun = functions;
     }
@@ -48,11 +51,7 @@ export class ReadyHandler extends CoreHandler {
 
                     console.error(error);
 
-                    if (this.emitErr) {
-                        this.emit("error", msg);
-                    } else {
-                        throw new Error(msg);
-                    }
+                    throw new Error(msg);
                 }
             }
         });

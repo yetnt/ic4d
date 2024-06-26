@@ -138,20 +138,6 @@ const ready = new ReadyHandler(client, ...)
 ready.execute()
 ```
 
-### `emitErrors()`
-
-Set whether the ready handler should throw or emit errors. Defaults to false.
-
-```js
-const ready = new ReadyHandler(client, ...);
-ready.emitErrors(true);
-
-// Listen for the error
-ready.on("error", (msg) => {
-    // do something with the error message
-})
-```
-
 # CommandHandler
 
 Command Handler, which handles slash command creation, deletion, editing and running of slash commands
@@ -338,7 +324,6 @@ Context Menus work a bit differently then the other interactions, please refer t
 -   `client`: Discord.js client
 -   `path`: Path to where interactions are stored. (They can be stored in your commands folder to, as long as they meet with [interactions object](#interaction-object))
 -   `loaderOptions`**(optional)**: Context Menu [Loader Options](#loaderoptions)
--   `emitErrors`**(optional)**: Log any errors that occur. True will emit errors, false will throw errors and null will not log any errors.
 
 ```js
 const { InteractionHandler } = require("ic4d");

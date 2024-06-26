@@ -65,7 +65,6 @@ export class InteractionHandler extends CoreHandler {
         contextMenus: Record<string, ContextMenuObject>;
         modals: Record<string, InteractionObject>;
     };
-    emitErrors: boolean = undefined;
     options: LoaderOptions = {
         loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
@@ -79,19 +78,12 @@ export class InteractionHandler extends CoreHandler {
      * @param client Discord.js Client
      * @param path Path to where the interaction objects are stored
      * @param loaderOptions Loader options (for context menus)
-     * @param emitErrors Log any errors that occur. True will emit errors, false will throw errors and null will not log any errors.
      */
-    constructor(
-        client: Client,
-        path: string,
-        loaderOptions?: LoaderOptions,
-        emitErrors?: boolean
-    ) {
+    constructor(client: Client, path: string, loaderOptions?: LoaderOptions) {
         super(client);
         this.interactionsPath = path;
         const interactions = this.getInteractions(this.interactionsPath);
         this.interactions = this.sortInteractionObjects(interactions);
-        this.emitErrors = emitErrors;
 
         this.options = {
             loadedNoChanges: clc.magenta.bold(
@@ -243,11 +235,7 @@ export class InteractionHandler extends CoreHandler {
                     interaction.customId
                 );
 
-                if (this.emitErrors) {
-                    this.emit("error", err.message);
-                } else if (this.emitErrors == false) {
-                    throw err;
-                }
+                throw err;
             }
         });
     }
@@ -311,11 +299,7 @@ export class InteractionHandler extends CoreHandler {
                     interaction.customId
                 );
 
-                if (this.emitErrors) {
-                    this.emit("error", err.message);
-                } else if (this.emitErrors == false) {
-                    throw err;
-                }
+                throw err;
             }
         });
     }
@@ -351,11 +335,7 @@ export class InteractionHandler extends CoreHandler {
                         interaction.commandName
                     );
 
-                    if (this.emitErrors) {
-                        this.emit("error", err.message);
-                    } else if (this.emitErrors == false) {
-                        throw err;
-                    }
+                    throw err;
                 }
             }
         );
@@ -386,11 +366,7 @@ export class InteractionHandler extends CoreHandler {
                         interaction.customId
                     );
 
-                    if (this.emitErrors) {
-                        this.emit("error", err.message);
-                    } else if (this.emitErrors == false) {
-                        throw err;
-                    }
+                    throw err;
                 }
             }
         );
@@ -513,11 +489,7 @@ export class InteractionHandler extends CoreHandler {
                       error.message
                     : msg;
 
-            if (this.emitErrors) {
-                this.emit("error", Lmsg);
-            } else if (this.emitErrors == false) {
-                throw new Error(Lmsg);
-            }
+            throw new Error(Lmsg);
         }
     }
 }

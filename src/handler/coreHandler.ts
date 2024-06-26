@@ -14,8 +14,8 @@ import {
     Interactions,
     CommandInteractionObject,
     InteractionBuilder,
+    SlashCommandManager,
 } from "./builders/builders";
-import { EventEmitter } from "events";
 
 export interface LoaderOptions {
     /**
@@ -81,11 +81,10 @@ export function extractAllInteractions(
 
 const isEmpty = (obj: Record<string, any>) => Object.keys(obj).length === 0;
 
-export class CoreHandler extends EventEmitter {
+export class CoreHandler {
     client: Client;
 
     constructor(client: Client) {
-        super();
         this.client = client;
     }
 
@@ -162,7 +161,7 @@ export class CoreHandler extends EventEmitter {
                     const commandObject: CommandObject & {
                         isCommand?: boolean;
                         customId?: string;
-                    } = require(itemPath);
+                    } & SlashCommandManager = require(itemPath);
 
                     if (
                         !commandObject.description ||
@@ -172,6 +171,12 @@ export class CoreHandler extends EventEmitter {
                     ) {
                         return [];
                     }
+                    // It's a valid command, now proceed with checks.
+                    commandObject.isOld = !(
+                        commandObject instanceof SlashCommandManager
+                    )
+                        ? true
+                        : false;
                     commandObject.filePath = itemPath;
                     return [commandObject];
                 }
