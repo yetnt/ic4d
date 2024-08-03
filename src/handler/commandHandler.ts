@@ -13,11 +13,26 @@ import { LoaderOptions } from "./coreHandler";
 import { deprecated } from "../funcs";
 
 interface ReaderOptions {
+    /**
+     * Test GuildID
+     */
     testGuildId?: string;
+    /**
+     * Array of discord snowflakes
+     */
     devs: string[];
 
+    /**
+     * String to show when an only dev command is run
+     */
     onlyDev?: string;
+    /**
+     * String to show when the bot does not have enough permissions
+     */
     botNoPerms?: string;
+    /**
+     * String to show when the user does not have enough permissions
+     */
     userNoPerms?: string;
 }
 
@@ -37,6 +52,28 @@ export interface CommandObject {
 
     permissionsRequired?: PermissionFlags[];
     botPermissions?: PermissionFlags[];
+}
+
+/**
+ * An interface that represents anything you can do with the commands when they are run, BUT before YOUR code executes.
+ */
+export interface InjectionOptions {
+    /**
+     * Enable Debugger mode.
+     */
+    debugger?: boolean;
+    /**
+     * Disabling Logging of the Command Loader. Not advised but hey it's your bot. Default is false.
+     */
+    disableLogs?: boolean;
+    /**
+     * Enable this if you're using typescript, Allows for es imports.
+     */
+    esImports?: boolean;
+    /**
+     * If you're using esImports, and you leave this at it's default (true), then if a file ion the commands folder does not export a SlashCommandManager class as one of the exports, an error will be thrown.
+     */
+    esImportsDisableNoExportFound?: boolean;
 }
 
 /**
@@ -60,6 +97,12 @@ export class CommandHandler extends CoreHandler {
         userNoPerms: "Not enough permissions.",
         botNoPerms: "I don't have enough permissions.",
     };
+    iOptions: InjectionOptions = {
+        debugger: false,
+        disableLogs: false,
+        esImports: false,
+        esImportsDisableNoExportFound: false,
+    };
 
     /**
      *
@@ -67,12 +110,14 @@ export class CommandHandler extends CoreHandler {
      * @param path Path to Slash Commands
      * @param readerOptions Command Reader Options
      * @param loaderOptions Command Loader Options
+     * @param injectionOptions Injection Options.
      */
     constructor(
         client: Client,
         path: string,
         readerOptions?: ReaderOptions,
-        loaderOptions?: LoaderOptions
+        loaderOptions?: LoaderOptions,
+        injectionOptions?: InjectionOptions
     ) {
         super(client);
         this.commandPath = path;
@@ -103,6 +148,14 @@ export class CommandHandler extends CoreHandler {
                 readerOptions?.userNoPerms || this.readerOptions.userNoPerms,
             botNoPerms:
                 readerOptions?.botNoPerms || this.readerOptions.botNoPerms,
+        };
+
+        this.iOptions = {
+            debugger: injectionOptions?.debugger || false,
+            disableLogs: injectionOptions?.disableLogs || false,
+            esImports: injectionOptions?.esImports || false,
+            esImportsDisableNoExportFound:
+                injectionOptions?.esImportsDisableNoExportFound || false,
         };
     }
 
