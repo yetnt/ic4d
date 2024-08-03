@@ -432,11 +432,6 @@ export class InteractionHandler extends CoreHandler {
                                 localContext
                             )
                         ) {
-                            // TO-DO: Remove later.
-                            data ||= {
-                                name,
-                                type,
-                            };
                             await applicationCommands.edit(
                                 existingContext.id,
                                 data

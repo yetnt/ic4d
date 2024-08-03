@@ -213,12 +213,6 @@ export class CommandHandler extends CoreHandler {
                             )
                         ) {
                             // Command was edited.
-                            // TO-DO: Remove the object in here and just pass the data object.
-                            data ||= {
-                                description,
-                                // @ts-ignore
-                                options,
-                            };
                             await applicationCommands.edit(
                                 existingCommand.id,
                                 // @ts-ignore
