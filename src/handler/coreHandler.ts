@@ -12,7 +12,6 @@ import { CommandObject } from "./commandHandler";
 import { ContextMenuObject, InteractionObject } from "./interactionHandler";
 import {
     Interactions,
-    CommandInteractionObject,
     InteractionBuilder,
     SlashCommandManager,
 } from "./builders/builders";
@@ -53,9 +52,7 @@ export interface Option {
     type: ApplicationCommandOptionType;
 }
 
-function change(
-    cI: CommandInteractionObject | InteractionBuilder
-): InteractionObject {
+function change(cI: InteractionBuilder): InteractionObject {
     return {
         customId: cI.customId,
         type: cI.type,
