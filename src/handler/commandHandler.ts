@@ -185,8 +185,7 @@ export class CommandHandler extends CoreHandler {
                         localCommand.filePath
                     );
                 }
-                let { name, description, options, filePath, isOld, data } =
-                    localCommand;
+                let { name, filePath, isOld, data } = localCommand;
                 try {
                     const existingCommand =
                         await applicationCommands.cache.find(
@@ -200,9 +199,10 @@ export class CommandHandler extends CoreHandler {
                                 existingCommand.id
                             );
                             noChanges = false;
-                            console.log(
-                                this.options.deleted.replace("NAME", name)
-                            );
+                            if (!this.iOptions.disableLogs)
+                                console.log(
+                                    this.options.deleted.replace("NAME", name)
+                                );
                             continue;
                         }
 
@@ -220,44 +220,53 @@ export class CommandHandler extends CoreHandler {
                             );
                             noChanges = false;
 
-                            console.log(
-                                deprecated(
-                                    this.options.edited.replace("NAME", name),
-                                    isOld
-                                )
-                            );
+                            if (!this.iOptions.disableLogs)
+                                console.log(
+                                    deprecated(
+                                        this.options.edited.replace(
+                                            "NAME",
+                                            name
+                                        ),
+                                        isOld
+                                    )
+                                );
                         }
                     } else {
                         if (localCommand.deleted) {
                             // Command was previously deleted
                             noChanges = false;
-                            console.log(
-                                deprecated(
-                                    this.options.skipped.replace("NAME", name),
-                                    isOld
-                                )
-                            );
+                            if (!this.iOptions.disableLogs)
+                                console.log(
+                                    deprecated(
+                                        this.options.skipped.replace(
+                                            "NAME",
+                                            name
+                                        ),
+                                        isOld
+                                    )
+                                );
                             continue;
                         }
 
                         // Create new command.
 
-                        data ||= {
-                            name,
-                            description,
-                            // @ts-ignore
-                            options,
-                        };
+                        // data ||= {
+                        //     name,
+                        //     description,
+                        //     // @ts-ignore
+                        //     options,
+                        // };
 
                         await applicationCommands.create(data);
                         noChanges = false;
 
-                        console.log(
-                            deprecated(
-                                this.options.loaded.replace("NAME", name),
-                                isOld
-                            )
-                        );
+                        if (!this.iOptions.disableLogs)
+                            console.log(
+                                deprecated(
+                                    this.options.loaded.replace("NAME", name),
+                                    isOld
+                                )
+                            );
                     }
                 } catch (err) {
                     throw new errs.LoaderError(
@@ -268,12 +277,16 @@ export class CommandHandler extends CoreHandler {
                 }
 
                 if (logAll && noChanges == true) {
-                    console.log(
-                        deprecated(
-                            this.options.loadedNoChanges.replace("NAME", name),
-                            isOld
-                        )
-                    );
+                    if (!this.iOptions.disableLogs)
+                        console.log(
+                            deprecated(
+                                this.options.loadedNoChanges.replace(
+                                    "NAME",
+                                    name
+                                ),
+                                isOld
+                            )
+                        );
                 }
             }
         } catch (error) {
