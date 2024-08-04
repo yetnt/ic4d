@@ -43,15 +43,15 @@ export interface CommandObject {
     callback: (
         client: Client,
         interaction: ChatInputCommandInteraction
-    ) => void;
+    ) => void | Promise<void>;
     options?: Option[];
     deleted?: boolean;
     devOnly?: boolean;
     filePath?: string;
     isOld?: boolean;
 
-    permissionsRequired?: PermissionFlags[];
-    botPermissions?: PermissionFlags[];
+    permissionsRequired?: bigint[];
+    botPermissions?: bigint[];
 }
 
 /**
@@ -167,7 +167,10 @@ export class CommandHandler extends CoreHandler {
     async registerCommands(logAll?: boolean, serverId?: string) {
         logAll = logAll !== undefined ? logAll : true;
         try {
-            const localCommands = this.getLocalCommands(this.commandPath);
+            const localCommands = this.getLocalCommands(
+                this.commandPath,
+                this.iOptions.esImports
+            );
             const applicationCommands = await this.getApplicationCommands(
                 this.client,
                 serverId
@@ -312,10 +315,23 @@ export class CommandHandler extends CoreHandler {
             interaction?: ChatInputCommandInteraction
         ) => number | Promise<number>)[]
     ) {
+        if (this.iOptions.debugger)
+            console.debug(
+                clc.underline.blue(
+                    "handleCommands() has been called and has started executing.\n"
+                )
+            );
         this.client.on(
             "interactionCreate",
             async (interaction: ChatInputCommandInteraction) => {
                 if (!interaction.isChatInputCommand()) return;
+
+                if (this.iOptions.debugger)
+                    console.debug(
+                        clc.underline(
+                            "'" + interaction.commandName + "' has been called."
+                        )
+                    );
 
                 const localCommands = this.getLocalCommands(this.commandPath);
 
@@ -332,6 +348,14 @@ export class CommandHandler extends CoreHandler {
                                 interaction.user.id
                             )
                         ) {
+                            if (this.iOptions.debugger)
+                                console.debug(
+                                    clc.bold.blue(
+                                        "\tUser tried running " +
+                                            interaction.commandName +
+                                            " which is a dev command."
+                                    )
+                                );
                             interaction.reply({
                                 content: this.readerOptions.onlyDev,
                                 ephemeral: true,
@@ -346,6 +370,13 @@ export class CommandHandler extends CoreHandler {
                                 //@ts-ignore
                                 !interaction.member.permissions.has(permission)
                             ) {
+                                if (this.iOptions.debugger)
+                                    console.debug(
+                                        clc.bold.blue(
+                                            "\tUser did not have enough permissions to run " +
+                                                interaction.commandName
+                                        )
+                                    );
                                 interaction.reply({
                                     content: this.readerOptions.userNoPerms,
                                     ephemeral: true,
@@ -360,6 +391,13 @@ export class CommandHandler extends CoreHandler {
                             const bot = interaction.guild.members.me;
                             //@ts-ignore
                             if (!bot.permissions.has(permission)) {
+                                if (this.iOptions.debugger)
+                                    console.debug(
+                                        clc.bold.blue(
+                                            "\tBot did not have the required permissions to run " +
+                                                interaction.commandName
+                                        )
+                                    );
                                 interaction.reply({
                                     content: this.readerOptions.botNoPerms,
                                     ephemeral: true,
@@ -369,10 +407,37 @@ export class CommandHandler extends CoreHandler {
                         }
                     }
 
+                    if (this.iOptions.debugger)
+                        console.debug(clc.underline("\tMiddlewares Called:"));
+
                     for (const fn of middleWare) {
                         let result = await fn(commandObject, interaction);
+                        if (this.iOptions.debugger) {
+                            const arr = fn.toString().split(" ");
+                            // Means the function has (function a(){}) syntax, otherwise it's (()=>{}) syntax
+                            const labeled = arr[0] == "function" ? true : false;
+                            console.debug(
+                                "\t\t" +
+                                    clc.bold.italic.red("fn") +
+                                    " " +
+                                    clc.bold.magenta(
+                                        arr
+                                            .slice(labeled ? 1 : 0, 2)
+                                            .join(" ") +
+                                            " " +
+                                            (labeled ? "=> " + result : result)
+                                    )
+                            );
+                        }
                         if (result == 1) return; // test condition is true
                     }
+
+                    if (this.iOptions.debugger)
+                        console.debug(
+                            clc.bold.blue(
+                                "Middlewares called, Callback to be called."
+                            )
+                        );
 
                     await commandObject.callback(this.client, interaction);
                 } catch (error) {

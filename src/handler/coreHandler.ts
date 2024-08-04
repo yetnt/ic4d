@@ -76,6 +76,25 @@ export function extractAllInteractions(
     );
 }
 
+function findCommandInstance(
+    module: Record<string, any>
+): SlashCommandManager | null {
+    // Iterate over the module's exports to find an instance of CommandHandler
+    for (const value of Object.values(module)) {
+        if (value instanceof SlashCommandManager) {
+            return value;
+        }
+    }
+
+    return null;
+}
+
+type cmd = {
+    isCommand?: boolean;
+    customId?: string;
+    filePath?: string;
+} & SlashCommandManager;
+
 const isEmpty = (obj: Record<string, any>) => Object.keys(obj).length === 0;
 
 export class CoreHandler {
@@ -145,9 +164,10 @@ export class CoreHandler {
 
     protected getLocalCommands(
         path: string,
+        es: boolean = false,
         exceptions: string[] = []
     ): CommandObject[] {
-        const scanDirectory = (directory: string): CommandObject[] => {
+        const scanDirectory = (directory: string): SlashCommandManager[] => {
             return fs.readdirSync(directory).flatMap((item) => {
                 const itemPath = path2.join(directory, item);
                 const isDirectory = fs.statSync(itemPath).isDirectory();
@@ -155,10 +175,12 @@ export class CoreHandler {
                 if (isDirectory) {
                     return scanDirectory(itemPath);
                 } else if (item.endsWith(".js")) {
-                    const commandObject: CommandObject & {
-                        isCommand?: boolean;
-                        customId?: string;
-                    } & SlashCommandManager = require(itemPath);
+                    let commandObject: cmd;
+                    if (es) {
+                        commandObject = findCommandInstance(require(itemPath));
+                    } else {
+                        commandObject = require(itemPath);
+                    }
 
                     if (
                         !commandObject.description ||
@@ -169,11 +191,6 @@ export class CoreHandler {
                         return [];
                     }
                     // It's a valid command, now proceed with checks.
-                    commandObject.isOld = !(
-                        commandObject instanceof SlashCommandManager
-                    )
-                        ? true
-                        : false;
                     commandObject.filePath = itemPath;
                     return [commandObject];
                 }
