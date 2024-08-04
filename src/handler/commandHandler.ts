@@ -113,14 +113,14 @@ export class CommandHandler extends CoreHandler {
      * @param path Path to Slash Commands
      * @param readerOptions Command Reader Options
      * @param loaderOptions Command Loader Options
-     * @param injectionOptions Injection Options.
+     * @param handlerFlags Injection Options.
      */
     constructor(
         client: Client,
         path: string,
         readerOptions?: ReaderOptions,
         loaderOptions?: LoaderOptions,
-        injectionOptions?: HandlerFlags
+        handlerFlags?: HandlerFlags
     ) {
         super(client);
         this.commandPath = path;
@@ -154,11 +154,11 @@ export class CommandHandler extends CoreHandler {
         };
 
         this.iOptions = {
-            debugger: injectionOptions?.debugger || false,
-            disableLogs: injectionOptions?.disableLogs || false,
-            esImports: injectionOptions?.esImports || false,
+            debugger: handlerFlags?.debugger || false,
+            disableLogs: handlerFlags?.disableLogs || false,
+            esImports: handlerFlags?.esImports || false,
             esImportsDisableNoExportFound:
-                injectionOptions?.esImportsDisableNoExportFound || false,
+                handlerFlags?.esImportsDisableNoExportFound || false,
         };
     }
 
@@ -321,7 +321,7 @@ export class CommandHandler extends CoreHandler {
         if (this.iOptions.debugger)
             console.debug(
                 clc.underline.blue(
-                    "handleCommands() has been called and has started executing.\n"
+                    "\nhandleCommands() has been called and has started executing.\n"
                 )
             );
         this.client.on(
@@ -424,10 +424,7 @@ export class CommandHandler extends CoreHandler {
                                     clc.bold.italic.red("fn") +
                                     " " +
                                     clc.bold.magenta(
-                                        arr
-                                            .slice(labeled ? 1 : 0, 2)
-                                            .join(" ") +
-                                            " " +
+                                        fn.toString().split("{")[0] +
                                             (labeled ? "=> " + result : result)
                                     )
                             );
