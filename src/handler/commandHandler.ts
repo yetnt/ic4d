@@ -36,6 +36,9 @@ interface ReaderOptions {
     userNoPerms?: string;
 }
 
+/**
+ * An interface representing a command that has been sanitized to work with the ic4d package. You should probably not touch this 💀
+ */
 export interface CommandObject {
     name: string;
     description: string;
@@ -57,7 +60,7 @@ export interface CommandObject {
 /**
  * An interface that represents anything you can do with the commands when they are run, BUT before YOUR code executes.
  */
-export interface InjectionOptions {
+export interface HandlerFlags {
     /**
      * Enable Debugger mode.
      */
@@ -97,7 +100,7 @@ export class CommandHandler extends CoreHandler {
         userNoPerms: "Not enough permissions.",
         botNoPerms: "I don't have enough permissions.",
     };
-    iOptions: InjectionOptions = {
+    iOptions: HandlerFlags = {
         debugger: false,
         disableLogs: false,
         esImports: false,
@@ -117,7 +120,7 @@ export class CommandHandler extends CoreHandler {
         path: string,
         readerOptions?: ReaderOptions,
         loaderOptions?: LoaderOptions,
-        injectionOptions?: InjectionOptions
+        injectionOptions?: HandlerFlags
     ) {
         super(client);
         this.commandPath = path;
