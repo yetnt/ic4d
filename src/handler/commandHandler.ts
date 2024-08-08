@@ -82,6 +82,10 @@ export interface HandlerFlags {
      * Whether or not this is the production version of the bot. If set to true, commands labelled `isDev` will NOT be loaded.
      */
     production?: boolean;
+    /**
+     * Clears ALL application commands on startup. (Slash commands, User commands, and Message commands.)
+     */
+    refreshApplicationCommands?: boolean;
 }
 
 /**
@@ -110,6 +114,8 @@ export class CommandHandler extends CoreHandler {
         disableLogs: false,
         esImports: false,
         esImportsDisableNoExportFound: false,
+        production: true,
+        refreshApplicationCommands: false,
     };
 
     /**
@@ -159,12 +165,16 @@ export class CommandHandler extends CoreHandler {
         };
 
         this.flags = {
-            debugger: handlerFlags?.debugger || false,
-            disableLogs: handlerFlags?.disableLogs || false,
-            esImports: handlerFlags?.esImports || false,
+            debugger: handlerFlags?.debugger || this.flags.debugger,
+            disableLogs: handlerFlags?.disableLogs || this.flags.disableLogs,
+            esImports: handlerFlags?.esImports || this.flags.esImports,
             esImportsDisableNoExportFound:
-                handlerFlags?.esImportsDisableNoExportFound || false,
-            production: handlerFlags?.production || true,
+                handlerFlags?.esImportsDisableNoExportFound ||
+                this.flags.esImportsDisableNoExportFound,
+            production: handlerFlags?.production || this.flags.production,
+            refreshApplicationCommands:
+                handlerFlags?.refreshApplicationCommands ||
+                this.flags.refreshApplicationCommands,
         };
     }
 
@@ -184,6 +194,9 @@ export class CommandHandler extends CoreHandler {
                 this.client,
                 serverId
             );
+
+            if (this.flags.refreshApplicationCommands)
+                await applicationCommands.set([]);
 
             for (const localCommand of localCommands) {
                 if (localCommand.isDev && this.flags.production) continue;
