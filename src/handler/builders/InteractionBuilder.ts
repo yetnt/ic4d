@@ -5,9 +5,9 @@ import {
     ButtonInteraction,
     ModalSubmitInteraction,
 } from "discord.js";
-import { InteractionType } from "./builders";
+import { InteractionTypeStrings } from "./builders";
 
-export type InteractionTypeMap<U extends string> = U extends "modal"
+export type InteractionTypeStringsMap<U extends string> = U extends "modal"
     ? ModalSubmitInteraction
     : U extends "selectMenu"
     ? AnySelectMenuInteraction
@@ -27,7 +27,7 @@ export class InteractionBuilder {
      * @param client Client
      */
     callback: (
-        interaction: InteractionTypeMap<InteractionType>,
+        interaction: InteractionTypeStringsMap<InteractionTypeStrings>,
         client?: Client
     ) => void | Promise<void>;
     /**
@@ -37,7 +37,7 @@ export class InteractionBuilder {
     /**
      * Type of interaction. Either "selectMenu", "modal" or "button"
      */
-    type: InteractionType;
+    type: InteractionTypeStrings;
     /**
      * Set the only author status of the button.
      */
@@ -53,8 +53,8 @@ export class InteractionBuilder {
     /**
      * Function to run when interaction times out. If this is set, timeoutMsg property is ignored.
      */
-    onTimeout?: (
-        interaction: InteractionTypeMap<InteractionType>,
+    onTimeout?: <T extends InteractionTypeStrings>(
+        interaction: InteractionTypeStringsMap<T>,
         client?: Client
     ) => void | Promise<void>;
     /**
@@ -84,7 +84,7 @@ export class InteractionBuilder {
      * Set the type of the interaction.
      * @param type Type of interaction, Either "selectMenu", "modal" or "button"
      */
-    setType(type: InteractionType): InteractionBuilder {
+    setType(type: InteractionTypeStrings): InteractionBuilder {
         this.type = type;
         return this;
     }
@@ -95,7 +95,7 @@ export class InteractionBuilder {
      */
     setCallback(
         fn: (
-            interaction: InteractionTypeMap<InteractionType>,
+            interaction: InteractionTypeStringsMap<InteractionTypeStrings>,
             client?: Client
         ) => void | Promise<void>
     ): InteractionBuilder {
@@ -119,7 +119,7 @@ export class InteractionBuilder {
      */
     setTimeout(
         fn: (
-            interaction: InteractionTypeMap<InteractionType>,
+            interaction: InteractionTypeStringsMap<InteractionTypeStrings>,
             client?: Client
         ) => void | Promise<void>,
         timeout?: number

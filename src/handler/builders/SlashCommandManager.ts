@@ -1,15 +1,14 @@
 import {
     Client,
-    PermissionFlags,
     SlashCommandBuilder,
     ChatInputCommandInteraction,
     RESTPostAPIApplicationCommandsJSONBody,
 } from "discord.js";
 import { Option } from "../coreHandler";
-import { InteractionType, InteractionBuilder } from "./builders";
+import { InteractionTypeStrings, InteractionBuilder } from "./builders";
 
 export type Interactions = {
-    [key in InteractionType]?: {
+    [key in InteractionTypeStrings]?: {
         [key: string]: InteractionBuilder;
     };
 };

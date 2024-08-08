@@ -9,7 +9,7 @@ import * as errs from "./Errors";
 import { LoaderOptions } from "./coreHandler";
 import { deprecated } from "../funcs";
 
-interface ReaderOptions {
+export interface ReaderOptions {
     /**
      * Test GuildID
      */

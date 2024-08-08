@@ -35,14 +35,19 @@ import /* Class you need separated by a comma */ "ic4d";
 # Contents
 
 -   [Quick Example](#quick-example)
--   Handlers
+-   (Classes) Handlers
 -   -   [ReadyHandler](#readyhandler)
 -   -   [CommandHandler](#commandhandler)
 -   -   [InteractionHandler](#interactionhandler)
--   Builders
+-   (Classes) Builders
 -   -   [SlashCommandManager](#slashcommandmanager)
 -   -   [InteractionBuilder](#interactionbuilder)
 -   -   [ContextMenuBuilder](#contextmenubuilder)
+-   Interfaces
+-   -   [ReaderOptions](#readeroptions)
+-   -   [ReaderOptions](#readeroptions)
+-   -   [ReaderOptions](#readeroptions)
+-   -   [ReaderOptions](#readeroptions)
 -   [Common Problems](#common-problems)
 -   [Credit](#credits)
 -   [Links](#links)
