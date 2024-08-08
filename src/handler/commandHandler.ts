@@ -52,6 +52,7 @@ export interface CommandObject {
     devOnly?: boolean;
     filePath?: string;
     isOld?: boolean;
+    isDev?: boolean;
 
     permissionsRequired?: bigint[];
     botPermissions?: bigint[];
@@ -77,6 +78,10 @@ export interface HandlerFlags {
      * If you're using esImports, and you leave this at it's default (true), then if a file ion the commands folder does not export a SlashCommandManager class as one of the exports, an error will be thrown.
      */
     esImportsDisableNoExportFound?: boolean;
+    /**
+     * Whether or not this is the production version of the bot. If set to true, commands labelled `isDev` will NOT be loaded.
+     */
+    production?: boolean;
 }
 
 /**
@@ -100,7 +105,7 @@ export class CommandHandler extends CoreHandler {
         userNoPerms: "Not enough permissions.",
         botNoPerms: "I don't have enough permissions.",
     };
-    iOptions: HandlerFlags = {
+    flags: HandlerFlags = {
         debugger: false,
         disableLogs: false,
         esImports: false,
@@ -153,12 +158,13 @@ export class CommandHandler extends CoreHandler {
                 readerOptions?.botNoPerms || this.readerOptions.botNoPerms,
         };
 
-        this.iOptions = {
+        this.flags = {
             debugger: handlerFlags?.debugger || false,
             disableLogs: handlerFlags?.disableLogs || false,
             esImports: handlerFlags?.esImports || false,
             esImportsDisableNoExportFound:
                 handlerFlags?.esImportsDisableNoExportFound || false,
+            production: handlerFlags?.production || true,
         };
     }
 
@@ -172,7 +178,7 @@ export class CommandHandler extends CoreHandler {
         try {
             const localCommands = this.getLocalCommands(
                 this.commandPath,
-                this.iOptions.esImports
+                this.flags.esImports
             );
             const applicationCommands = await this.getApplicationCommands(
                 this.client,
@@ -180,6 +186,7 @@ export class CommandHandler extends CoreHandler {
             );
 
             for (const localCommand of localCommands) {
+                if (localCommand.isDev && this.flags.production) continue;
                 let noChanges = true;
                 if (
                     !localCommand.name ||
@@ -205,7 +212,7 @@ export class CommandHandler extends CoreHandler {
                                 existingCommand.id
                             );
                             noChanges = false;
-                            if (!this.iOptions.disableLogs)
+                            if (!this.flags.disableLogs)
                                 console.log(
                                     this.options.deleted.replace("NAME", name)
                                 );
@@ -226,7 +233,7 @@ export class CommandHandler extends CoreHandler {
                             );
                             noChanges = false;
 
-                            if (!this.iOptions.disableLogs)
+                            if (!this.flags.disableLogs)
                                 console.log(
                                     deprecated(
                                         this.options.edited.replace(
@@ -241,7 +248,7 @@ export class CommandHandler extends CoreHandler {
                         if (localCommand.deleted) {
                             // Command was previously deleted
                             noChanges = false;
-                            if (!this.iOptions.disableLogs)
+                            if (!this.flags.disableLogs)
                                 console.log(
                                     deprecated(
                                         this.options.skipped.replace(
@@ -266,7 +273,7 @@ export class CommandHandler extends CoreHandler {
                         await applicationCommands.create(data);
                         noChanges = false;
 
-                        if (!this.iOptions.disableLogs)
+                        if (!this.flags.disableLogs)
                             console.log(
                                 deprecated(
                                     this.options.loaded.replace("NAME", name),
@@ -283,7 +290,7 @@ export class CommandHandler extends CoreHandler {
                 }
 
                 if (logAll && noChanges == true) {
-                    if (!this.iOptions.disableLogs)
+                    if (!this.flags.disableLogs)
                         console.log(
                             deprecated(
                                 this.options.loadedNoChanges.replace(
@@ -318,7 +325,7 @@ export class CommandHandler extends CoreHandler {
             interaction?: ChatInputCommandInteraction
         ) => number | Promise<number>)[]
     ) {
-        if (this.iOptions.debugger)
+        if (this.flags.debugger)
             console.debug(
                 clc.underline.blue(
                     "\nhandleCommands() has been called and has started executing.\n"
@@ -329,7 +336,7 @@ export class CommandHandler extends CoreHandler {
             async (interaction: ChatInputCommandInteraction) => {
                 if (!interaction.isChatInputCommand()) return;
 
-                if (this.iOptions.debugger)
+                if (this.flags.debugger)
                     console.debug(
                         clc.underline(
                             "'" + interaction.commandName + "' has been called."
@@ -351,7 +358,7 @@ export class CommandHandler extends CoreHandler {
                                 interaction.user.id
                             )
                         ) {
-                            if (this.iOptions.debugger)
+                            if (this.flags.debugger)
                                 console.debug(
                                     clc.bold.blue(
                                         "\tUser tried running " +
@@ -373,7 +380,7 @@ export class CommandHandler extends CoreHandler {
                                 //@ts-ignore
                                 !interaction.member.permissions.has(permission)
                             ) {
-                                if (this.iOptions.debugger)
+                                if (this.flags.debugger)
                                     console.debug(
                                         clc.bold.blue(
                                             "\tUser did not have enough permissions to run " +
@@ -394,7 +401,7 @@ export class CommandHandler extends CoreHandler {
                             const bot = interaction.guild.members.me;
                             //@ts-ignore
                             if (!bot.permissions.has(permission)) {
-                                if (this.iOptions.debugger)
+                                if (this.flags.debugger)
                                     console.debug(
                                         clc.bold.blue(
                                             "\tBot did not have the required permissions to run " +
@@ -410,12 +417,12 @@ export class CommandHandler extends CoreHandler {
                         }
                     }
 
-                    if (this.iOptions.debugger)
+                    if (this.flags.debugger)
                         console.debug(clc.underline("\tMiddlewares Called:"));
 
                     for (const fn of middleWare) {
                         let result = await fn(commandObject, interaction);
-                        if (this.iOptions.debugger) {
+                        if (this.flags.debugger) {
                             const arr = fn.toString().split(" ");
                             // Means the function has (function a(){}) syntax, otherwise it's (()=>{}) syntax
                             const labeled = arr[0] == "function" ? true : false;
@@ -432,7 +439,7 @@ export class CommandHandler extends CoreHandler {
                         if (result == 1) return; // test condition is true
                     }
 
-                    if (this.iOptions.debugger)
+                    if (this.flags.debugger)
                         console.debug(
                             clc.bold.blue(
                                 "Middlewares called, Callback to be called."

@@ -57,6 +57,11 @@ export class SlashCommandManager {
      * Whether the command is deleted or not
      */
     deleted: boolean;
+    /**
+     * Whether or not this command can only be found in the development release.
+     * To have dev commands disabled, enable `production` property in the CommandHandler HandlerFlags parameter
+     */
+    isDev: boolean = false;
 
     constructor(commandObject: {
         /**
@@ -110,6 +115,15 @@ export class SlashCommandManager {
      */
     setDeleted(bool: boolean): SlashCommandManager {
         this.deleted = bool;
+        return this;
+    }
+
+    /**
+     * Set whether or not this command is only available in the developer release of said bot.
+     * @param bool If true, command is marked as developer.
+     */
+    setDev(bool: boolean): SlashCommandManager {
+        this.isDev = bool;
         return this;
     }
 
