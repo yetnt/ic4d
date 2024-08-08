@@ -183,8 +183,8 @@ export class CommandHandler extends CoreHandler {
      * @param logAll Log when loading a command and no changes are made
      * @param serverId Server Id, Makes loaded commands guild wide.
      */
-    async registerCommands(logAll?: boolean, serverId?: string) {
-        logAll = logAll !== undefined ? logAll : true;
+    async registerCommands(logNoChanges?: boolean, serverId?: string) {
+        logNoChanges = logNoChanges !== undefined ? logNoChanges : true;
         try {
             const localCommands = this.getLocalCommands(
                 this.commandPath,
@@ -302,7 +302,7 @@ export class CommandHandler extends CoreHandler {
                     );
                 }
 
-                if (logAll && noChanges == true) {
+                if (logNoChanges && noChanges == true) {
                     if (!this.flags.disableLogs)
                         console.log(
                             deprecated(
