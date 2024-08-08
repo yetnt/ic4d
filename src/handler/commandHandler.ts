@@ -2,10 +2,7 @@ import { CoreHandler, Option } from "./coreHandler";
 import {
     ChatInputCommandInteraction,
     Client,
-    Interaction,
-    PermissionFlags,
     RESTPostAPIApplicationCommandsJSONBody,
-    SlashCommandBuilder,
 } from "discord.js";
 import * as clc from "cli-color";
 import * as errs from "./Errors";
@@ -89,6 +86,17 @@ export interface HandlerFlags {
 }
 
 /**
+ * Helper function to just attach [DEV] to a command that is of developer.
+ * @param name
+ * @param isDev
+ * @returns
+ */
+function attachDev(name: string, isDev: boolean) {
+    const str = "[DEV] ";
+    return isDev ? str + name : name;
+}
+
+/**
  * @class
  * Command Handler which loads, edits and deletes slash commands for you.
  */
@@ -114,7 +122,7 @@ export class CommandHandler extends CoreHandler {
         disableLogs: false,
         esImports: false,
         esImportsDisableNoExportFound: false,
-        production: true,
+        production: false,
         refreshApplicationCommands: false,
     };
 
@@ -180,7 +188,7 @@ export class CommandHandler extends CoreHandler {
 
     /**
      * Register Slash Commands
-     * @param logAll Log when loading a command and no changes are made
+     * @param logNoChanges Log when loading a command and no changes are made
      * @param serverId Server Id, Makes loaded commands guild wide.
      */
     async registerCommands(logNoChanges?: boolean, serverId?: string) {
@@ -199,19 +207,31 @@ export class CommandHandler extends CoreHandler {
                 await applicationCommands.set([]);
 
             for (const localCommand of localCommands) {
-                if (localCommand.isDev && this.flags.production) continue;
-                let noChanges = true;
                 if (
                     !localCommand.name ||
                     !localCommand.description ||
                     !localCommand.callback
-                ) {
+                )
                     throw new errs.LoaderError(
                         `Command $PATH$ does not export required properties: name, description or callback`,
                         localCommand.filePath
                     );
+
+                let { name, filePath, isOld, data, isDev } = localCommand;
+
+                if (localCommand.isDev && this.flags.production) {
+                    const existingCommand =
+                        await applicationCommands.cache.find(
+                            (cmd) => cmd.name === name
+                        );
+                    if (existingCommand) {
+                        applicationCommands.delete(existingCommand.id);
+                    }
+                    continue;
                 }
-                let { name, filePath, isOld, data } = localCommand;
+
+                let noChanges = true;
+
                 try {
                     const existingCommand =
                         await applicationCommands.cache.find(
@@ -227,7 +247,10 @@ export class CommandHandler extends CoreHandler {
                             noChanges = false;
                             if (!this.flags.disableLogs)
                                 console.log(
-                                    this.options.deleted.replace("NAME", name)
+                                    this.options.deleted.replace(
+                                        "NAME",
+                                        attachDev(name, isDev)
+                                    )
                                 );
                             continue;
                         }
@@ -251,7 +274,7 @@ export class CommandHandler extends CoreHandler {
                                     deprecated(
                                         this.options.edited.replace(
                                             "NAME",
-                                            name
+                                            attachDev(name, isDev)
                                         ),
                                         isOld
                                     )
@@ -266,7 +289,7 @@ export class CommandHandler extends CoreHandler {
                                     deprecated(
                                         this.options.skipped.replace(
                                             "NAME",
-                                            name
+                                            attachDev(name, isDev)
                                         ),
                                         isOld
                                     )
@@ -275,21 +298,16 @@ export class CommandHandler extends CoreHandler {
                         }
 
                         // Create new command.
-
-                        // data ||= {
-                        //     name,
-                        //     description,
-                        //     // @ts-ignore
-                        //     options,
-                        // };
-
                         await applicationCommands.create(data);
                         noChanges = false;
 
                         if (!this.flags.disableLogs)
                             console.log(
                                 deprecated(
-                                    this.options.loaded.replace("NAME", name),
+                                    this.options.loaded.replace(
+                                        "NAME",
+                                        attachDev(name, isDev)
+                                    ),
                                     isOld
                                 )
                             );
@@ -308,7 +326,7 @@ export class CommandHandler extends CoreHandler {
                             deprecated(
                                 this.options.loadedNoChanges.replace(
                                     "NAME",
-                                    name
+                                    attachDev(name, isDev)
                                 ),
                                 isOld
                             )
