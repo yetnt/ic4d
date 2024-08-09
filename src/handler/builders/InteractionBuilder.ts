@@ -53,8 +53,8 @@ export class InteractionBuilder {
     /**
      * Function to run when interaction times out. If this is set, timeoutMsg property is ignored.
      */
-    onTimeout?: <T extends InteractionTypeStrings>(
-        interaction: InteractionTypeStringsMap<T>,
+    onTimeout?: (
+        interaction: InteractionTypeStringsMap<this["type"]>,
         client?: Client
     ) => void | Promise<void>;
     /**
@@ -95,7 +95,7 @@ export class InteractionBuilder {
      */
     setCallback(
         fn: (
-            interaction: InteractionTypeStringsMap<InteractionTypeStrings>,
+            interaction: InteractionTypeStringsMap<this["type"]>,
             client?: Client
         ) => void | Promise<void>
     ): InteractionBuilder {
@@ -119,7 +119,7 @@ export class InteractionBuilder {
      */
     setTimeout(
         fn: (
-            interaction: InteractionTypeStringsMap<InteractionTypeStrings>,
+            interaction: InteractionTypeStringsMap<this["type"]>,
             client?: Client
         ) => void | Promise<void>,
         timeout?: number
