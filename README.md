@@ -34,20 +34,25 @@ import /* Class you need separated by a comma */ "ic4d";
 
 # Contents
 
+If any method/function has no return documentation, it returns void.
+
 -   [Quick Example](#quick-example)
--   (Classes) Handlers
+-   Classes
 -   -   [ReadyHandler](#readyhandler)
 -   -   [CommandHandler](#commandhandler)
 -   -   [InteractionHandler](#interactionhandler)
--   (Classes) Builders
 -   -   [SlashCommandManager](#slashcommandmanager)
 -   -   [InteractionBuilder](#interactionbuilder)
 -   -   [ContextMenuBuilder](#contextmenubuilder)
+
+For TS Lovers:
+
 -   Interfaces
--   -   [ReaderOptions](#readeroptions)
--   -   [ReaderOptions](#readeroptions)
--   -   [ReaderOptions](#readeroptions)
--   -   [ReaderOptions](#readeroptions)
+-   -   [RunFlags](#runflags)
+-   -   [HandlerFlags](#handlerflags)
+-   -   [LoaderOptions](#loaderoptions)
+-   Other Types
+-   -   [InteractionTypeStrings](#interactiontypestrings)
 -   [Common Problems](#common-problems)
 -   [Credit](#credits)
 -   [Links](#links)
@@ -142,10 +147,14 @@ Command Handler, which handles slash command creation, deletion, editing and run
 
 ### Parameters
 
--   `client`: Discord.js Client Instance
--   `path`: Path in which your exported command objects are stored. The handler will **not** work if you do not use path.
--   `readerOptions`**(optional)**: Command Reader Options
--   `loaderOptions`**(optional)**: Command Loader Options
+-   `client`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
+-   -   Discord.js Client Instance
+-   `path`**: string**
+-   -   Path in which your exported command objects are stored. The handler will **not** work if you do not use path.
+-   `runFlags`**: [RunFlags](#runflags)**
+-   -   **(optional)** Command Reader Options
+-   `loaderOptions`**: [LoaderOptions](#loaderoptions)**
+-   -   **(optional)** Command Loader Options
 
 ```js
 const { CommandHandler } = require("ic4d");
@@ -154,47 +163,16 @@ const path = require("path");
 const handler = new CommandHandler(client, path.join(__dirname, "commands"));
 ```
 
-#### readerOptions
-
-Information for the handler and text that displays the the user when the CommandHandler is running checks before the actual command's code
-
-```js
-{
-    testGuildId: "808701451399725116",
-    devs: ["671549251024584725"],
-
-    // next params are not required, but cool
-    onlyDev: "Text to display when a user runs a developer command.",
-    userNoPerms: "Text to display when the user has insufficient permissions",
-    botNoPerms: "Text to display when the bot has insufficient permissions"
-}
-```
-
-#### loaderOptions
-
-Text that displays in the console when the CommandHandler is loading a command.
-
-Make sure you keep `NAME` in the string or else you will not know what happened to which command.
-If there is no log in the console for a specific command, then it has been loaded, there are no edits and it has not been deleted.
-
-```js
-{
-        loadedNoChanges: "NAME was loaded. No changes were made to NAME."
-        loaded: "NAME has been registered successfully.",
-        edited: "NAME has been edited.",
-        deleted: "NAME has been deleted.",
-        skipped: "NAME was skipped. (Command deleted or set to delete.)",
-}
-```
-
 ## Methods
 
 ### `registerCommands()`
 
 **(asynchronous function)**
 
--   `logAll`**(optional)**: Log command even if no change was performed.
--   `serverId`**(optional)**: Register all commands in a specific server. if not provided it will be application wide
+-   `logAll`**: boolean**
+-   -   **(optional)** Log command even if no change was performed.
+-   `serverId`**: string**
+-   -   **(optional)** Register all commands in a specific server. if not provided it will be application wide
 
 ```js
 const handler = new CommandHandler(client, path.join(__dirname, "commands"));
@@ -208,7 +186,8 @@ async () => {
 
 **(asynchronous function)**
 
--   `...middleWare`: Functions to run before a command is run.
+-   `...middleWare`**: ( ( commandObject: Object, interaction?: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class) ) => number | Promise<number> )[]**
+-   -   Functions to run before a command is run.
 
 ```js
 const handler = new CommandHandler(client, path.join(__dirname, "commands"));
@@ -317,9 +296,14 @@ Context Menus work a bit differently then the other interactions, please refer t
 
 ## Constructor
 
--   `client`: Discord.js client
--   `path`: Path to where interactions are stored. (They can be stored in your commands folder to, as long as they meet with [interactions object](#interaction-object))
--   `loaderOptions`**(optional)**: Context Menu [Loader Options](#loaderoptions)
+-   `client`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
+-   -   Discord.js client
+
+-   `path`**: string**
+-   -   Path to where interactions are stored.
+
+-   `loaderOptions`**: [LoaderOptions](#loaderoptions)**
+-   -   **(optional)** Context Menu Loader Options
 
 ```js
 const { InteractionHandler } = require("ic4d");
@@ -337,8 +321,10 @@ const interactions = new InteractionHandler(
 
 Start listening for all the available interactions. (Context Menus, Buttons, Select Menus and Modals)
 
--   `authorOnlyMsg`**(optional)**: Message to display when a interacts with another user's interaction (onlyAuthor is set to true.)
--   `...middleWare`: Functions to run before an interaction is run.
+-   `authorOnlyMsg`**: string**
+-   -   **(optional)** Message to display when a interacts with another user's interaction (onlyAuthor is set to true.)
+-   `...middleWare`**: ((interaction?: [Interaction](https://discord.js.org/docs/packages/discord.js/main/Interaction:TypeAlias)) => number)[]**
+-   -   Functions to run before an interaction is run.
 
 ```js
 interactions.start();
@@ -348,8 +334,10 @@ interactions.start();
 
 Start listening for button interactions.
 
--   `authorOnlyMsg`**(optional)**: Message to display when a user click's another user's button (onlyAuthor is set to true.)
--   `...middleWare`: Functions to run before a button is run.
+-   `authorOnlyMsg`**: string**
+-   -   **(optional)** Message to display when a user click's another user's button (onlyAuthor is set to true.)
+-   `...middleWare`**: ((interaction?: [Interaction](https://discord.js.org/docs/packages/discord.js/main/Interaction:TypeAlias)) => number)[]**
+-   -   Functions to run before a button is run.
 
 ```js
 interactions.buttons();
@@ -359,8 +347,10 @@ interactions.buttons();
 
 Start listening for select menu interactions.
 
--   `authorOnlyMsg`**(optional)**: Message to display when a user click's another user's select menu (onlyAuthor is set to true.)
--   `...middleWare`: Functions to run before a select menu is run.
+-   `authorOnlyMsg`**: string**
+-   -   **(optional)** Message to display when a user click's another user's select menu (onlyAuthor is set to true.)
+-   `...middleWare`**: ((interaction?: [Interaction](https://discord.js.org/docs/packages/discord.js/main/Interaction:TypeAlias)) => number)[]**
+-   -   Functions to run before a select menu is run.
 
 ```js
 interactions.selectMenu();
@@ -370,7 +360,8 @@ interactions.selectMenu();
 
 Start listening for modal interactions. (After their registered)
 
--   `...middleWare`: Functions to run before a modal is shown.
+-   `...middleWare`**: ((interaction?: [Interaction](https://discord.js.org/docs/packages/discord.js/main/Interaction:TypeAlias)) => number)[]**
+-   -   Functions to run before a modal is shown.
 
 ```js
 interactions.modals();
@@ -380,7 +371,8 @@ interactions.modals();
 
 Start listening for context menu interactions. (After their registered)
 
--   `...middleWare`: Functions to run before a context menu is run.
+-   `...middleWare`**: ((interaction?: [Interaction](https://discord.js.org/docs/packages/discord.js/main/Interaction:TypeAlias)) => number)[]**
+-   -   Functions to run before a context menu is run.
 
 ```js
 interactions.contextMenus();
@@ -417,8 +409,10 @@ interactions.start(undefined, lucky); // will run for every interactions
 
 Registers Context Menus that are found in the path given tot he InteractionHandler.
 
--   `logAll`**(optional)**: Log context menu even if no change was performed.
--   `serverId`**(optional)**: Register all commands in a specific server. if not provided it will be application wide
+-   `logAll`**: string**
+-   -   **(optional)** Log context menu even if no change was performed.
+-   `serverId`**: string**
+-   -   **(optional)** Register all commands in a specific server. if not provided it will be application wide
 
 ```js
 await interactions.registerContextMenus();
@@ -442,7 +436,13 @@ module.exports = command;
 
 ## Constructor
 
--   `commandObject`: Command's data, Only takes in 2 properties: `data` property which contains the command's data from the discord.js provided class `SlashCommandBuilder` and the `execute` property which takes in a function with the `interaction` and `client` parameter.
+-   `commandObject`**: {
+    data: [SlashCommandBuilder](https://discord.js.org/docs/packages/builders/1.8.2/SlashCommandBuilder:Class);
+    execute: (
+    interaction: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class),
+    client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
+    ) => void | Promise<void>;**
+-   -   Command's data, Only takes in 2 properties: `data` property which contains the command's data from the discord.js provided class `SlashCommandBuilder` and the `execute` property which takes in a function with the `interaction` and `client` parameter.
 
 Example:
 
@@ -470,12 +470,16 @@ module.exports = command;
 
 Sets the permissions required by the user to execute the command.
 
--   `...perms`: Rest paramter of `bitInt`s provided by discord.js (class `PermissionFlagsBits`)
+-   `...perms`**: bigint[]**
+-   -   Rest paramter of `bigint`s provided by discord.js ([PermissionFlagsBits](https://discord-api-types.dev/api/discord-api-types-payloads/common#PermissionFlagsBits))
+
+**_`returns`: [self](#slashcommandmanager)_**
 
 Example:
 
 ```js
 const { SlashCommandManager } = require("ic4d");
+const { PermissionFlagsBits } = require("discord.js");
 
 const command = new SlashCommandManager(/* command cofig */).setUserPermissions(
     PermissionFlagsBits.Administrator
@@ -487,12 +491,16 @@ module.exports = command;
 
 Sets the permissions needed for the bot to execute the command.
 
--   `...perms`: Rest paramter of `bitInt`s provided by discord.js (class `PermissionFlagsBits`)
+-   `...perms`**: bigint[]**
+-   -   Rest paramter of `bigint`s provided by discord.js ([PermissionFlagsBits](https://discord-api-types.dev/api/discord-api-types-payloads/common#PermissionFlagsBits))
+
+**_`returns`: [self](#slashcommandmanager)_**
 
 Example:
 
 ```js
 const { SlashCommandManager } = require("ic4d");
+const { PermissionFlagsBits } = require("discord.js");
 
 const command = new SlashCommandManager(/* command cofig */).setBotPermissions(
     PermissionFlagsBits.Administrator
@@ -504,7 +512,10 @@ module.exports = command;
 
 Sets the commmand to be deleted, If command has already been deleted, it will be skipped when loaded again.
 
--   `bool`: Boolean param
+-   `bool`**: boolean**
+-   -   Boolean param
+
+**_`returns`: [self](#slashcommandmanager)_**
 
 Example:
 
@@ -519,7 +530,10 @@ module.exports = command;
 
 Appends related interactions to the slash command, only way for slash commands and other interactions to appear in the same file.
 
--   `...interactions`: Rest paramater of [InteractionBuilder](#interactionbuilder)s
+-   `...interactions`**: [InteractionBuilder](#interactionbuilder)[]**
+-   -   Rest paramater of [InteractionBuilder](#interactionbuilder)
+
+**_`returns`: [self](#slashcommandmanager)_**
 
 ```js
 const { SlashCommandManager, InteractionBuilder } = require("ic4d");
@@ -532,7 +546,7 @@ module.exports = command;
 
 # InteractionBuilder
 
-Represents a single itneraction that isn't a chat input (slash command) or context menu. (This class can however be passed into a rest parameter in [SlashCommandManager](#slashcommandmanager) or in it's own separate file by itself.)
+Represents a single interaction that isn't a chat input (slash command) or context menu. (This class can however be passed into a rest parameter in [SlashCommandManager](#slashcommandmanager) or in it's own separate file by itself.)
 Builder for Context Menus: [ContextMenuBuilder](#contextmenubuilder)
 
 > [!NOTE] Methods can be chained together
@@ -554,6 +568,7 @@ const button = new InteractionBuilder()
 ## Constructor
 
 No parameters are passed, so no documentation :)
+yay. (I hate documenting.)
 
 ## Methods
 
@@ -561,7 +576,10 @@ No parameters are passed, so no documentation :)
 
 Sets the custom ID of the interaction.
 
--   `customId`: Custom ID of the interaction.
+-   `customId`**: string**
+-   -   Custom ID of the interaction.
+
+**_`returns`: [self](#interactionbuilder)_**
 
 ```js
 const button = new InteractionBuilder().setCustomId("my-cool-button");
@@ -571,7 +589,10 @@ const button = new InteractionBuilder().setCustomId("my-cool-button");
 
 Sets the type of the interaction. (Either "selectMenu", "button" or "modal")
 
--   `type`: Type of the interaction.
+-   `type`: [InteractionTypeStrings](#interactiontypestrings)
+-   -   Type of the interaction.
+
+**_`returns`: [self](#interactionbuilder)_**
 
 ```js
 const selectMenu = new InteractionBuilder().setType("selectMenu");
@@ -581,7 +602,13 @@ const selectMenu = new InteractionBuilder().setType("selectMenu");
 
 Function to be called when the interaction is called. (Is that how you say it?)
 
--   `fn`: The function to be called (Parameters: `(interaction, client)`)
+-   `fn`**: (
+    interaction: [InteractionTypeStringsMap<this["type"]>](#interactiontypestringsmap),
+    client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
+    ) => void | Promise\<void>**
+-   -   The function to be called (Parameters: `(interaction, client)`)
+
+**_`returns`: [self](#interactionbuilder)_**
 
 ```js
 const selectMenu = new InteractionBuilder().setCallback((i) => {
@@ -593,7 +620,10 @@ const selectMenu = new InteractionBuilder().setCallback((i) => {
 
 Set whether or not the interaction can only be interacted with by the author of the interaction.
 
--   `bool`: If true, the interaction only accepts the author's input.
+-   `bool`**: boolean**
+-   -   If true, the interaction only accepts the author's input.
+
+**_`returns`: [self](#interactionbuilder)_**
 
 ```js
 const button = new InteractionBuilder().setOnlyAuthor(true);
@@ -603,12 +633,19 @@ const button = new InteractionBuilder().setOnlyAuthor(true);
 
 Sets the interaction to have a timeout.
 
--   `fn`: Function to call when the interaction time expires.
--   `timeout`: How long to wait for the interaction to timeout. (in ms)
+-   `fn`**:(
+    interaction: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class),
+    client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
+    ) => void | Promise\<void>**
+-   -   Function to call when the interaction time expires.
+-   `timeout`**: number**
+-   -   How long to wait for the interaction to timeout. (in ms)
+
+**_`returns`: [self](#interactionbuilder)_**
 
 ```js
 const a = new InteractionBuilder().setTimeout((i) => {
-    i.update("Damn the time expired brodie");
+    i.editReply("Damn the time expired brodie");
 }, 10_000);
 ```
 
@@ -618,7 +655,14 @@ Builder for context menus, since they are special.
 
 ## Constructor
 
--   `context`: Object with 2 properties, a `data` property that is an instance of `ContextMenuBuilder` provided by discord.js and a function called `execute` to execute when the context menu is called.
+-   `context`**: {
+    data: [ContextMenuCommandBuilder](https://discord.js.org/docs/packages/builders/main/ContextMenuCommandBuilder:Class);
+    execute: (
+    interaction: [ContextMenuCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ContextMenuCommandInteraction:Class),
+    client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
+    ) => void;
+    }**
+-   -   Object with 2 properties, a `data` property that is an instance of `ContextMenuBuilder` provided by discord.js and a function called `execute` to execute when the context menu is called.
 
 ```js
 const {
@@ -650,8 +694,214 @@ module.exports = user;
 
 Sets the context menu to be deleted, If context menu has already been deleted, it will be skipped when loaded again.
 
+-   `deleted`**: boolean**
+-   -   Boolean indicating whether the context menu is deleted.
+
+**_`returns`: [self](#contextmenubuilder)_**
+
 ```js
 const user = new ContextMenuBuilder().setDeleted(true);
+```
+
+# RunFlags
+
+An interface representing the configuration flags used for running commands in the bot.
+
+This configuration is specifically used to control various runtime aspects of command execution.
+
+## Properties
+
+### **_testGuildId: string_**
+
+```
+Default value: undefined
+```
+
+The ID of the test guild for command testing purposes. If provided, commands will be deployed only to this guild.
+
+### **_devs: string[]_**
+
+```
+Default value: []
+```
+
+An array of Discord user IDs (snowflakes) that have developer privileges.
+
+Commands or functionalities restricted to developers will be accessible to users with IDs in this array.
+
+### **_onlyDev: string_**
+
+```
+Default value: "Only developers are allowed to run this command."
+```
+
+The message shown when a command restricted to developers is executed by a non-developer.
+
+### **_userNoPerms: string_**
+
+```
+Default value: "Not enough permissions."
+```
+
+The message displayed when a user lacks the necessary permissions to execute a command.
+
+### **_botNoPerms: string_**
+
+```
+Default value: "I don't have enough permissions."
+```
+
+The message displayed when the bot lacks the necessary permissions to execute a command.
+
+## Exmaple Use
+
+```ts
+const obj: RunFlags = {
+    testGuildId: "808701451399725116",
+    devs: ["671549251024584725"],
+
+    onlyDev: "Text to display when a user runs a developer command.",
+    userNoPerms: "Text to display when the user has insufficient permissions",
+    botNoPerms: "Text to display when the bot has insufficient permissions",
+};
+```
+
+# HandlerFlags
+
+An interface that represents anything you can do with the commands when they are run, BUT before YOUR code executes.
+
+## Properties
+
+### **_debugger: boolean_**
+
+```
+Default value: false
+```
+
+Enable debugger mode. Prints(almost) everything that happens behind the scenes of course not with the API itself.
+
+### **_disableLogs: boolean_**
+
+```
+Default value: false
+```
+
+Disabling Logging of the Command Loader. Not advisable but hey it's your bot.
+
+### **_esImports: boolean_**
+
+```brainfuck
+- NOT SURE IF IT WORKS, STILL NEED TO TEST.
+```
+
+```
+Default value: false
+```
+
+Enable this if you're using typescript, Allows for es imports.
+
+### **_esImportsDisableNoExportFound: boolean_**
+
+```brainfuck
+- NOT SURE IF IT WORKS, STILL NEED TO TEST.
+```
+
+```
+Default value: false
+```
+
+If you're using esImports, and you leave this at it's default, then if a file ion the commands folder does not export a SlashCommandManager class as one of the exports, an error will be thrown.
+
+### **_production: boolean_**
+
+```
+Default value: false
+```
+
+Whether or not this is the production version of the bot. If set to true, commands labelled `isDev` will NOT be loaded. (Use the `setDev()` method in [SlashCommandManager](#slashcommandmanager))
+
+### **_refreshApplicationCommands?: boolean_**
+
+```
+Default value: false
+```
+
+Clears ALL application commands on startup. (Slash commands, User commands, and Message commands.)
+
+## Example Use
+
+```ts
+const obj: LoaderOptions = {
+    debugger: true,
+    production: true,
+    disableLogs: true,
+    esImports: false, // I like my life simple.
+};
+```
+
+# LoaderOptions
+
+Interface that represents default string values for the loader to log to the console when it encounters a command/context menu.
+
+Make sure you keep `NAME` in the string or else you will not know what happened to which command.
+If there is no log in the console for a specific command, then it has been loaded, there are no edits and it has not been deleted.
+
+## Properties
+
+Note:
+
+> These have multiple default values, as context menus and commands are different.
+
+### **_loaded: string_**
+
+What to show for context menus/commands that load in
+
+### **_edited: string_**
+
+What to show for context menus/commands that gets edited.
+
+### **_deleted: string_**
+
+What to show for context menus/commands that gets deleted.
+
+### **_skipped: string_**
+
+What to show for context menus/commands that gets skipped. (Deleted and still marked as deleted.)
+
+### **_loadedNoChanges: string_**
+
+What to show for context menus/commands that gets loaded, but has no changes
+
+## Example Use
+
+```ts
+const obj: LoaderOptions = {
+    loadedNoChanges: "NAME was loaded. No changes were made to NAME.",
+    loaded: "NAME has been registered successfully.",
+    edited: "NAME has been edited.",
+    deleted: "NAME has been deleted.",
+    skipped: "NAME was skipped. (Command deleted or set to delete.)",
+};
+```
+
+# InteractionTypeStrings
+
+Type alias for the strings `"selectMenu"`, `"modal"` and `"button"`
+
+Yes this did not need documenting, but here it is.
+
+# InteractionTypeStringsMap
+
+Here's the exact definition because I genuinely don't know how to explain this.
+
+```ts
+export type InteractionTypeStringsMap<U extends string> = U extends "modal"
+    ? ModalSubmitInteraction
+    : U extends "selectMenu"
+    ? AnySelectMenuInteraction
+    : U extends "button"
+    ? ButtonInteraction
+    : never;
 ```
 
 # Common Problems
@@ -698,3 +948,7 @@ He probably has a way better package, so go check his out!
 
 > [!IMPORTANT]
 > The following is deprecated in favor of other classes.
+
+```
+
+```

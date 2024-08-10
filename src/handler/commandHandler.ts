@@ -9,28 +9,41 @@ import * as errs from "./Errors";
 import { LoaderOptions } from "./coreHandler";
 import { deprecated, setupCollector } from "../funcs";
 import { Interactions } from "./builders/SlashCommandManager";
-import { InteractionObject } from "./interactionHandler";
 
-export interface ReaderOptions {
+/**
+ * An interface representing the configuration flags used for running commands in the bot.
+ * This configuration is specifically used to control various runtime aspects of command execution.
+ *
+ * @see HandlerFlags for flags related to the command handling and execution process before the code runs.
+ */
+export interface RunFlags {
     /**
-     * Test GuildID
+     * The ID of the test guild for command testing purposes. If provided, commands will be deployed only to this guild.
+     *
+     * @example "123456789012345678"
      */
     testGuildId?: string;
+
     /**
-     * Array of discord snowflakes
+     * An array of Discord user IDs (snowflakes) that have developer privileges.
+     * Commands or functionalities restricted to developers will be accessible to users with IDs in this array.
+     *
+     * @example ["123456789012345678", "876543210987654321"]
      */
     devs: string[];
 
     /**
-     * String to show when an only dev command is run
+     * The message shown when a command restricted to developers is executed by a non-developer.
      */
     onlyDev?: string;
+
     /**
-     * String to show when the bot does not have enough permissions
+     * The message displayed when the bot lacks the necessary permissions to execute a command.
      */
     botNoPerms?: string;
+
     /**
-     * String to show when the user does not have enough permissions
+     * The message displayed when a user lacks the necessary permissions to execute a command.
      */
     userNoPerms?: string;
 }
@@ -63,7 +76,7 @@ export interface CommandObject {
  */
 export interface HandlerFlags {
     /**
-     * Enable Debugger mode.
+     * Enable Debugger mode. Prints (almost) everything that happens behind the scenes of course not with the API itself.
      */
     debugger?: boolean;
     /**
@@ -75,11 +88,11 @@ export interface HandlerFlags {
      */
     esImports?: boolean;
     /**
-     * If you're using esImports, and you leave this at it's default (true), then if a file ion the commands folder does not export a SlashCommandManager class as one of the exports, an error will be thrown.
+     * If you're using esImports, and you leave this at it's default (false), then if a file ion the commands folder does not export a SlashCommandManager class as one of the exports, an error will be thrown.
      */
     esImportsDisableNoExportFound?: boolean;
     /**
-     * Whether or not this is the production version of the bot. If set to true, commands labelled `isDev` will NOT be loaded.
+     * Whether or not this is the production version of the bot. If set to true, commands labelled `isDev` will NOT be loaded. (Use the `setDev()` method in  @see SlashCommandManager
      */
     production?: boolean;
     /**
@@ -113,7 +126,7 @@ export class CommandHandler extends CoreHandler {
         deleted: "NAME has been deleted.",
         skipped: "NAME was skipped. (Command deleted or set to delete.)",
     };
-    readerOptions: ReaderOptions = {
+    runFlags: RunFlags = {
         testGuildId: undefined,
         devs: [],
         onlyDev: "Only developers are allowed to run this command.",
@@ -133,14 +146,14 @@ export class CommandHandler extends CoreHandler {
      *
      * @param client Discord.js Client
      * @param path Path to Slash Commands
-     * @param readerOptions Command Reader Options
+     * @param runFlags Command Reader Options
      * @param loaderOptions Command Loader Options
      * @param handlerFlags Injection Options.
      */
     constructor(
         client: Client,
         path: string,
-        readerOptions?: ReaderOptions,
+        runFlags?: RunFlags,
         loaderOptions?: LoaderOptions,
         handlerFlags?: HandlerFlags
     ) {
@@ -165,14 +178,12 @@ export class CommandHandler extends CoreHandler {
             ),
         };
 
-        this.readerOptions = {
-            testGuildId: readerOptions?.testGuildId || undefined,
-            devs: readerOptions?.devs || [],
-            onlyDev: readerOptions?.onlyDev || this.readerOptions.onlyDev,
-            userNoPerms:
-                readerOptions?.userNoPerms || this.readerOptions.userNoPerms,
-            botNoPerms:
-                readerOptions?.botNoPerms || this.readerOptions.botNoPerms,
+        this.runFlags = {
+            testGuildId: runFlags?.testGuildId || undefined,
+            devs: runFlags?.devs || [],
+            onlyDev: runFlags?.onlyDev || this.runFlags.onlyDev,
+            userNoPerms: runFlags?.userNoPerms || this.runFlags.userNoPerms,
+            botNoPerms: runFlags?.botNoPerms || this.runFlags.botNoPerms,
         };
 
         this.flags = {
@@ -387,11 +398,7 @@ export class CommandHandler extends CoreHandler {
                     if (!commandObject) return;
 
                     if (commandObject.devOnly) {
-                        if (
-                            !this.readerOptions.devs.includes(
-                                interaction.user.id
-                            )
-                        ) {
+                        if (!this.runFlags.devs.includes(interaction.user.id)) {
                             if (this.flags.debugger)
                                 console.debug(
                                     clc.bold.blue(
@@ -401,7 +408,7 @@ export class CommandHandler extends CoreHandler {
                                     )
                                 );
                             interaction.reply({
-                                content: this.readerOptions.onlyDev,
+                                content: this.runFlags.onlyDev,
                                 ephemeral: true,
                             });
                             return;
@@ -422,7 +429,7 @@ export class CommandHandler extends CoreHandler {
                                         )
                                     );
                                 interaction.reply({
-                                    content: this.readerOptions.userNoPerms,
+                                    content: this.runFlags.userNoPerms,
                                     ephemeral: true,
                                 });
                                 return;
@@ -443,7 +450,7 @@ export class CommandHandler extends CoreHandler {
                                         )
                                     );
                                 interaction.reply({
-                                    content: this.readerOptions.botNoPerms,
+                                    content: this.runFlags.botNoPerms,
                                     ephemeral: true,
                                 });
                                 return;

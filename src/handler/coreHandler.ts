@@ -1,6 +1,5 @@
 import {
     Client,
-    CommandInteraction,
     ApplicationCommandManager,
     GuildApplicationCommandManager,
     ApplicationCommandOptionType,
@@ -17,6 +16,12 @@ import {
     ContextMenuBuilder,
 } from "./builders/builders";
 
+/**
+ * Interface that represents default string values for the loader to log to the console when it encounters a command/context menu.
+ * 
+ * Make sure you keep `NAME` in the string or else you will not know what happened to which command.
+If there is no log in the console for a specific command, then it has been loaded, there are no edits and it has not been deleted.
+ */
 export interface LoaderOptions {
     /**
      * What to show for context menus/commands that load in

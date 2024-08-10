@@ -1,6 +1,6 @@
 export {
     CommandHandler,
-    ReaderOptions,
+    RunFlags,
     HandlerFlags,
 } from "./handler/commandHandler";
 export { ReadyHandler } from "./handler/ready";
