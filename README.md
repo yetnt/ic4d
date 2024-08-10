@@ -10,7 +10,7 @@ With npm
 npm i ic4d
 ```
 
-With yarn
+with yarn
 
 ```
 yarn add ic4d
@@ -29,7 +29,7 @@ and for yall ts lovers (I tried using this in ts and damn is it hard work.)
 ```ts
 import * as ic4d from "ic4d";
 // or
-import /* Class you need separated by a comma */ "ic4d";
+import /* Classes and/or Interfaces you need separated by a comma */ "ic4d";
 ```
 
 # Contents
@@ -945,14 +945,3 @@ He probably has a way better package, so go check his out!
 -   [Github](https://github.com/YetNT/ic4d)
 -   [NPM](https://www.npmjs.com/package/ic4d)
 -   [underctrl Discord.js Tutorial](https://www.youtube.com/playlist?list=PLpmb-7WxPhe0ZVpH9pxT5MtC4heqej8Es)
-
----
-
----
-
-> [!IMPORTANT]
-> The following is deprecated in favor of other classes.
-
-```
-
-```
