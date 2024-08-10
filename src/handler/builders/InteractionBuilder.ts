@@ -1,9 +1,9 @@
 import {
-    Interaction,
     Client,
     AnySelectMenuInteraction,
     ButtonInteraction,
     ModalSubmitInteraction,
+    ChatInputCommandInteraction,
 } from "discord.js";
 import { InteractionTypeStrings } from "./builders";
 
@@ -27,7 +27,7 @@ export class InteractionBuilder {
      * @param client Client
      */
     callback: (
-        interaction: InteractionTypeStringsMap<InteractionTypeStrings>,
+        interaction: InteractionTypeStringsMap<this["type"]>,
         client?: Client
     ) => void | Promise<void>;
     /**
@@ -54,7 +54,7 @@ export class InteractionBuilder {
      * Function to run when interaction times out. If this is set, timeoutMsg property is ignored.
      */
     onTimeout?: (
-        interaction: InteractionTypeStringsMap<this["type"]>,
+        interaction: ChatInputCommandInteraction,
         client?: Client
     ) => void | Promise<void>;
     /**
@@ -119,7 +119,7 @@ export class InteractionBuilder {
      */
     setTimeout(
         fn: (
-            interaction: InteractionTypeStringsMap<this["type"]>,
+            interaction: ChatInputCommandInteraction,
             client?: Client
         ) => void | Promise<void>,
         timeout?: number

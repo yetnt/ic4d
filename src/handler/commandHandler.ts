@@ -7,7 +7,8 @@ import {
 import * as clc from "cli-color";
 import * as errs from "./Errors";
 import { LoaderOptions } from "./coreHandler";
-import { deprecated } from "../funcs";
+import { deprecated, setupCollector } from "../funcs";
+import { Interactions } from "./builders/SlashCommandManager";
 
 export interface ReaderOptions {
     /**
@@ -50,6 +51,7 @@ export interface CommandObject {
     filePath?: string;
     isOld?: boolean;
     isDev?: boolean;
+    interactions: Interactions;
 
     permissionsRequired?: bigint[];
     botPermissions?: bigint[];
@@ -478,6 +480,48 @@ export class CommandHandler extends CoreHandler {
                         );
 
                     await commandObject.callback(this.client, interaction);
+
+                    if (
+                        Object.keys(commandObject.interactions.button).length !=
+                        0
+                    ) {
+                        for (const [key, value] of Object.entries(
+                            commandObject.interactions.button
+                        )) {
+                            if (
+                                value.timeout == 0 ||
+                                value.timeout == undefined
+                            )
+                                continue;
+                            await setupCollector(
+                                this.client,
+                                interaction,
+                                value.timeout,
+                                value.onTimeout
+                            );
+                        }
+                    }
+
+                    if (
+                        Object.keys(commandObject.interactions.selectMenu)
+                            .length != 0
+                    ) {
+                        for (const [key, value] of Object.entries(
+                            commandObject.interactions.selectMenu
+                        )) {
+                            if (
+                                value.timeout == 0 ||
+                                value.timeout == undefined
+                            )
+                                continue;
+                            await setupCollector(
+                                this.client,
+                                interaction,
+                                value.timeout,
+                                value.onTimeout
+                            );
+                        }
+                    }
                 } catch (error) {
                     let err = new errs.HandlerError(
                         `Failed to run command $NAME$ \n\n` + error,
