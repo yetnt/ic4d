@@ -483,8 +483,9 @@ export class CommandHandler extends CoreHandler {
                     await commandObject.callback(this.client, interaction);
 
                     if (
+                        commandObject.interactions.button &&
                         Object.keys(commandObject.interactions.button).length !=
-                        0
+                            0
                     ) {
                         for (const [key, value] of Object.entries(
                             commandObject.interactions.button
@@ -503,6 +504,7 @@ export class CommandHandler extends CoreHandler {
                     }
 
                     if (
+                        commandObject.interactions.selectMenu &&
                         Object.keys(commandObject.interactions.selectMenu)
                             .length != 0
                     ) {

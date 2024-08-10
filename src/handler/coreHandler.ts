@@ -14,6 +14,7 @@ import {
     Interactions,
     InteractionBuilder,
     SlashCommandManager,
+    ContextMenuBuilder,
 } from "./builders/builders";
 
 export interface LoaderOptions {
@@ -143,16 +144,17 @@ export class CoreHandler {
                                 interactionObject.interactions,
                                 itemPath
                             );
-                        } else {
-                            if (!interactionObject.customId) {
-                                return [];
-                            }
-                            interactionObject.onlyAuthor =
-                                interactionObject.onlyAuthor ||
-                                interactionObject.authorOnly === true;
-                            interactionObject.filePath = itemPath;
-                            return [interactionObject];
                         }
+                        // } else {
+                        //     if (!interactionObject.customId) {
+                        //         return [];
+                        //     }
+                        //     interactionObject.onlyAuthor =
+                        //         interactionObject.onlyAuthor ||
+                        //         interactionObject.authorOnly === true;
+                        //     interactionObject.filePath = itemPath;
+                        //     return [interactionObject];
+                        // }
                     }
                 }
                 return [];
