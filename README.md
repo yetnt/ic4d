@@ -38,21 +38,21 @@ If any method/function has no return documentation, it returns void.
 
 -   [Quick Example](#quick-example)
 -   Classes
--   -   [ReadyHandler](#readyhandler)
--   -   [CommandHandler](#commandhandler)
--   -   [InteractionHandler](#interactionhandler)
--   -   [SlashCommandManager](#slashcommandmanager)
--   -   [InteractionBuilder](#interactionbuilder)
--   -   [ContextMenuBuilder](#contextmenubuilder)
+    -   [ReadyHandler](#readyhandler)
+    -   [CommandHandler](#commandhandler)
+    -   [InteractionHandler](#interactionhandler)
+    -   [SlashCommandManager](#slashcommandmanager)
+    -   [InteractionBuilder](#interactionbuilder)
+    -   [ContextMenuBuilder](#contextmenubuilder)
 
 For TS Lovers:
 
 -   Interfaces
--   -   [RunFlags](#runflags)
--   -   [HandlerFlags](#handlerflags)
--   -   [LoaderOptions](#loaderoptions)
+    -   [RunFlags](#runflags)
+    -   [HandlerFlags](#handlerflags)
+    -   [LoaderOptions](#loaderoptions)
 -   Other Types
--   -   [InteractionTypeStrings](#interactiontypestrings)
+    -   [InteractionTypeStrings](#interactiontypestrings)
 -   [Common Problems](#common-problems)
 -   [Credit](#credits)
 -   [Links](#links)
@@ -110,8 +110,10 @@ Ready handler is a handler that runs a set of functions when the bot starts.
 
 ## Constructor
 
--   `client`: Discord.js Client Instance
--   `...functions`: Functions to run when the `execute()` method is called, and the ready event has been emitted. Functions may take one parameter (client) or none.
+-   `client`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
+    -   Discord.js Client Instance
+-   `...functions`**: ((client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)) => Promise\<void> | void )[] = []**
+    -   Functions to run when the `execute()` method is called, and the ready event has been emitted. Functions may take one parameter (client) or none.
 
 ```js
 const { ReadyHandler } = require("ic4d");
@@ -148,13 +150,13 @@ Command Handler, which handles slash command creation, deletion, editing and run
 ### Parameters
 
 -   `client`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
--   -   Discord.js Client Instance
+    -   Discord.js Client Instance
 -   `path`**: string**
--   -   Path in which your exported command objects are stored. The handler will **not** work if you do not use path.
+    -   Path in which your exported command objects are stored. The handler will **not** work if you do not use path.
 -   `runFlags`**: [RunFlags](#runflags)**
--   -   **(optional)** Command Reader Options
+    -   **(optional)** Command Reader Options
 -   `loaderOptions`**: [LoaderOptions](#loaderoptions)**
--   -   **(optional)** Command Loader Options
+    -   **(optional)** Command Loader Options
 
 ```js
 const { CommandHandler } = require("ic4d");
@@ -170,9 +172,9 @@ const handler = new CommandHandler(client, path.join(__dirname, "commands"));
 **(asynchronous function)**
 
 -   `logAll`**: boolean**
--   -   **(optional)** Log command even if no change was performed.
+    -   **(optional)** Log command even if no change was performed.
 -   `serverId`**: string**
--   -   **(optional)** Register all commands in a specific server. if not provided it will be application wide
+    -   **(optional)** Register all commands in a specific server. if not provided it will be application wide
 
 ```js
 const handler = new CommandHandler(client, path.join(__dirname, "commands"));
@@ -187,7 +189,7 @@ async () => {
 **(asynchronous function)**
 
 -   `...middleWare`**: ( ( commandObject: Object, interaction?: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class) ) => number | Promise<number> )[]**
--   -   Functions to run before a command is run.
+    -   Functions to run before a command is run.
 
 ```js
 const handler = new CommandHandler(client, path.join(__dirname, "commands"));
@@ -297,13 +299,15 @@ Context Menus work a bit differently then the other interactions, please refer t
 ## Constructor
 
 -   `client`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
--   -   Discord.js client
+
+    -   Discord.js client
 
 -   `path`**: string**
--   -   Path to where interactions are stored.
+
+    -   Path to where interactions are stored.
 
 -   `loaderOptions`**: [LoaderOptions](#loaderoptions)**
--   -   **(optional)** Context Menu Loader Options
+    -   **(optional)** Context Menu Loader Options
 
 ```js
 const { InteractionHandler } = require("ic4d");
@@ -322,9 +326,9 @@ const interactions = new InteractionHandler(
 Start listening for all the available interactions. (Context Menus, Buttons, Select Menus and Modals)
 
 -   `authorOnlyMsg`**: string**
--   -   **(optional)** Message to display when a interacts with another user's interaction (onlyAuthor is set to true.)
+    -   **(optional)** Message to display when a interacts with another user's interaction (onlyAuthor is set to true.)
 -   `...middleWare`**: ((interaction?: [Interaction](https://discord.js.org/docs/packages/discord.js/main/Interaction:TypeAlias)) => number)[]**
--   -   Functions to run before an interaction is run.
+    -   Functions to run before an interaction is run.
 
 ```js
 interactions.start();
@@ -335,9 +339,9 @@ interactions.start();
 Start listening for button interactions.
 
 -   `authorOnlyMsg`**: string**
--   -   **(optional)** Message to display when a user click's another user's button (onlyAuthor is set to true.)
+    -   **(optional)** Message to display when a user click's another user's button (onlyAuthor is set to true.)
 -   `...middleWare`**: ((interaction?: [Interaction](https://discord.js.org/docs/packages/discord.js/main/Interaction:TypeAlias)) => number)[]**
--   -   Functions to run before a button is run.
+    -   Functions to run before a button is run.
 
 ```js
 interactions.buttons();
@@ -348,9 +352,9 @@ interactions.buttons();
 Start listening for select menu interactions.
 
 -   `authorOnlyMsg`**: string**
--   -   **(optional)** Message to display when a user click's another user's select menu (onlyAuthor is set to true.)
+    -   **(optional)** Message to display when a user click's another user's select menu (onlyAuthor is set to true.)
 -   `...middleWare`**: ((interaction?: [Interaction](https://discord.js.org/docs/packages/discord.js/main/Interaction:TypeAlias)) => number)[]**
--   -   Functions to run before a select menu is run.
+    -   Functions to run before a select menu is run.
 
 ```js
 interactions.selectMenu();
@@ -361,7 +365,7 @@ interactions.selectMenu();
 Start listening for modal interactions. (After their registered)
 
 -   `...middleWare`**: ((interaction?: [Interaction](https://discord.js.org/docs/packages/discord.js/main/Interaction:TypeAlias)) => number)[]**
--   -   Functions to run before a modal is shown.
+    -   Functions to run before a modal is shown.
 
 ```js
 interactions.modals();
@@ -372,7 +376,7 @@ interactions.modals();
 Start listening for context menu interactions. (After their registered)
 
 -   `...middleWare`**: ((interaction?: [Interaction](https://discord.js.org/docs/packages/discord.js/main/Interaction:TypeAlias)) => number)[]**
--   -   Functions to run before a context menu is run.
+    -   Functions to run before a context menu is run.
 
 ```js
 interactions.contextMenus();
@@ -410,9 +414,9 @@ interactions.start(undefined, lucky); // will run for every interactions
 Registers Context Menus that are found in the path given tot he InteractionHandler.
 
 -   `logAll`**: string**
--   -   **(optional)** Log context menu even if no change was performed.
+    -   **(optional)** Log context menu even if no change was performed.
 -   `serverId`**: string**
--   -   **(optional)** Register all commands in a specific server. if not provided it will be application wide
+    -   **(optional)** Register all commands in a specific server. if not provided it will be application wide
 
 ```js
 await interactions.registerContextMenus();
@@ -441,8 +445,8 @@ module.exports = command;
     execute: (
     interaction: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class),
     client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
-    ) => void | Promise<void>;**
--   -   Command's data, Only takes in 2 properties: `data` property which contains the command's data from the discord.js provided class `SlashCommandBuilder` and the `execute` property which takes in a function with the `interaction` and `client` parameter.
+    ) => void | Promise\<void>**
+    -   Command's data, Only takes in 2 properties: `data` property which contains the command's data from the discord.js provided class `SlashCommandBuilder` and the `execute` property which takes in a function with the `interaction` and `client` parameter.
 
 Example:
 
@@ -471,7 +475,7 @@ module.exports = command;
 Sets the permissions required by the user to execute the command.
 
 -   `...perms`**: bigint[]**
--   -   Rest paramter of `bigint`s provided by discord.js ([PermissionFlagsBits](https://discord-api-types.dev/api/discord-api-types-payloads/common#PermissionFlagsBits))
+    -   Rest paramter of `bigint`s provided by discord.js ([PermissionFlagsBits](https://discord-api-types.dev/api/discord-api-types-payloads/common#PermissionFlagsBits))
 
 **_`returns`: [self](#slashcommandmanager)_**
 
@@ -492,7 +496,7 @@ module.exports = command;
 Sets the permissions needed for the bot to execute the command.
 
 -   `...perms`**: bigint[]**
--   -   Rest paramter of `bigint`s provided by discord.js ([PermissionFlagsBits](https://discord-api-types.dev/api/discord-api-types-payloads/common#PermissionFlagsBits))
+    -   Rest paramter of `bigint`s provided by discord.js ([PermissionFlagsBits](https://discord-api-types.dev/api/discord-api-types-payloads/common#PermissionFlagsBits))
 
 **_`returns`: [self](#slashcommandmanager)_**
 
@@ -513,7 +517,7 @@ module.exports = command;
 Sets the commmand to be deleted, If command has already been deleted, it will be skipped when loaded again.
 
 -   `bool`**: boolean**
--   -   Boolean param
+    -   Boolean param
 
 **_`returns`: [self](#slashcommandmanager)_**
 
@@ -531,7 +535,7 @@ module.exports = command;
 Appends related interactions to the slash command, only way for slash commands and other interactions to appear in the same file.
 
 -   `...interactions`**: [InteractionBuilder](#interactionbuilder)[]**
--   -   Rest paramater of [InteractionBuilder](#interactionbuilder)
+    -   Rest paramater of [InteractionBuilder](#interactionbuilder)
 
 **_`returns`: [self](#slashcommandmanager)_**
 
@@ -577,7 +581,7 @@ yay. (I hate documenting.)
 Sets the custom ID of the interaction.
 
 -   `customId`**: string**
--   -   Custom ID of the interaction.
+    -   Custom ID of the interaction.
 
 **_`returns`: [self](#interactionbuilder)_**
 
@@ -590,7 +594,7 @@ const button = new InteractionBuilder().setCustomId("my-cool-button");
 Sets the type of the interaction. (Either "selectMenu", "button" or "modal")
 
 -   `type`: [InteractionTypeStrings](#interactiontypestrings)
--   -   Type of the interaction.
+    -   Type of the interaction.
 
 **_`returns`: [self](#interactionbuilder)_**
 
@@ -606,7 +610,7 @@ Function to be called when the interaction is called. (Is that how you say it?)
     interaction: [InteractionTypeStringsMap<this["type"]>](#interactiontypestringsmap),
     client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
     ) => void | Promise\<void>**
--   -   The function to be called (Parameters: `(interaction, client)`)
+    -   The function to be called (Parameters: `(interaction, client)`)
 
 **_`returns`: [self](#interactionbuilder)_**
 
@@ -621,7 +625,7 @@ const selectMenu = new InteractionBuilder().setCallback((i) => {
 Set whether or not the interaction can only be interacted with by the author of the interaction.
 
 -   `bool`**: boolean**
--   -   If true, the interaction only accepts the author's input.
+    -   If true, the interaction only accepts the author's input.
 
 **_`returns`: [self](#interactionbuilder)_**
 
@@ -637,9 +641,9 @@ Sets the interaction to have a timeout.
     interaction: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class),
     client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
     ) => void | Promise\<void>**
--   -   Function to call when the interaction time expires.
+    -   Function to call when the interaction time expires.
 -   `timeout`**: number**
--   -   How long to wait for the interaction to timeout. (in ms)
+    -   How long to wait for the interaction to timeout. (in ms)
 
 **_`returns`: [self](#interactionbuilder)_**
 
@@ -662,7 +666,7 @@ Builder for context menus, since they are special.
     client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
     ) => void;
     }**
--   -   Object with 2 properties, a `data` property that is an instance of `ContextMenuBuilder` provided by discord.js and a function called `execute` to execute when the context menu is called.
+    -   Object with 2 properties, a `data` property that is an instance of `ContextMenuBuilder` provided by discord.js and a function called `execute` to execute when the context menu is called.
 
 ```js
 const {
@@ -695,7 +699,7 @@ module.exports = user;
 Sets the context menu to be deleted, If context menu has already been deleted, it will be skipped when loaded again.
 
 -   `deleted`**: boolean**
--   -   Boolean indicating whether the context menu is deleted.
+    -   Boolean indicating whether the context menu is deleted.
 
 **_`returns`: [self](#contextmenubuilder)_**
 
