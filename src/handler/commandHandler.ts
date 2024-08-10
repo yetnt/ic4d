@@ -9,6 +9,7 @@ import * as errs from "./Errors";
 import { LoaderOptions } from "./coreHandler";
 import { deprecated, setupCollector } from "../funcs";
 import { Interactions } from "./builders/SlashCommandManager";
+import { InteractionObject } from "./interactionHandler";
 
 export interface ReaderOptions {
     /**

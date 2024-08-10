@@ -29,15 +29,7 @@ export interface InteractionObject {
             | ModalSubmitInteraction,
         client?: Client
     ) => void;
-    onTimeout?: (
-        interaction:
-            | ButtonInteraction
-            | AnySelectMenuInteraction
-            | UserContextMenuCommandInteraction
-            | MessageContextMenuCommandInteraction
-            | ModalSubmitInteraction,
-        client?: Client
-    ) => void;
+    onTimeout?: (interaction: Interaction, client?: Client) => void;
 }
 export interface ContextMenuObject {
     name: string;

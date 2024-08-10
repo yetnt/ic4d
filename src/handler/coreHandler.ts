@@ -106,7 +106,7 @@ export class CoreHandler {
 
     protected getInteractions(
         path: string,
-        getContextMenusOnly?: boolean
+        getContextMenusOnly: boolean = false
     ): (ContextMenuObject | InteractionObject)[] | ContextMenuObject[] {
         const scanDirectory = (
             directory: string
