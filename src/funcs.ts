@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path2 from "path";
 import * as clc from "cli-color";
 import { ChatInputCommandInteraction, Client } from "discord.js";
+import { InteractionBuilder } from "./handler/builders/InteractionBuilder";
 
 /**
  * Get all the command objects. This is the same function inherited from the CoreHandler used by the CommandHandler.
@@ -59,27 +60,32 @@ export function deprecated(txt: string, isOld: boolean) {
         : txt;
 }
 
+/**
+ * Sets up a collector for message components with a specified timeout.
+ *
+ * @param client - The Discord client instance.
+ * @param initInteraction - The initial interaction that triggered the setup.
+ * @param interaction - An object containing the interaction details, including the onTimeout function, timeout duration, and customId.
+ */
 export async function setupCollector(
     client: Client,
-    interaction: ChatInputCommandInteraction,
-    timeoutDuration: number,
-    onTimeoutFunc: (
-        interaction: ChatInputCommandInteraction,
-        client?: Client
-    ) => void | Promise<void>
+    initInteraction: ChatInputCommandInteraction,
+    interaction: InteractionBuilder
 ) {
-    const collector = interaction.channel.createMessageComponentCollector({
-        time: timeoutDuration,
+    const { onTimeout, timeout, customId } = interaction;
+
+    const collector = initInteraction.channel.createMessageComponentCollector({
+        time: timeout,
+        filter: (i) => i.customId === customId,
     });
 
     collector.on("collect", (i) => {
-        // console.log("Button clicked!");
-        // You can handle the button click here or simply notify that it was clicked
+        // Handle the button click here or simply notify that it was clicked
         // i.reply({ content: "Button was clicked!", ephemeral: true });
         collector.stop(); // Stop the collector after a click is detected
     });
 
     collector.on("end", async (collected, reason) => {
-        await onTimeoutFunc(interaction, client);
+        await onTimeout(initInteraction, client);
     });
 }

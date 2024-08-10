@@ -210,19 +210,6 @@ export class InteractionHandler extends CoreHandler {
                     return;
                 }
 
-                if (
-                    buttonObj.timeout !== 0 &&
-                    buttonObj.timeout !== undefined
-                ) {
-                    const created = new Date(
-                        interaction.message.createdTimestamp + buttonObj.timeout
-                    );
-                    if (created < new Date()) {
-                        buttonObj.onTimeout(interaction, this.client);
-                        return;
-                    }
-                }
-
                 for (const fn of middleWare) {
                     let result = fn(interaction);
                     if (result == 1) return; // test condition is true
@@ -275,18 +262,6 @@ export class InteractionHandler extends CoreHandler {
                     return;
                 }
 
-                if (
-                    selectObj.timeout !== 0 &&
-                    selectObj.timeout !== undefined
-                ) {
-                    const created = new Date(
-                        interaction.message.createdTimestamp + selectObj.timeout
-                    );
-                    if (created < new Date()) {
-                        selectObj.onTimeout(interaction, this.client);
-                        return;
-                    }
-                }
                 for (const fn of middleWare) {
                     let result = fn(interaction);
                     if (result == 1) return; // test condition is true

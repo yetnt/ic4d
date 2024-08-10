@@ -496,8 +496,7 @@ export class CommandHandler extends CoreHandler {
                             await setupCollector(
                                 this.client,
                                 interaction,
-                                value.timeout,
-                                value.onTimeout
+                                value
                             );
                         }
                     }
@@ -517,8 +516,7 @@ export class CommandHandler extends CoreHandler {
                             await setupCollector(
                                 this.client,
                                 interaction,
-                                value.timeout,
-                                value.onTimeout
+                                value
                             );
                         }
                     }
