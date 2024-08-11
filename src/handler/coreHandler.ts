@@ -133,7 +133,6 @@ export class CoreHandler {
 
     protected getLocalCommands(
         path: string,
-        es: boolean = false,
         exceptions: string[] = []
     ): CommandObject[] {
         const scanDirectory = (directory: string): SlashCommandManager[] => {
@@ -144,11 +143,9 @@ export class CoreHandler {
                 if (isDirectory) {
                     return scanDirectory(itemPath);
                 } else if (item.endsWith(".js")) {
-                    let commandObject: cmd;
-                    if (es) {
+                    let commandObject: cmd = require(itemPath);
+                    if (!(commandObject instanceof SlashCommandManager)) {
                         commandObject = findCommandInstance(require(itemPath));
-                    } else {
-                        commandObject = require(itemPath);
                     }
 
                     if (

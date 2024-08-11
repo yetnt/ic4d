@@ -5,6 +5,7 @@ import {
     UserContextMenuCommandInteraction,
     Interaction,
     ModalSubmitInteraction,
+    ApplicationCommandType,
 } from "discord.js";
 import * as clc from "cli-color";
 import * as errs from "./Errors";
@@ -12,6 +13,7 @@ import {
     InteractionObject,
     ContextMenuObject,
     LoaderOptions,
+    InteractionHandlerFlags,
 } from "./interfaces";
 
 /**
@@ -33,6 +35,11 @@ export class InteractionHandler extends CoreHandler {
         deleted: "NAME has been deleted.",
         skipped: "NAME was skipped. (Command deleted or set to delete.)",
     };
+    flags: InteractionHandlerFlags = {
+        debugger: false,
+        disableLogs: false,
+        refreshContextMenus: false,
+    };
 
     /**
      *
@@ -40,7 +47,12 @@ export class InteractionHandler extends CoreHandler {
      * @param path Path to where the interaction objects are stored
      * @param loaderOptions Loader options (for context menus)
      */
-    constructor(client: Client, path: string, loaderOptions?: LoaderOptions) {
+    constructor(
+        client: Client,
+        path: string,
+        loaderOptions?: LoaderOptions,
+        flags?: InteractionHandlerFlags
+    ) {
         super(client);
         this.interactionsPath = path;
         const interactions = this.getInteractions(this.interactionsPath);
@@ -62,6 +74,13 @@ export class InteractionHandler extends CoreHandler {
             skipped: clc.cyan.bold(
                 loaderOptions?.skipped || this.options.skipped
             ),
+        };
+
+        this.flags = {
+            debugger: flags?.debugger || this.flags.debugger,
+            disableLogs: flags?.disableLogs || this.flags.disableLogs,
+            refreshContextMenus:
+                flags?.refreshContextMenus || this.flags.refreshContextMenus,
         };
     }
 
@@ -149,6 +168,12 @@ export class InteractionHandler extends CoreHandler {
         authorOnlyMsg: string,
         ...middleWare: ((interaction?: Interaction) => number)[]
     ) {
+        if (this.flags.debugger)
+            console.debug(
+                clc.underline.blue(
+                    "\nbuttons() has been called and has started executing.\n"
+                )
+            );
         authorOnlyMsg =
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
@@ -197,6 +222,12 @@ export class InteractionHandler extends CoreHandler {
         authorOnlyMsg?: string,
         ...middleWare: ((interaction?: Interaction) => number)[]
     ) {
+        if (this.flags.debugger)
+            console.debug(
+                clc.underline.blue(
+                    "\nselectMenus() has been called and has started executing.\n"
+                )
+            );
         authorOnlyMsg =
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
@@ -245,6 +276,12 @@ export class InteractionHandler extends CoreHandler {
      * @param middleWare Functions to run before the buttons contextMenus execute.
      */
     contextMenus(...middleWare: ((interaction?: Interaction) => number)[]) {
+        if (this.flags.debugger)
+            console.debug(
+                clc.underline.blue(
+                    "\ncontextMenus() has been called and has started executing.\n"
+                )
+            );
         this.client.on(
             "interactionCreate",
             (
@@ -282,6 +319,12 @@ export class InteractionHandler extends CoreHandler {
      * @param middleWare Functions to run before the modals execute.
      */
     modals(...middleWare: ((interaction?: Interaction) => number)[]) {
+        if (this.flags.debugger)
+            console.debug(
+                clc.underline.blue(
+                    "\nmodals() has been called and has started executing.\n"
+                )
+            );
         this.client.on(
             "interactionCreate",
             (interaction: ModalSubmitInteraction) => {
@@ -340,6 +383,28 @@ export class InteractionHandler extends CoreHandler {
                 serverId
             );
 
+            if (this.flags.refreshContextMenus) {
+                let count = 0;
+                applicationCommands.cache.forEach((v, k, m) => {
+                    if (
+                        v.type !== ApplicationCommandType.Message &&
+                        v.type !== ApplicationCommandType.User
+                    )
+                        return;
+                    if (this.flags.debugger)
+                        console.log(clc.red.underline(`${v.name}, `));
+                    applicationCommands.delete(v.id);
+                });
+                if (this.flags.debugger)
+                    console.log(clc.red.underline("have been deleted."));
+
+                console.log(
+                    clc.yellow.underline.italic(
+                        `${count} application commands (Context Menus) have been deleted.`
+                    )
+                );
+            }
+
             for (const localContext of localContexts as ContextMenuObject[]) {
                 let noChanges = true;
                 let { name, type, filePath, data } = localContext;
@@ -355,9 +420,10 @@ export class InteractionHandler extends CoreHandler {
                                 existingContext.id
                             );
                             noChanges = false;
-                            console.log(
-                                this.options.deleted.replace("NAME", name)
-                            );
+                            if (!this.flags.disableLogs)
+                                console.log(
+                                    this.options.deleted.replace("NAME", name)
+                                );
                             continue;
                         }
 
@@ -374,16 +440,18 @@ export class InteractionHandler extends CoreHandler {
                             );
                             noChanges = false;
 
-                            console.log(
-                                this.options.edited.replace("NAME", name)
-                            );
+                            if (!this.flags.disableLogs)
+                                console.log(
+                                    this.options.edited.replace("NAME", name)
+                                );
                         }
                     } else {
                         if (localContext.deleted) {
                             noChanges = false;
-                            console.log(
-                                this.options.skipped.replace("NAME", name)
-                            );
+                            if (!this.flags.disableLogs)
+                                console.log(
+                                    this.options.skipped.replace("NAME", name)
+                                );
                             continue;
                         }
 
@@ -395,7 +463,10 @@ export class InteractionHandler extends CoreHandler {
                         await applicationCommands.create(data);
                         noChanges = false;
 
-                        console.log(this.options.loaded.replace("NAME", name));
+                        if (!this.flags.disableLogs)
+                            console.log(
+                                this.options.loaded.replace("NAME", name)
+                            );
                     }
                 } catch (err) {
                     throw new errs.ContextLoaderError(
@@ -405,7 +476,7 @@ export class InteractionHandler extends CoreHandler {
                     );
                 }
 
-                if (logAll && noChanges == true) {
+                if (logAll && noChanges == true && !this.flags.disableLogs) {
                     console.log(
                         this.options.loadedNoChanges.replace("NAME", name)
                     );

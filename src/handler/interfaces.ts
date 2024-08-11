@@ -133,14 +133,6 @@ export interface HandlerFlags {
      */
     disableLogs?: boolean;
     /**
-     * Enable this if you're using typescript, Allows for es imports.
-     */
-    esImports?: boolean;
-    /**
-     * If you're using esImports, and you leave this at it's default (false), then if a file ion the commands folder does not export a SlashCommandManager class as one of the exports, an error will be thrown.
-     */
-    esImportsDisableNoExportFound?: boolean;
-    /**
      * Whether or not this is the production version of the bot. If set to true, commands labelled `isDev` will NOT be loaded. (Use the `setDev()` method in  @see SlashCommandManager
      */
     production?: boolean;
@@ -148,6 +140,25 @@ export interface HandlerFlags {
      * Clears ALL application commands on startup. (Slash commands, User commands, and Message commands.)
      */
     refreshApplicationCommands?: boolean;
+}
+
+/**
+ * An interface that represents anything you can do with the interactions when they are run, BUT before YOUR code executes.
+ * @see HandlerFlags If you have `esImports` enabled in HandlerFlags, enable here to or else your code will not work!
+ */
+export interface InteractionHandlerFlags {
+    /**
+     * Enable Debugger mode. Prints (almost) everything that happens behind the scenes of course not with the API itself.
+     */
+    debugger?: boolean;
+    /**
+     * Disabling Logging of the Context Menu Loader. Not advised but hey it's your bot. Default is false.
+     */
+    disableLogs?: boolean;
+    /**
+     * Clears Context Menus
+     */
+    refreshContextMenus?: boolean;
 }
 
 /**

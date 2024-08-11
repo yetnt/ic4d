@@ -1,5 +1,9 @@
 import { CoreHandler } from "./coreHandler";
-import { ChatInputCommandInteraction, Client } from "discord.js";
+import {
+    ApplicationCommandType,
+    ChatInputCommandInteraction,
+    Client,
+} from "discord.js";
 import * as clc from "cli-color";
 import * as errs from "./Errors";
 import {
@@ -45,8 +49,6 @@ export class CommandHandler extends CoreHandler {
     flags: HandlerFlags = {
         debugger: false,
         disableLogs: false,
-        esImports: false,
-        esImportsDisableNoExportFound: false,
         production: false,
         refreshApplicationCommands: false,
     };
@@ -98,10 +100,6 @@ export class CommandHandler extends CoreHandler {
         this.flags = {
             debugger: handlerFlags?.debugger || this.flags.debugger,
             disableLogs: handlerFlags?.disableLogs || this.flags.disableLogs,
-            esImports: handlerFlags?.esImports || this.flags.esImports,
-            esImportsDisableNoExportFound:
-                handlerFlags?.esImportsDisableNoExportFound ||
-                this.flags.esImportsDisableNoExportFound,
             production: handlerFlags?.production || this.flags.production,
             refreshApplicationCommands:
                 handlerFlags?.refreshApplicationCommands ||
@@ -117,17 +115,30 @@ export class CommandHandler extends CoreHandler {
     async registerCommands(logNoChanges?: boolean, serverId?: string) {
         logNoChanges = logNoChanges !== undefined ? logNoChanges : true;
         try {
-            const localCommands = this.getLocalCommands(
-                this.commandPath,
-                this.flags.esImports
-            );
+            const localCommands = this.getLocalCommands(this.commandPath);
             const applicationCommands = await this.getApplicationCommands(
                 this.client,
                 serverId
             );
 
-            if (this.flags.refreshApplicationCommands)
-                await applicationCommands.set([]);
+            if (this.flags.refreshApplicationCommands) {
+                let count = 0;
+                applicationCommands.cache.forEach((v) => {
+                    if (v.type !== ApplicationCommandType.ChatInput) return;
+                    if (this.flags.debugger)
+                        console.log(clc.red.underline(`${v.name}, `));
+                    applicationCommands.delete(v.id);
+                    count++;
+                });
+                if (this.flags.debugger)
+                    console.log(clc.red.underline("have been deleted."));
+
+                console.log(
+                    clc.yellow.underline.italic(
+                        `${count} application commands (Slash Only) have been deleted.`
+                    )
+                );
+            }
 
             for (const localCommand of localCommands) {
                 if (
@@ -297,10 +308,7 @@ export class CommandHandler extends CoreHandler {
                         )
                     );
 
-                const localCommands = this.getLocalCommands(
-                    this.commandPath,
-                    this.flags.esImports
-                );
+                const localCommands = this.getLocalCommands(this.commandPath);
 
                 const commandObject: CommandObject = localCommands.find(
                     (cmd: CommandObject) => cmd.name === interaction.commandName

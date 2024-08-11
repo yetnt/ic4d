@@ -50,6 +50,7 @@ For TS Lovers:
 -   Interfaces
     -   [RunFlags](#runflags)
     -   [HandlerFlags](#handlerflags)
+    -   [InteractionHandlerFlags](#interactionhandlerflags)
     -   [LoaderOptions](#loaderoptions)
 -   Other Types
     -   [InteractionTypeStrings](#interactiontypestrings)
@@ -69,7 +70,7 @@ const path = require("path");
 const { CommandHandler, ReadyHandler } = require("ic4d");
 
 const commandsPath = "commands";
-const readerOptions = {
+const runFlags = {
     devs: ["671549251024584725"],
     testGuildId: "808701451399725116",
 };
@@ -84,7 +85,7 @@ const client = new Client({
 const handler = new CommandHandler(
     client,
     path.join(__dirname, "commands"),
-    readerOptions
+    runFlags
 );
 const ready = new ReadyHandler(
     client,
@@ -307,7 +308,12 @@ Context Menus work a bit differently then the other interactions, please refer t
     -   Path to where interactions are stored.
 
 -   `loaderOptions`**: [LoaderOptions](#loaderoptions)**
+
     -   **(optional)** Context Menu Loader Options
+
+-   `flags`**: [InteractionHandlerFlags](#interactionhandlerflags)**
+
+    -   **(optional)** Interaction Handler Flags
 
 ```js
 const { InteractionHandler } = require("ic4d");
@@ -792,30 +798,6 @@ Default value: false
 
 Disabling Logging of the Command Loader. Not advisable but hey it's your bot.
 
-### **_esImports: boolean_**
-
-```brainfuck
-- NOT SURE IF IT WORKS, STILL NEED TO TEST.
-```
-
-```
-Default value: false
-```
-
-Enable this if you're using typescript, Allows for es imports.
-
-### **_esImportsDisableNoExportFound: boolean_**
-
-```brainfuck
-- NOT SURE IF IT WORKS, STILL NEED TO TEST.
-```
-
-```
-Default value: false
-```
-
-If you're using esImports, and you leave this at it's default, then if a file ion the commands folder does not export a SlashCommandManager class as one of the exports, an error will be thrown.
-
 ### **_production: boolean_**
 
 ```
@@ -824,7 +806,7 @@ Default value: false
 
 Whether or not this is the production version of the bot. If set to true, commands labelled `isDev` will NOT be loaded. (Use the `setDev()` method in [SlashCommandManager](#slashcommandmanager))
 
-### **_refreshApplicationCommands?: boolean_**
+### **_refreshApplicationCommands: boolean_**
 
 ```
 Default value: false
@@ -839,9 +821,38 @@ const obj: LoaderOptions = {
     debugger: true,
     production: true,
     disableLogs: true,
-    esImports: false, // I like my life simple.
 };
 ```
+
+# InteractionHandlerFlags
+
+An interface that represents anything you can do with the interactions when they are run, BUT before YOUR code executes.
+
+## Properties
+
+### **_debugger: boolean_**
+
+```
+Default value: false
+```
+
+Enable Debugger mode. Prints (almost) everything that happens behind the scenes of course not with the API itself.
+
+### **_disableLogs: boolean_**
+
+```
+Default value: false
+```
+
+Disabling Logging of the Context Menu Loader. Not advised but hey it's your bot. Default is false.
+
+### **_refreshContextMenus: boolean_**
+
+```
+Default value: false
+```
+
+Clears Context Menus
 
 # LoaderOptions
 
