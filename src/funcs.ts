@@ -1,4 +1,4 @@
-import { CommandObject } from "./handler/commandHandler";
+import { CommandObject } from "./handler/interfaces";
 import * as fs from "fs";
 import * as path2 from "path";
 import * as clc from "cli-color";
@@ -79,13 +79,14 @@ export async function setupCollector(
         filter: (i) => i.customId === customId,
     });
 
-    collector.on("collect", (i) => {
+    collector.once("collect", (i) => {
         // Handle the button click here or simply notify that it was clicked
         // i.reply({ content: "Button was clicked!", ephemeral: true });
-        collector.stop(); // Stop the collector after a click is detected
+        collector.stop("respondedInTime"); // Stop the collector after a click is detected. This is in a comment because when it's run it emits the "end" event.
     });
 
-    collector.on("end", async (collected, reason) => {
-        await onTimeout(initInteraction, client);
+    collector.once("end", async (collected, reason) => {
+        if (reason !== "respondedInTime")
+            await onTimeout(initInteraction, client);
     });
 }

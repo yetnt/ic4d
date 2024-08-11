@@ -4,7 +4,7 @@ import {
     ChatInputCommandInteraction,
     RESTPostAPIApplicationCommandsJSONBody,
 } from "discord.js";
-import { Option } from "../coreHandler";
+import { Option } from "../interfaces";
 import { InteractionTypeStrings, InteractionBuilder } from "./builders";
 
 export type Interactions = {

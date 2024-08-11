@@ -1,49 +1,18 @@
 import { CoreHandler } from "./coreHandler";
 import {
     Client,
-    ButtonInteraction,
-    AnySelectMenuInteraction,
     MessageContextMenuCommandInteraction,
     UserContextMenuCommandInteraction,
-    RESTPostAPIApplicationCommandsJSONBody,
     Interaction,
     ModalSubmitInteraction,
 } from "discord.js";
 import * as clc from "cli-color";
 import * as errs from "./Errors";
-import { LoaderOptions } from "./coreHandler";
-
-export interface InteractionObject {
-    customId?: string;
-    onlyAuthor?: boolean;
-    authorOnly?: boolean;
-    filePath: string;
-    type: string;
-    timeout?: number;
-    callback: (
-        interaction:
-            | ButtonInteraction
-            | AnySelectMenuInteraction
-            | UserContextMenuCommandInteraction
-            | MessageContextMenuCommandInteraction
-            | ModalSubmitInteraction,
-        client?: Client
-    ) => void;
-    onTimeout?: (interaction: Interaction, client?: Client) => void;
-}
-export interface ContextMenuObject {
-    name: string;
-    type: number;
-    deleted?: boolean;
-    filePath?: string;
-    data: RESTPostAPIApplicationCommandsJSONBody;
-    callback: (
-        interaction:
-            | UserContextMenuCommandInteraction
-            | MessageContextMenuCommandInteraction,
-        client?: Client
-    ) => void;
-}
+import {
+    InteractionObject,
+    ContextMenuObject,
+    LoaderOptions,
+} from "./interfaces";
 
 /**
  * @class

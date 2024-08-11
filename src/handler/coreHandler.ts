@@ -7,56 +7,18 @@ import {
 } from "discord.js";
 import * as path2 from "path";
 import * as fs from "fs";
-import { CommandObject } from "./commandHandler";
-import { ContextMenuObject, InteractionObject } from "./interactionHandler";
+import {
+    Choice,
+    Option,
+    CommandObject,
+    ContextMenuObject,
+    InteractionObject,
+} from "./interfaces";
 import {
     Interactions,
     InteractionBuilder,
     SlashCommandManager,
-    ContextMenuBuilder,
 } from "./builders/builders";
-
-/**
- * Interface that represents default string values for the loader to log to the console when it encounters a command/context menu.
- * 
- * Make sure you keep `NAME` in the string or else you will not know what happened to which command.
-If there is no log in the console for a specific command, then it has been loaded, there are no edits and it has not been deleted.
- */
-export interface LoaderOptions {
-    /**
-     * What to show for context menus/commands that load in
-     */
-    loaded: string;
-    /**
-     * What to show for context menus/commands that get edited.
-     */
-    edited: string;
-    /**
-     * What to show for context menus/commands that get deleted.
-     */
-    deleted: string;
-    /**
-     * What to show for context menus/commands that get skipped. (Deleted and still marked as deleted.)
-     */
-    skipped: string;
-    /**
-     * What to show for context menus/commands that get loaded, but have no changes
-     */
-    loadedNoChanges?: string;
-}
-
-export interface Choice {
-    name: string;
-    value: any;
-}
-
-export interface Option {
-    name: string;
-    description: string;
-    required?: boolean;
-    choices?: Choice[];
-    type: ApplicationCommandOptionType;
-}
 
 function change(cI: InteractionBuilder): InteractionObject {
     return {

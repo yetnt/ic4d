@@ -1,105 +1,14 @@
-import { CoreHandler, Option } from "./coreHandler";
-import {
-    ChatInputCommandInteraction,
-    Client,
-    RESTPostAPIApplicationCommandsJSONBody,
-} from "discord.js";
+import { CoreHandler } from "./coreHandler";
+import { ChatInputCommandInteraction, Client } from "discord.js";
 import * as clc from "cli-color";
 import * as errs from "./Errors";
-import { LoaderOptions } from "./coreHandler";
+import {
+    CommandObject,
+    HandlerFlags,
+    LoaderOptions,
+    RunFlags,
+} from "./interfaces";
 import { deprecated, setupCollector } from "../funcs";
-import { Interactions } from "./builders/SlashCommandManager";
-
-/**
- * An interface representing the configuration flags used for running commands in the bot.
- * This configuration is specifically used to control various runtime aspects of command execution.
- *
- * @see HandlerFlags for flags related to the command handling and execution process before the code runs.
- */
-export interface RunFlags {
-    /**
-     * The ID of the test guild for command testing purposes. If provided, commands will be deployed only to this guild.
-     *
-     * @example "123456789012345678"
-     */
-    testGuildId?: string;
-
-    /**
-     * An array of Discord user IDs (snowflakes) that have developer privileges.
-     * Commands or functionalities restricted to developers will be accessible to users with IDs in this array.
-     *
-     * @example ["123456789012345678", "876543210987654321"]
-     */
-    devs: string[];
-
-    /**
-     * The message shown when a command restricted to developers is executed by a non-developer.
-     */
-    onlyDev?: string;
-
-    /**
-     * The message displayed when the bot lacks the necessary permissions to execute a command.
-     */
-    botNoPerms?: string;
-
-    /**
-     * The message displayed when a user lacks the necessary permissions to execute a command.
-     */
-    userNoPerms?: string;
-}
-
-/**
- * An interface representing a command that has been sanitized to work with the ic4d package. You should probably not touch this 💀
- */
-export interface CommandObject {
-    name: string;
-    description: string;
-    data?: RESTPostAPIApplicationCommandsJSONBody;
-    callback: (
-        client: Client,
-        interaction: ChatInputCommandInteraction
-    ) => void | Promise<void>;
-    options?: Option[];
-    deleted?: boolean;
-    devOnly?: boolean;
-    filePath?: string;
-    isOld?: boolean;
-    isDev?: boolean;
-    interactions: Interactions;
-
-    permissionsRequired?: bigint[];
-    botPermissions?: bigint[];
-}
-
-/**
- * An interface that represents anything you can do with the commands when they are run, BUT before YOUR code executes.
- */
-export interface HandlerFlags {
-    /**
-     * Enable Debugger mode. Prints (almost) everything that happens behind the scenes of course not with the API itself.
-     */
-    debugger?: boolean;
-    /**
-     * Disabling Logging of the Command Loader. Not advised but hey it's your bot. Default is false.
-     */
-    disableLogs?: boolean;
-    /**
-     * Enable this if you're using typescript, Allows for es imports.
-     */
-    esImports?: boolean;
-    /**
-     * If you're using esImports, and you leave this at it's default (false), then if a file ion the commands folder does not export a SlashCommandManager class as one of the exports, an error will be thrown.
-     */
-    esImportsDisableNoExportFound?: boolean;
-    /**
-     * Whether or not this is the production version of the bot. If set to true, commands labelled `isDev` will NOT be loaded. (Use the `setDev()` method in  @see SlashCommandManager
-     */
-    production?: boolean;
-    /**
-     * Clears ALL application commands on startup. (Slash commands, User commands, and Message commands.)
-     */
-    refreshApplicationCommands?: boolean;
-}
 
 /**
  * Helper function to just attach [DEV] to a command that is of developer.
@@ -388,7 +297,10 @@ export class CommandHandler extends CoreHandler {
                         )
                     );
 
-                const localCommands = this.getLocalCommands(this.commandPath);
+                const localCommands = this.getLocalCommands(
+                    this.commandPath,
+                    this.flags.esImports
+                );
 
                 const commandObject: CommandObject = localCommands.find(
                     (cmd: CommandObject) => cmd.name === interaction.commandName

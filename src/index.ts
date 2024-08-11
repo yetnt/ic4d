@@ -1,8 +1,4 @@
-export {
-    CommandHandler,
-    RunFlags,
-    HandlerFlags,
-} from "./handler/commandHandler";
+export { CommandHandler } from "./handler/commandHandler";
 export { ReadyHandler } from "./handler/ready";
 export { InteractionHandler } from "./handler/interactionHandler";
 export {
@@ -12,3 +8,4 @@ export {
     SlashCommandManager,
 } from "./handler/builders/builders";
 export { getLocalCommands } from "./funcs";
+export { RunFlags, HandlerFlags, LoaderOptions } from "./handler/interfaces";
