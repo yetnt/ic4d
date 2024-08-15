@@ -49,7 +49,7 @@ export function getLocalCommands(
 }
 
 /**
- * Add deprecated string.
+ * Add deprecated string. TO-DO remove.
  * @param isOld
  */
 export function deprecated(txt: string, isOld: boolean) {
