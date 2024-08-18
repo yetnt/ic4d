@@ -46,7 +46,7 @@ export function extractAllInteractions(
 
 function findCommandInstance(
     module: Record<string, any>
-): SlashCommandManager | null {
+): SlashCommandManager | { isCommand: boolean } {
     // Iterate over the module's exports to find an instance of CommandHandler
     for (const value of Object.values(module)) {
         if (value instanceof SlashCommandManager) {
@@ -54,7 +54,7 @@ function findCommandInstance(
         }
     }
 
-    return null;
+    return { isCommand: false };
 }
 
 type cmd = {
@@ -143,7 +143,14 @@ export class CoreHandler {
                 if (isDirectory) {
                     return scanDirectory(itemPath);
                 } else if (item.endsWith(".js")) {
-                    let commandObject: cmd = require(itemPath);
+                    let commandObject:
+                        | cmd
+                        | {
+                              isCommand: boolean;
+                              description?: null;
+                              customId?: "!";
+                              name?: string;
+                          } = require(itemPath);
                     if (!(commandObject instanceof SlashCommandManager)) {
                         commandObject = findCommandInstance(require(itemPath));
                     }
@@ -156,6 +163,7 @@ export class CoreHandler {
                     ) {
                         return [];
                     }
+                    commandObject = <cmd>commandObject;
                     // It's a valid command, now proceed with checks.
                     commandObject.filePath = itemPath;
                     return [commandObject];
