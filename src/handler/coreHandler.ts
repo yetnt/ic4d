@@ -105,6 +105,7 @@ export class CoreHandler {
      */
     protected logOrWrite(x: string, col?: bare.Format, stdout?: boolean): void {
         if (this.coreFlags.logToFile) {
+            x = x.replace(/\x1b\[([0-9;]*)m/g, "");
             try {
                 // If `logToFile` is a valid file path, append the message with a newline
                 appendFileSync(
