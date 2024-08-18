@@ -53,7 +53,7 @@ export class InteractionHandler extends CoreHandler {
         loaderOptions?: LoaderOptions,
         flags?: InteractionHandlerFlags
     ) {
-        super(client);
+        super(client, flags.debugger, flags.logToFile);
         this.interactionsPath = path;
         const interactions = this.getInteractions(this.interactionsPath);
         this.interactions = this.sortInteractionObjects(interactions);
@@ -79,6 +79,7 @@ export class InteractionHandler extends CoreHandler {
         this.flags = {
             debugger: flags?.debugger || this.flags.debugger,
             disableLogs: flags?.disableLogs || this.flags.disableLogs,
+            logToFile: flags?.logToFile || this.flags.logToFile,
             refreshContextMenus:
                 flags?.refreshContextMenus || this.flags.refreshContextMenus,
         };
@@ -168,12 +169,7 @@ export class InteractionHandler extends CoreHandler {
         authorOnlyMsg: string,
         ...middleWare: ((interaction?: Interaction) => number)[]
     ) {
-        if (this.flags.debugger)
-            console.debug(
-                clc.underline.blue(
-                    "\nbuttons() has been called and has started executing.\n"
-                )
-            );
+        if (this.flags.debugger) this.debug.topMsg("buttons()");
         authorOnlyMsg =
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
@@ -222,12 +218,7 @@ export class InteractionHandler extends CoreHandler {
         authorOnlyMsg?: string,
         ...middleWare: ((interaction?: Interaction) => number)[]
     ) {
-        if (this.flags.debugger)
-            console.debug(
-                clc.underline.blue(
-                    "\nselectMenus() has been called and has started executing.\n"
-                )
-            );
+        if (this.flags.debugger) this.debug.topMsg("selectMenus()");
         authorOnlyMsg =
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
@@ -276,12 +267,7 @@ export class InteractionHandler extends CoreHandler {
      * @param middleWare Functions to run before the buttons contextMenus execute.
      */
     contextMenus(...middleWare: ((interaction?: Interaction) => number)[]) {
-        if (this.flags.debugger)
-            console.debug(
-                clc.underline.blue(
-                    "\ncontextMenus() has been called and has started executing.\n"
-                )
-            );
+        if (this.flags.debugger) this.debug.topMsg("contextMenus()");
         this.client.on(
             "interactionCreate",
             (
@@ -319,12 +305,7 @@ export class InteractionHandler extends CoreHandler {
      * @param middleWare Functions to run before the modals execute.
      */
     modals(...middleWare: ((interaction?: Interaction) => number)[]) {
-        if (this.flags.debugger)
-            console.debug(
-                clc.underline.blue(
-                    "\nmodals() has been called and has started executing.\n"
-                )
-            );
+        if (this.flags.debugger) this.debug.topMsg("modals()");
         this.client.on(
             "interactionCreate",
             (interaction: ModalSubmitInteraction) => {

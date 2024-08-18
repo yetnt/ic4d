@@ -20,6 +20,10 @@ import {
     SlashCommandManager,
 } from "./builders/builders";
 
+import * as clc from "cli-color";
+import bare = require("cli-color/bare");
+import { appendFileSync } from "fs";
+
 function change(cI: InteractionBuilder): InteractionObject {
     return {
         customId: cI.customId,
@@ -67,9 +71,120 @@ const isEmpty = (obj: Record<string, any>) => Object.keys(obj).length === 0;
 
 export class CoreHandler {
     client: Client;
+    coreFlags: { debugger: boolean; logToFile: string | false } = {
+        debugger: false,
+        logToFile: false,
+    };
 
-    constructor(client: Client) {
+    protected currentDate() {
+        const date = new Date(Date.now());
+        const arr = [
+            "[ ",
+            date.getHours(),
+            ":",
+            date.getMinutes(),
+            ":",
+            date.getSeconds(),
+            " ",
+            date.getDate(),
+            "-",
+            date.getMonth() + 1,
+            "-",
+            date.getFullYear(),
+            " ]",
+        ];
+
+        return arr.join("");
+    }
+
+    /**
+     * Either Logs to the console or writes to a file. If to the console, clc coloruing will be used.
+     * @param x String to log or write
+     * @param clc clc colouring.
+     * @param stdout Print via procress.stdout
+     */
+    protected logOrWrite(x: string, col?: bare.Format, stdout?: boolean): void {
+        if (this.coreFlags.logToFile) {
+            try {
+                // If `logToFile` is a valid file path, append the message with a newline
+                appendFileSync(
+                    this.coreFlags.logToFile,
+                    this.currentDate() + " " + x + "\n",
+                    "utf8"
+                );
+            } catch (err) {
+                console.log("logOrWrite() function failed to write to file!:");
+                console.error(err);
+            }
+        } else {
+            let string = col ? col(x) : x;
+            stdout ? process.stdout.write(string) : console.debug(string);
+        }
+    }
+
+    /**
+     * Object of debuger helper function which take in a string and use clc to colour it and ouput whatever debug message to the console.
+     * Only used by the InteractionHandler and CommandHandler, That's why it's protected, the user doesn't need this.
+     */
+    protected debug = {
+        /**
+         * Custom string that already has clc colouring.
+         * @param x String to log to the console.
+         */
+        custom: (x: string): void => {
+            this.logOrWrite(x); // this is red and red has any type???
+        },
+
+        /**
+         * Common Text.
+         * @param x String tot log to the console.
+         */
+        common: (x: string): void => {
+            this.logOrWrite(x, clc.underline);
+        },
+
+        /**
+         * Common Blue Text
+         */
+        commonBlue: (x: string): void => {
+            this.logOrWrite(x, clc.blue.bold);
+        },
+
+        /**
+         * Top Level Message for the debugger. Used to tell the user which function has started running
+         * @param x String to log to the console.
+         */
+        topMsg: (x: string): void => {
+            this.logOrWrite(
+                "\n" + x + " has been called and has started executing.\n",
+                clc.underline.blue
+            );
+        },
+        /**
+         * Used when the CommandHandler and InteravctionHander refresh the applicat5ion command.
+         * Commands use stdout instead of console.log cuz new line
+         */
+        refresh: {
+            /**
+             * An item in a list of multiple items that have been deleted. Used by the ComandHandler and InteractionHandler when refreshing application commands.
+             * @param x String to log to the console
+             */
+            sMsg: (x: string): void => {
+                this.logOrWrite(x + ", ", clc.red.underline);
+            },
+            /**
+             * Final Message to log to the console. (Logs the string "have been deleted.")
+             */
+            lMsg: (): void => {
+                this.logOrWrite("have been deleted.", clc.red.underline);
+            },
+        },
+    };
+
+    constructor(client: Client, debugMode = false, logToFile?: string | false) {
         this.client = client;
+        this.coreFlags.debugger = debugMode || false;
+        this.coreFlags.logToFile = logToFile || false;
     }
 
     protected getInteractions(

@@ -814,6 +814,14 @@ Default value: false
 
 Clears ALL application commands on startup. (Slash commands, User commands, and Message commands.)
 
+### **_logToFile: string | false_**
+
+```
+Default value: false
+```
+
+When debugger mode is enabled, Either log to console or a file.
+
 ## Example Use
 
 ```ts
@@ -853,6 +861,14 @@ Default value: false
 ```
 
 Clears Context Menus
+
+### **_logToFile: string | false_**
+
+```
+Default value: false
+```
+
+When debugger mode is enabled, Either log to console or a file.
 
 # LoaderOptions
 

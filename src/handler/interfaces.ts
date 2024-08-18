@@ -129,6 +129,10 @@ export interface HandlerFlags {
      */
     debugger?: boolean;
     /**
+     * When debugger mode is enabled, Either log to console or a file.
+     */
+    logToFile?: string | false;
+    /**
      * Disabling Logging of the Command Loader. Not advised but hey it's your bot. Default is false.
      */
     disableLogs?: boolean;
@@ -151,6 +155,10 @@ export interface InteractionHandlerFlags {
      * Enable Debugger mode. Prints (almost) everything that happens behind the scenes of course not with the API itself.
      */
     debugger?: boolean;
+    /**
+     * When debugger mode is enabled, Either log to console or a file.
+     */
+    logToFile?: string | false;
     /**
      * Disabling Logging of the Context Menu Loader. Not advised but hey it's your bot. Default is false.
      */
