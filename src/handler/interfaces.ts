@@ -130,6 +130,8 @@ export interface HandlerFlags {
     debugger?: boolean;
     /**
      * When debugger mode is enabled, Either log to console or a file.
+     *
+     * When log to file specify a FOLDER path
      */
     logToFile?: string | false;
     /**
@@ -157,6 +159,8 @@ export interface InteractionHandlerFlags {
     debugger?: boolean;
     /**
      * When debugger mode is enabled, Either log to console or a file.
+     *
+     * When log to file specify a FOLDER path
      */
     logToFile?: string | false;
     /**

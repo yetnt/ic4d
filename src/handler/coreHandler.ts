@@ -85,12 +85,6 @@ export class CoreHandler {
             date.getMinutes(),
             ":",
             date.getSeconds(),
-            " ",
-            date.getDate(),
-            "-",
-            date.getMonth() + 1,
-            "-",
-            date.getFullYear(),
             " ]",
         ];
 
@@ -107,9 +101,18 @@ export class CoreHandler {
         if (this.coreFlags.logToFile) {
             x = x.replace(/\x1b\[([0-9;]*)m/g, "");
             try {
+                const date = new Date(Date.now());
                 // If `logToFile` is a valid file path, append the message with a newline
                 appendFileSync(
-                    this.coreFlags.logToFile,
+                    path2.join(
+                        this.coreFlags.logToFile,
+                        date.getDate() +
+                            "-" +
+                            (date.getMonth() + 1) +
+                            "-" +
+                            date.getFullYear(),
+                        "-log.txt"
+                    ),
                     this.currentDate() + " " + x + "\n",
                     "utf8"
                 );

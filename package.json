@@ -1,6 +1,6 @@
 {
     "name": "ic4d",
-    "version": "3.0.0",
+    "version": "3.1.0-pr.0",
     "description": "Discord.js Interaction and Command handler 4 Dummies",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -40,7 +40,7 @@
     },
     "homepage": "https://github.com/YetNT/ic4d#readme",
     "devDependencies": {
-        "@types/node": "^22.7.9",
+        "@types/node": "^22.8.0",
         "discord.js": "^14.16.3",
         "typescript": "^5.6.3"
     },
