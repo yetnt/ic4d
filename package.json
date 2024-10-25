@@ -9,7 +9,8 @@
     ],
     "scripts": {
         "build": "npx tsc",
-        "deps": "npm i"
+        "deps": "npm i",
+        "test": "echo \"Error: no test specified\" && exit 0"
     },
     "repository": {
         "type": "git",
