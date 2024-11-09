@@ -11,7 +11,7 @@
         "build": "npx tsc",
         "deps": "npm i",
         "test": "echo \"Error: no test specified\" && exit 0",
-        "chfile": "node -e \"const fs = require('fs'); const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8')); packageJson.name = '@yetnt/ic4d'; fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2));\""
+        "publish": "npm run build && npm publish"
     },
     "repository": {
         "type": "git",
