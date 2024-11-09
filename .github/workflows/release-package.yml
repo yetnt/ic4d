@@ -36,7 +36,7 @@ jobs:
             - run: npm run chfile
 
     publish-gpr:
-        needs: build
+        needs: change-file
         runs-on: ubuntu-latest
         permissions:
             packages: write
