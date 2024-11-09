@@ -1,6 +1,6 @@
 {
     "name": "ic4d",
-    "version": "4.0.0-beta.0",
+    "version": "4.0.0-beta.1",
     "description": "Discord.js Interaction and Command handler 4 Dummies",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -10,8 +10,7 @@
     "scripts": {
         "build": "npx tsc",
         "deps": "npm i",
-        "test": "echo \"Error: no test specified\" && exit 0",
-        "publish": "npm run build && npm publish"
+        "test": "echo \"Error: no test specified\" && exit 0"
     },
     "repository": {
         "type": "git",

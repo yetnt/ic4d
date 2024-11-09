@@ -104,15 +104,15 @@ export class CoreHandler {
             try {
                 const date = new Date(Date.now());
                 const path = path2.join(
-                    this.coreFlags.logToFolder,
-                    date.getDate() +
-                        "-" +
-                        (date.getMonth() + 1) +
-                        "-" +
-                        date.getFullYear(),
-                    "_",
-                    this.subClassName,
-                    ".log.txt"
+                    this.coreFlags.logToFolder +
+                        (date.getDate() +
+                            "-" +
+                            (date.getMonth() + 1) +
+                            "-" +
+                            date.getFullYear()) +
+                        "_" +
+                        this.subClassName +
+                        ".log.txt"
                 );
                 // If `logToFile` is a valid file path, append the message with a newline
                 appendFileSync(
