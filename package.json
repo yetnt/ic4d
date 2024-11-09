@@ -39,6 +39,9 @@
     "bugs": {
         "url": "https://github.com/YetNT/ic4d/issues"
     },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com/"
+    },
     "homepage": "https://github.com/YetNT/ic4d#readme",
     "devDependencies": {
         "@types/node": "^22.8.0",
