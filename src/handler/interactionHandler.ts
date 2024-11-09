@@ -53,7 +53,7 @@ export class InteractionHandler extends CoreHandler {
         loaderOptions?: LoaderOptions,
         flags?: InteractionHandlerFlags
     ) {
-        super(client, flags.debugger, flags.logToFile);
+        super("iHandler", client, flags.debugger, flags.logToFile);
         this.interactionsPath = path;
         const interactions = this.getInteractions(this.interactionsPath);
         this.interactions = this.sortInteractionObjects(interactions);

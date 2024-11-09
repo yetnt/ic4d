@@ -68,15 +68,16 @@ type cmd = {
 } & SlashCommandManager;
 
 const isEmpty = (obj: Record<string, any>) => Object.keys(obj).length === 0;
-
+export type Handlers = "iHandler" | "cHandler";
 export class CoreHandler {
     client: Client;
-    coreFlags: { debugger: boolean; logToFile: string | false } = {
+    coreFlags: { debugger: boolean; logToFolder: string | false } = {
         debugger: false,
-        logToFile: false,
+        logToFolder: false,
     };
+    private subClassName: Handlers;
 
-    protected currentDate() {
+    protected currentTime() {
         const date = new Date(Date.now());
         const arr = [
             "[ ",
@@ -98,22 +99,25 @@ export class CoreHandler {
      * @param stdout Print via procress.stdout
      */
     protected logOrWrite(x: string, col?: bare.Format, stdout?: boolean): void {
-        if (this.coreFlags.logToFile) {
+        if (this.coreFlags.logToFolder) {
             x = x.replace(/\x1b\[([0-9;]*)m/g, "");
             try {
                 const date = new Date(Date.now());
+                const path = path2.join(
+                    this.coreFlags.logToFolder,
+                    date.getDate() +
+                        "-" +
+                        (date.getMonth() + 1) +
+                        "-" +
+                        date.getFullYear(),
+                    "_",
+                    this.subClassName,
+                    ".log.txt"
+                );
                 // If `logToFile` is a valid file path, append the message with a newline
                 appendFileSync(
-                    path2.join(
-                        this.coreFlags.logToFile,
-                        date.getDate() +
-                            "-" +
-                            (date.getMonth() + 1) +
-                            "-" +
-                            date.getFullYear(),
-                        "-log.txt"
-                    ),
-                    this.currentDate() + " " + x + "\n",
+                    path,
+                    this.currentTime() + " " + x + "\n\n",
                     "utf8"
                 );
             } catch (err) {
@@ -185,10 +189,15 @@ export class CoreHandler {
         },
     };
 
-    constructor(client: Client, debugMode = false, logToFile?: string | false) {
+    constructor(
+        extender: Handlers,
+        client: Client,
+        debugMode = false,
+        logToFolder?: string | false
+    ) {
         this.client = client;
         this.coreFlags.debugger = debugMode || false;
-        this.coreFlags.logToFile = logToFile || false;
+        this.coreFlags.logToFolder = logToFolder || false;
     }
 
     protected getInteractions(

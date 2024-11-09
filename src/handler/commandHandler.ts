@@ -24,7 +24,6 @@ function attachDev(name: string, isDev: boolean) {
     const str = "[DEV] ";
     return isDev ? str + name : name;
 }
-
 /**
  * @class
  * Command Handler which loads, edits and deletes slash commands for you.
@@ -69,7 +68,12 @@ export class CommandHandler extends CoreHandler {
         loaderOptions?: LoaderOptions,
         handlerFlags?: HandlerFlags
     ) {
-        super(client, handlerFlags?.debugger, handlerFlags.logToFile);
+        super(
+            "cHandler",
+            client,
+            handlerFlags?.debugger,
+            handlerFlags.logToFile
+        );
 
         this.flags = {
             debugger: handlerFlags?.debugger || this.flags.debugger,

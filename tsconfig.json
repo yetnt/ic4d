@@ -10,7 +10,3 @@
     "include": ["src/**/*"],
     "exclude": ["node_modules"]
 }
-
-    // "publishConfig": {
-    //     "@yetnt:registry": "https://npm.pkg.github.com"
-    // },
