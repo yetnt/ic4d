@@ -16,7 +16,7 @@ export class ReadyHandler extends CoreHandler {
         client: Client,
         ...functions: ((client?: Client) => Promise<void> | void)[]
     ) {
-        super(client);
+        super("rHandler", client);
         this.functionsToRun = functions;
     }
 

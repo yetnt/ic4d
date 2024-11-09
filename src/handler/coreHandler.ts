@@ -68,7 +68,7 @@ type cmd = {
 } & SlashCommandManager;
 
 const isEmpty = (obj: Record<string, any>) => Object.keys(obj).length === 0;
-export type Handlers = "iHandler" | "cHandler";
+export type Handlers = "iHandler" | "cHandler" | "rHandler";
 export class CoreHandler {
     client: Client;
     coreFlags: { debugger: boolean; logToFolder: string | false } = {
@@ -195,6 +195,7 @@ export class CoreHandler {
         debugMode = false,
         logToFolder?: string | false
     ) {
+        this.subClassName = extender;
         this.client = client;
         this.coreFlags.debugger = debugMode || false;
         this.coreFlags.logToFolder = logToFolder || false;
