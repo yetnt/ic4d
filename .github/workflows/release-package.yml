@@ -44,4 +44,4 @@ jobs:
             - name: Publish to GitHub Packages
               run: npm publish --access public # Publish to GitHub Packages (Scoped)
               env:
-                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Authenticate with GitHub token
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # Authenticate with GitHub token
