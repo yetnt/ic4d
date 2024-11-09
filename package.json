@@ -17,9 +17,6 @@
         "type": "git",
         "url": "git+https://github.com/YetNT/ic4d.git"
     },
-    "publishConfig": {
-        "@YetNT:registry": "https://npm.pkg.github.com"
-    },
     "keywords": [
         "bot",
         "discord",
