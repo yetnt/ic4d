@@ -62,6 +62,8 @@ For TS Lovers:
 
 [Here's the example bot](https://github.com/YetNT/ic4d-example-bot) if you don't like reading
 
+this is what you're index.js should look something like.
+
 ```js
 require("dotenv").config();
 const { Client, IntentsBitField } = require("discord.js");
@@ -84,7 +86,7 @@ const client = new Client({
 
 const handler = new CommandHandler(
     client,
-    path.join(__dirname, "commands"),
+    path.join(__dirname, commandsPath),
     runFlags
 );
 const ready = new ReadyHandler(
@@ -98,11 +100,60 @@ const ready = new ReadyHandler(
 );
 
 (async () => {
-    await handler.handleCommands();
     ready.execute();
+    await handler.handleCommands();
 })();
 
 client.login(process.env.TOKEN);
+```
+
+And in any file or folder as long as it's in the `commands` directory
+
+```js
+const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+const { SlashCommandObject, SlashCommandManager } = require("ic4d");
+
+const ping = new SlashCommandManager({
+    data: new SlashCommandBuilder().setName("ping").setDescription("Pong!"),
+    async execute(interaction, client) {
+        try {
+            const sent = await interaction.reply({
+                embeds: [new EmbedBuilder().setDescription("Pinging...")],
+                fetchReply: true,
+            });
+            interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle("Pong!")
+                        .setFields([
+                            {
+                                name: "Roundtrip latency",
+                                value: `${
+                                    sent.createdTimestamp -
+                                    interaction.createdTimestamp
+                                }ms`,
+                                inline: true,
+                            },
+                            {
+                                name: "Websocket heartbeat",
+                                value: `${client.ws.ping}ms.`,
+                                inline: true,
+                            },
+                        ])
+                        .setColor("Green"),
+                ],
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    },
+});
+
+ping.category = "misc"; // if you want to add your own property to the exorted object, you can do this
+
+module.exports = ping;
+// or
+module.exports = { ping };
 ```
 
 # ReadyHandler
