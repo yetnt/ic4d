@@ -289,9 +289,14 @@ export class CommandHandler extends CoreHandler {
     /**
      * Handle Slash Commands
      * @param middleWare Functions to be run before running a command.
+     * @param postWare Functions to be run AFTER the callback has been called.
      */
     async handleCommands(
-        ...middleWare: ((
+        middleWare: ((
+            commandObject: CommandObject,
+            interaction?: ChatInputCommandInteraction
+        ) => number | Promise<number>)[],
+        postWare: ((
             commandObject: CommandObject,
             interaction?: ChatInputCommandInteraction
         ) => number | Promise<number>)[]
@@ -374,7 +379,7 @@ export class CommandHandler extends CoreHandler {
                     if (this.flags.debugger)
                         this.debug.common("\tMiddlewares Called:");
 
-                    for (const fn of middleWare) {
+                    middleWare.forEach(async (fn) => {
                         let result = await fn(commandObject, interaction);
                         if (this.flags.debugger) {
                             const arr = fn.toString().split(" ");
@@ -391,7 +396,7 @@ export class CommandHandler extends CoreHandler {
                             );
                         }
                         if (result == 1) return; // test condition is true
-                    }
+                    });
 
                     if (this.flags.debugger)
                         this.debug.common(
@@ -405,20 +410,19 @@ export class CommandHandler extends CoreHandler {
                         Object.keys(commandObject.interactions.button).length !=
                             0
                     ) {
-                        for (const [key, value] of Object.entries(
-                            commandObject.interactions.button
-                        )) {
-                            if (
-                                value.timeout == 0 ||
-                                value.timeout == undefined
+                        Object.entries(commandObject.interactions.button)
+                            .filter(
+                                ([, value]) =>
+                                    value.timeout !== 0 &&
+                                    value.timeout !== undefined
                             )
-                                continue;
-                            await setupCollector(
-                                this.client,
-                                interaction,
-                                value
-                            );
-                        }
+                            .forEach(async ([, value]) => {
+                                await setupCollector(
+                                    this.client,
+                                    interaction,
+                                    value
+                                );
+                            });
                     }
 
                     if (
@@ -426,21 +430,45 @@ export class CommandHandler extends CoreHandler {
                         Object.keys(commandObject.interactions.selectMenu)
                             .length != 0
                     ) {
-                        for (const [key, value] of Object.entries(
-                            commandObject.interactions.selectMenu
-                        )) {
-                            if (
-                                value.timeout == 0 ||
-                                value.timeout == undefined
+                        Object.entries(commandObject.interactions.selectMenu)
+                            .filter(
+                                ([, value]) =>
+                                    value.timeout !== 0 &&
+                                    value.timeout !== undefined
                             )
-                                continue;
-                            await setupCollector(
-                                this.client,
-                                interaction,
-                                value
+                            .forEach(async ([, value]) => {
+                                await setupCollector(
+                                    this.client,
+                                    interaction,
+                                    value
+                                );
+                            });
+                    }
+
+                    if (this.flags.debugger)
+                        this.debug.common("\tPostwares Called:");
+
+                    postWare.forEach(async (fn) => {
+                        let result = await fn(commandObject, interaction);
+                        if (this.flags.debugger) {
+                            const arr = fn.toString().split(" ");
+                            // Means the function has (function a(){}) syntax, otherwise it's (()=>{}) syntax
+                            const labeled = arr[0] == "function" ? true : false;
+                            this.debug.common(
+                                "\t\t" +
+                                    clc.bold.italic.blue("fn") +
+                                    " " +
+                                    clc.bold.magentaBright(
+                                        fn.toString().split("{")[0] +
+                                            (labeled ? "=> " + result : result)
+                                    )
                             );
                         }
-                    }
+                        if (result == 1) return; // test condition is true
+                    });
+
+                    if (this.flags.debugger)
+                        this.debug.common("Postwares have been called.");
                 } catch (error) {
                     let err = new errs.HandlerError(
                         `Failed to run command $NAME$ \n\n` + error,

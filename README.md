@@ -107,7 +107,7 @@ const ready = new ReadyHandler(
 client.login(process.env.TOKEN);
 ```
 
-And in any file or folder as long as it's in the `commands` directory
+And in any file in any folder under your specified `commands` directory
 
 ```js
 const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
@@ -240,8 +240,10 @@ async () => {
 
 **(asynchronous function)**
 
--   `...middleWare`**: ( ( commandObject: Object, interaction?: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class) ) => number | Promise<number> )[]**
+-   `middleWare`**: ( ( commandObject: Object, interaction?: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class) ) => number | Promise<number> )[]**
     -   Functions to run before a command is run.
+-   `postWare`**: ( ( commandObject: Object, interaction?: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class) ) => number | Promise<number> )[]**
+    -   Functions to run AFTER the command's callback has been called.
 
 ```js
 const handler = new CommandHandler(client, path.join(__dirname, "commands"));
@@ -258,10 +260,18 @@ const blacklist = (commandObject, interaction) => {
     return 0;
 };
 
-await handler.handleCommands(blacklist);
+const addXp = (commandObject, interaction) => {
+    if (commandObject.category != "Economy") return;
+    // Xp stuff
+};
+
+await handler.handleCommands([blacklist], [addXp]);
 ```
 
 #### Middleware Parameters and use
+
+> [!NOTE]  
+> This is ONLY for `middleWare` and does NOT apply to `postWare` functions.
 
 Middleware is to define your own custom functions you want to run when a command is run by anyone. This can be a function to check for cooldown or function to add XP to a user.
 
@@ -323,21 +333,7 @@ const middleWare = (commandObject, interaction) => {
     return 0;
 };
 
-handler.handleCommands(middleWare); // pass the function alone without brackets or its parameters, i'll do that magic
-```
-
-### `emitErrors()`
-
-Set whether the ready handler should throw or emit errors. Defaults to false.
-
-```js
-const handler = new CommandHandler(client, path.join(__dirname, "commands"));
-handler.emitErrors(true);
-
-// Listen for the error
-handler.on("error", (msg) => {
-    // do something with the error message
-});
+handler.handleCommands([middleWare]); // pass the function alone without brackets or its parameters, i'll do that magic
 ```
 
 # InteractionHandler
