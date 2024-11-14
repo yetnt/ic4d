@@ -52,11 +52,11 @@ function findCommandInstance(
     module: Record<string, any>
 ): SlashCommandManager | { isCommand: boolean } {
     // Iterate over the module's exports to find an instance of CommandHandler
-    for (const value of Object.values(module)) {
+    Object.values(module).forEach((value) => {
         if (value instanceof SlashCommandManager) {
             return value;
         }
-    }
+    });
 
     return { isCommand: false };
 }

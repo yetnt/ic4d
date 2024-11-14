@@ -146,6 +146,9 @@ export class CommandHandler extends CoreHandler {
                 );
             }
 
+            // Due to the amount of conditionals that can happen during registering commands,
+            // we kinda do need continue so we cant use js array funcs, or either i can but
+            // i'm just too lazy
             for (const localCommand of localCommands) {
                 if (
                     !localCommand.name ||
@@ -299,7 +302,7 @@ export class CommandHandler extends CoreHandler {
         postWare: ((
             commandObject: CommandObject,
             interaction?: ChatInputCommandInteraction
-        ) => number | Promise<number>)[]
+        ) => any)[]
     ) {
         if (this.flags.debugger) this.debug.topMsg("handleCommands()");
         this.client.on(
@@ -338,27 +341,31 @@ export class CommandHandler extends CoreHandler {
                     }
 
                     if (commandObject.permissionsRequired?.length) {
-                        for (const permission of commandObject.permissionsRequired) {
-                            if (
-                                //@ts-ignore
-                                !interaction.member.permissions.has(permission)
-                            ) {
-                                if (this.flags.debugger)
-                                    this.debug.commonBlue(
-                                        "\tUser did not have enough permissions to run " +
-                                            interaction.commandName
-                                    );
-                                interaction.reply({
-                                    content: this.runFlags.userNoPerms,
-                                    ephemeral: true,
-                                });
-                                return;
+                        commandObject.permissionsRequired.forEach(
+                            (permission) => {
+                                if (
+                                    //@ts-ignore
+                                    !interaction.member.permissions.has(
+                                        permission
+                                    )
+                                ) {
+                                    if (this.flags.debugger)
+                                        this.debug.commonBlue(
+                                            "\tUser did not have enough permissions to run " +
+                                                interaction.commandName
+                                        );
+                                    interaction.reply({
+                                        content: this.runFlags.userNoPerms,
+                                        ephemeral: true,
+                                    });
+                                    return;
+                                }
                             }
-                        }
+                        );
                     }
 
                     if (commandObject.botPermissions?.length) {
-                        for (const permission of commandObject.botPermissions) {
+                        commandObject.botPermissions.forEach((permission) => {
                             const bot = interaction.guild.members.me;
                             //@ts-ignore
                             if (!bot.permissions.has(permission)) {
@@ -373,7 +380,7 @@ export class CommandHandler extends CoreHandler {
                                 });
                                 return;
                             }
-                        }
+                        });
                     }
 
                     if (this.flags.debugger)
