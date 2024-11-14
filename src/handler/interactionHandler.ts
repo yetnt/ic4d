@@ -6,6 +6,7 @@ import {
     Interaction,
     ModalSubmitInteraction,
     ApplicationCommandType,
+    ChatInputCommandInteraction,
 } from "discord.js";
 import * as clc from "cli-color";
 import * as errs from "./Errors";
@@ -14,7 +15,14 @@ import {
     ContextMenuObject,
     LoaderOptions,
     InteractionHandlerFlags,
+    CommandObject,
 } from "./interfaces";
+
+export type HandlerVariables = Record<string, any[]>;
+enum HandlerVariablesSeparators {
+    INTERACTION_IDS = "~=~",
+    DEFAULT = "~_~",
+}
 
 /**
  * @class
@@ -28,6 +36,7 @@ export class InteractionHandler extends CoreHandler {
         contextMenus: Record<string, ContextMenuObject>;
         modals: Record<string, InteractionObject>;
     };
+    variables: HandlerVariables;
     options: LoaderOptions = {
         loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
@@ -83,6 +92,34 @@ export class InteractionHandler extends CoreHandler {
             refreshContextMenus:
                 flags?.refreshContextMenus || this.flags.refreshContextMenus,
         };
+
+        this.on(
+            "interactionHandlerAddVariable",
+            async (
+                interaction: ChatInputCommandInteraction,
+                commandObject: CommandObject,
+                ...k: any[]
+            ) => {
+                const messageId = await interaction
+                    .fetchReply()
+                    .then((d) => d.id);
+                const interactionIds: string = Object.values(
+                    commandObject.interactions
+                )
+                    .filter((interactionType) => interactionType) // Ensure interactionType is not undefined
+                    .flatMap((interactionType) =>
+                        Object.values(interactionType)
+                    ) // Get all InteractionBuilder objects
+                    .map((builder) => builder.customId) // Extract ids from the InteractionBuilder object's ID
+                    .join(HandlerVariablesSeparators.INTERACTION_IDS);
+
+                const id = [interactionIds, messageId].join(
+                    HandlerVariablesSeparators.DEFAULT
+                );
+
+                this.variables[id] = k;
+            }
+        );
     }
 
     private sortInteractionObjects(
