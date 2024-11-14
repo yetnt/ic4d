@@ -104,12 +104,12 @@ export class CoreHandler {
             try {
                 const date = new Date(Date.now());
                 const path = path2.join(
-                    this.coreFlags.logToFolder +
-                        (date.getDate() +
-                            "-" +
-                            (date.getMonth() + 1) +
-                            "-" +
-                            date.getFullYear()) +
+                    this.coreFlags.logToFolder,
+                    date.getDate() +
+                        "-" +
+                        (date.getMonth() + 1) +
+                        "-" +
+                        date.getFullYear() +
                         "_" +
                         this.subClassName +
                         ".log.txt"
