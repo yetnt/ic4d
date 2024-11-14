@@ -2,6 +2,10 @@
 
 **I**nteractions and **C**ommand handler **4** **D**ummies
 
+# DEVELOPMENT BRANCH
+
+This branch wont have versions pushed to it nor npm. if you want to install and run locally you'll have to get it from github and run `npm run build` on your machine. Sorry not sorry
+
 # Installation
 
 With npm
