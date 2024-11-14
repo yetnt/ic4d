@@ -19,6 +19,7 @@ import {
     InteractionBuilder,
     SlashCommandManager,
 } from "./builders/builders";
+import { EventEmitter } from "events";
 
 import * as clc from "cli-color";
 import bare = require("cli-color/bare");
@@ -69,7 +70,7 @@ type cmd = {
 
 const isEmpty = (obj: Record<string, any>) => Object.keys(obj).length === 0;
 export type Handlers = "iHandler" | "cHandler" | "rHandler";
-export class CoreHandler {
+export class CoreHandler extends EventEmitter {
     client: Client;
     coreFlags: { debugger: boolean; logToFolder: string | false } = {
         debugger: false,
@@ -195,6 +196,7 @@ export class CoreHandler {
         debugMode = false,
         logToFolder?: string | false
     ) {
+        super();
         this.subClassName = extender;
         this.client = client;
         this.coreFlags.debugger = debugMode || false;

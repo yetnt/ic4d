@@ -4,7 +4,15 @@
 
 # DEVELOPMENT BRANCH
 
+> [!NOTE]
+> Use this branch at your own risk.
+
+This branch is just to test a new feature that will allow the [SlashCommandManager](#slashcommandmanager) to expose variables to the [CommandHandler](#commandhandler) which somehow over thin air will also be exposed to [InteractionBuilder](#interactionbuilder) instances used in [SlashCommandManager](#slashcommandmanager).
+
 This branch wont have versions pushed to it nor npm. if you want to install and run locally you'll have to get it from github and run `npm run build` on your machine. Sorry not sorry
+Below is the normal package documentation.
+
+I wont be releasing any versions or tags this is like my playground for the variable scoping feautre i want to add.
 
 # Installation
 
