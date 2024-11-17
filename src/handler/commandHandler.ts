@@ -14,7 +14,7 @@ import {
     LoaderOptions,
     RunFlags,
 } from "./interfaces";
-import { deprecated, setupCollector } from "../funcs";
+import { setupCollector } from "../funcs";
 
 /**
  * Helper function to just attach [DEV] to a command that is of developer.
@@ -162,7 +162,7 @@ export class CommandHandler extends CoreHandler {
                         localCommand.filePath
                     );
 
-                let { name, filePath, isOld, data, isDev } = localCommand;
+                let { name, filePath, data, isDev } = localCommand;
 
                 if (localCommand.isDev && this.flags.production) {
                     const existingCommand =
@@ -216,12 +216,9 @@ export class CommandHandler extends CoreHandler {
 
                             if (!this.flags.disableLogs)
                                 console.log(
-                                    deprecated(
-                                        this.options.edited.replace(
-                                            "NAME",
-                                            attachDev(name, isDev)
-                                        ),
-                                        isOld
+                                    this.options.edited.replace(
+                                        "NAME",
+                                        attachDev(name, isDev)
                                     )
                                 );
                         }
@@ -231,12 +228,9 @@ export class CommandHandler extends CoreHandler {
                             noChanges = false;
                             if (!this.flags.disableLogs)
                                 console.log(
-                                    deprecated(
-                                        this.options.skipped.replace(
-                                            "NAME",
-                                            attachDev(name, isDev)
-                                        ),
-                                        isOld
+                                    this.options.skipped.replace(
+                                        "NAME",
+                                        attachDev(name, isDev)
                                     )
                                 );
                             continue;
@@ -248,12 +242,9 @@ export class CommandHandler extends CoreHandler {
 
                         if (!this.flags.disableLogs)
                             console.log(
-                                deprecated(
-                                    this.options.loaded.replace(
-                                        "NAME",
-                                        attachDev(name, isDev)
-                                    ),
-                                    isOld
+                                this.options.loaded.replace(
+                                    "NAME",
+                                    attachDev(name, isDev)
                                 )
                             );
                     }
@@ -268,12 +259,9 @@ export class CommandHandler extends CoreHandler {
                 if (logNoChanges && noChanges == true) {
                     if (!this.flags.disableLogs)
                         console.log(
-                            deprecated(
-                                this.options.loadedNoChanges.replace(
-                                    "NAME",
-                                    attachDev(name, isDev)
-                                ),
-                                isOld
+                            this.options.loadedNoChanges.replace(
+                                "NAME",
+                                attachDev(name, isDev)
                             )
                         );
                 }

@@ -49,18 +49,6 @@ export function getLocalCommands(
 }
 
 /**
- * Add deprecated string. TO-DO remove.
- * @param isOld
- */
-export function deprecated(txt: string, isOld: boolean) {
-    return isOld
-        ? txt +
-              " " +
-              clc.bold.bgRedBright.white("(Command uses deprecated syntax!)")
-        : txt;
-}
-
-/**
  * Sets up a collector for message components with a specified timeout.
  *
  * @param client - The Discord client instance.

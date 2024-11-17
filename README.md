@@ -1006,7 +1006,7 @@ Method 2 involves:
 
 ```js
 // method 1
-let variable = ""
+let variable = "";
 
 const test = new SlashCommandManager({
     data: new SlashCommandBuilder()
@@ -1017,7 +1017,7 @@ const test = new SlashCommandManager({
                 .setName("string")
                 .setDescription("some input")
                 .setRequired(true)
-        )
+        ),
 
     async execute(interaction, client) {
         try {
@@ -1025,13 +1025,13 @@ const test = new SlashCommandManager({
             const itemName = interaction.options.get("string").value;
 
             // method 1 (global variable)
-            variable = itemName
+            variable = itemName;
 
             // method 2 (adding a property)
-            test.variable = itemName
+            test.variable = itemName;
 
             await interaction.editReply({
-                content:"Huh?",
+                content: "Huh?",
                 components: [
                     new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
@@ -1045,10 +1045,7 @@ const test = new SlashCommandManager({
             errorHandler(e, client, interaction, EmbedBuilder);
         }
     },
-}).addInteractions(
-    button
-);
-
+}).addInteractions(button);
 
 const button = new InteractionBuilder()
     .setType("button")
@@ -1056,12 +1053,12 @@ const button = new InteractionBuilder()
 
     .setCallback(async (i, c, v) => {
         // method 1
-        const itemName = variable
+        const itemName = variable;
 
         //method 2
-        const itemName = test.variable
+        const itemName = test.variable;
         await i.update({ content: itemName, components: [] });
-    })
+    });
 
 module.exports = test;
 ```
@@ -1098,14 +1095,14 @@ const test = new SlashCommandManager({
                 .setName("string")
                 .setDescription("some input")
                 .setRequired(true)
-        )
-// here we add the function in the parameter list
+        ),
+    // here we add the function in the parameter list
     async execute(interaction, client, addInteractionVariables) {
         try {
             await interaction.deferReply();
             const itemName = interaction.options.get("string").value;
             await interaction.editReply({
-                content:"Huh?",
+                content: "Huh?",
                 components: [
                     new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
@@ -1122,9 +1119,7 @@ const test = new SlashCommandManager({
             errorHandler(e, client, interaction, EmbedBuilder);
         }
     },
-}).addInteractions(
-    button
-);
+}).addInteractions(button);
 
 const button = new InteractionBuilder()
     .setType("button")
@@ -1133,8 +1128,8 @@ const button = new InteractionBuilder()
     // add the variables to the parameter list
     .setCallback(async (i, c, variables) => {
         // using the variable in the callback
-        await i.update({ content: variables.itemName,components: [] });
-    })
+        await i.update({ content: variables.itemName, components: [] });
+    });
 ```
 
 This method will always find the variables associated with the message sent by the bot. (This method may not work if you have something like a modal before a bot response as it uses the messageId as a unique identifier.)
