@@ -28,7 +28,8 @@ export class InteractionBuilder {
      */
     callback: (
         interaction: InteractionTypeStringsMap<this["type"]>,
-        client?: Client
+        client?: Client,
+        variables?: { [key: string]: any }
     ) => void | Promise<void>;
     /**
      * The interaction's custom identifier
@@ -55,7 +56,8 @@ export class InteractionBuilder {
      */
     onTimeout?: (
         interaction: ChatInputCommandInteraction,
-        client?: Client
+        client?: Client,
+        variables?: { [key: string]: any }
     ) => void | Promise<void>;
     /**
      * Build the actual interaction
@@ -96,7 +98,8 @@ export class InteractionBuilder {
     setCallback(
         fn: (
             interaction: InteractionTypeStringsMap<this["type"]>,
-            client?: Client
+            client?: Client,
+            variables?: { [key: string]: any }
         ) => void | Promise<void>
     ): InteractionBuilder {
         this.callback = fn;
@@ -120,7 +123,8 @@ export class InteractionBuilder {
     setTimeout(
         fn: (
             interaction: ChatInputCommandInteraction,
-            client?: Client
+            client?: Client,
+            variables?: { [key: string]: any }
         ) => void | Promise<void>,
         timeout?: number
     ): InteractionBuilder {

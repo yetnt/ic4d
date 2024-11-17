@@ -7,8 +7,10 @@ import {
 import * as clc from "cli-color";
 import * as errs from "./Errors";
 import {
+    addInteractionVariables,
     CommandObject,
     HandlerFlags,
+    HandlerVariables,
     LoaderOptions,
     RunFlags,
 } from "./interfaces";
@@ -383,34 +385,56 @@ export class CommandHandler extends CoreHandler {
                         });
                     }
 
-                    if (this.flags.debugger)
-                        this.debug.common("\tMiddlewares Called:");
+                    if (middleWare) {
+                        if (this.flags.debugger)
+                            this.debug.common("\tMiddlewares Called:");
 
-                    middleWare.forEach(async (fn) => {
-                        let result = await fn(commandObject, interaction);
-                        if (this.flags.debugger) {
-                            const arr = fn.toString().split(" ");
-                            // Means the function has (function a(){}) syntax, otherwise it's (()=>{}) syntax
-                            const labeled = arr[0] == "function" ? true : false;
+                        middleWare.forEach(async (fn) => {
+                            let result = await fn(commandObject, interaction);
+                            if (this.flags.debugger) {
+                                const arr = fn.toString().split(" ");
+                                // Means the function has (function a(){}) syntax, otherwise it's (()=>{}) syntax
+                                const labeled =
+                                    arr[0] == "function" ? true : false;
+                                this.debug.common(
+                                    "\t\t" +
+                                        clc.bold.italic.red("fn") +
+                                        " " +
+                                        clc.bold.magenta(
+                                            fn.toString().split("{")[0] +
+                                                (labeled
+                                                    ? "=> " + result
+                                                    : result)
+                                        )
+                                );
+                            }
+                            if (result == 1) return; // test condition is true
+                        });
+
+                        if (this.flags.debugger)
                             this.debug.common(
-                                "\t\t" +
-                                    clc.bold.italic.red("fn") +
-                                    " " +
-                                    clc.bold.magenta(
-                                        fn.toString().split("{")[0] +
-                                            (labeled ? "=> " + result : result)
-                                    )
+                                "Middlewares called, Callback to be called."
                             );
-                        }
-                        if (result == 1) return; // test condition is true
-                    });
+                    }
 
-                    if (this.flags.debugger)
-                        this.debug.common(
-                            "Middlewares called, Callback to be called."
+                    const addInteractionVariables: addInteractionVariables = (
+                        k
+                    ): void => {
+                        console.log("fweah");
+                        this.client.emit(
+                            HandlerVariables.Events.ADD_VARIABLE,
+                            interaction,
+                            commandObject,
+                            k
                         );
+                        return;
+                    };
 
-                    await commandObject.callback(this.client, interaction);
+                    await commandObject.callback(
+                        this.client,
+                        interaction,
+                        addInteractionVariables
+                    );
 
                     if (
                         commandObject.interactions.button &&
@@ -452,30 +476,35 @@ export class CommandHandler extends CoreHandler {
                             });
                     }
 
-                    if (this.flags.debugger)
-                        this.debug.common("\tPostwares Called:");
+                    if (postWare) {
+                        if (this.flags.debugger)
+                            this.debug.common("\tPostwares Called:");
 
-                    postWare.forEach(async (fn) => {
-                        let result = await fn(commandObject, interaction);
-                        if (this.flags.debugger) {
-                            const arr = fn.toString().split(" ");
-                            // Means the function has (function a(){}) syntax, otherwise it's (()=>{}) syntax
-                            const labeled = arr[0] == "function" ? true : false;
-                            this.debug.common(
-                                "\t\t" +
-                                    clc.bold.italic.blue("fn") +
-                                    " " +
-                                    clc.bold.magentaBright(
-                                        fn.toString().split("{")[0] +
-                                            (labeled ? "=> " + result : result)
-                                    )
-                            );
-                        }
-                        if (result == 1) return; // test condition is true
-                    });
+                        postWare.forEach(async (fn) => {
+                            let result = await fn(commandObject, interaction);
+                            if (this.flags.debugger) {
+                                const arr = fn.toString().split(" ");
+                                // Means the function has (function a(){}) syntax, otherwise it's (()=>{}) syntax
+                                const labeled =
+                                    arr[0] == "function" ? true : false;
+                                this.debug.common(
+                                    "\t\t" +
+                                        clc.bold.italic.blue("fn") +
+                                        " " +
+                                        clc.bold.magentaBright(
+                                            fn.toString().split("{")[0] +
+                                                (labeled
+                                                    ? "=> " + result
+                                                    : result)
+                                        )
+                                );
+                            }
+                            if (result == 1) return; // test condition is true
+                        });
 
-                    if (this.flags.debugger)
-                        this.debug.common("Postwares have been called.");
+                        if (this.flags.debugger)
+                            this.debug.common("Postwares have been called.");
+                    }
                 } catch (error) {
                     let err = new errs.HandlerError(
                         `Failed to run command $NAME$ \n\n` + error,

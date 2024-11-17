@@ -34,7 +34,8 @@ export class SlashCommandManager {
      */
     callback: (
         client: Client,
-        interaction: ChatInputCommandInteraction
+        interaction: ChatInputCommandInteraction,
+        addInteractionVariables: (k: { [key: string]: any }) => void
     ) => void | Promise<void>;
     /**
      * An array of options
@@ -71,10 +72,12 @@ export class SlashCommandManager {
          * Function to run when this command is called.
          * @param interaction Interaction associated with the command
          * @param client Bot's client object.
+         * @param addInteractionVariable Object of variables to save and be referenced later in interactions associated with this command.
          */
         execute: (
             interaction: ChatInputCommandInteraction,
-            client?: Client
+            client?: Client,
+            addInteractionVariables?: (k: { [key: string]: any }) => void
         ) => void | Promise<void>;
     }) {
         this.data = commandObject.data.toJSON();
@@ -84,9 +87,14 @@ export class SlashCommandManager {
             commandObject.data.options.map((option) => option.toJSON()) || [];
         this.callback = async function command(
             client: Client,
-            interaction: ChatInputCommandInteraction
+            interaction: ChatInputCommandInteraction,
+            addInteractionVariables
         ) {
-            await commandObject.execute(interaction, client);
+            await commandObject.execute(
+                interaction,
+                client,
+                addInteractionVariables
+            );
         };
     }
 

@@ -12,6 +12,24 @@ import {
 } from "discord.js";
 import { Interactions } from "./builders/SlashCommandManager";
 
+/**
+ * Type of the addinteractionvariable function
+ */
+export type addInteractionVariables = (k: { [key: string]: any }) => void;
+
+export namespace HandlerVariables {
+    export type Type = Record<string, any>;
+
+    export enum Separators {
+        INTERACTION_IDS = "~=~",
+        DEFAULT = "~_~",
+    }
+
+    export enum Events {
+        ADD_VARIABLE = "interactionHandlerAddVariable",
+    }
+}
+
 // Interfaces used by the package.
 
 export interface Choice {
@@ -35,7 +53,8 @@ export interface CommandObject {
     data?: RESTPostAPIApplicationCommandsJSONBody;
     callback: (
         client: Client,
-        interaction: ChatInputCommandInteraction
+        interaction: ChatInputCommandInteraction,
+        addInteractionVariables: addInteractionVariables
     ) => void | Promise<void>;
     options?: Option[];
     deleted?: boolean;
@@ -62,9 +81,14 @@ export interface InteractionObject {
             | UserContextMenuCommandInteraction
             | MessageContextMenuCommandInteraction
             | ModalSubmitInteraction,
-        client?: Client
+        client?: Client,
+        variables?: { [key: string]: any }
     ) => void;
-    onTimeout?: (interaction: Interaction, client?: Client) => void;
+    onTimeout?: (
+        interaction: Interaction,
+        client?: Client,
+        variables?: { [key: string]: any }
+    ) => void;
 }
 export interface ContextMenuObject {
     name: string;

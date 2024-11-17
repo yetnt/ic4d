@@ -7,6 +7,8 @@ import {
     ModalSubmitInteraction,
     ApplicationCommandType,
     ChatInputCommandInteraction,
+    ButtonInteraction,
+    AnySelectMenuInteraction,
 } from "discord.js";
 import * as clc from "cli-color";
 import * as errs from "./Errors";
@@ -16,13 +18,8 @@ import {
     LoaderOptions,
     InteractionHandlerFlags,
     CommandObject,
+    HandlerVariables,
 } from "./interfaces";
-
-export type HandlerVariables = Record<string, any[]>;
-enum HandlerVariablesSeparators {
-    INTERACTION_IDS = "~=~",
-    DEFAULT = "~_~",
-}
 
 /**
  * @class
@@ -36,7 +33,7 @@ export class InteractionHandler extends CoreHandler {
         contextMenus: Record<string, ContextMenuObject>;
         modals: Record<string, InteractionObject>;
     };
-    variables: HandlerVariables;
+    variables: HandlerVariables.Type;
     options: LoaderOptions = {
         loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
@@ -93,13 +90,14 @@ export class InteractionHandler extends CoreHandler {
                 flags?.refreshContextMenus || this.flags.refreshContextMenus,
         };
 
-        this.on(
-            "interactionHandlerAddVariable",
+        client.on(
+            HandlerVariables.Events.ADD_VARIABLE,
             async (
                 interaction: ChatInputCommandInteraction,
                 commandObject: CommandObject,
-                ...k: any[]
+                k: { [key: string]: any }
             ) => {
+                console.log("ON!!!!!!!!!!!!!!!!!!!!!!!");
                 const messageId = await interaction
                     .fetchReply()
                     .then((d) => d.id);
@@ -111,15 +109,42 @@ export class InteractionHandler extends CoreHandler {
                         Object.values(interactionType)
                     ) // Get all InteractionBuilder objects
                     .map((builder) => builder.customId) // Extract ids from the InteractionBuilder object's ID
-                    .join(HandlerVariablesSeparators.INTERACTION_IDS);
+                    .join(HandlerVariables.Separators.INTERACTION_IDS);
 
                 const id = [interactionIds, messageId].join(
-                    HandlerVariablesSeparators.DEFAULT
+                    HandlerVariables.Separators.DEFAULT
                 );
 
                 this.variables[id] = k;
             }
         );
+    }
+
+    private async findVariable(
+        interaction:
+            | ButtonInteraction
+            | AnySelectMenuInteraction
+            | ModalSubmitInteraction,
+        customId: string
+    ) {
+        // Use `find` instead of `filter`
+        const varEntry = Object.entries(this.variables).find(async ([key]) => {
+            const [interactionIds, messageId] = key.split(
+                HandlerVariables.Separators.DEFAULT
+            );
+            const interactionMessageId = await interaction
+                .fetchReply()
+                .then((d) => d.id);
+
+            return (
+                interactionIds
+                    .split(HandlerVariables.Separators.INTERACTION_IDS)
+                    .includes(customId) && messageId === interactionMessageId
+            );
+        });
+
+        // Return the variable if found, otherwise undefined
+        return varEntry ? varEntry[1] : undefined;
     }
 
     private sortInteractionObjects(
@@ -211,39 +236,50 @@ export class InteractionHandler extends CoreHandler {
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
                 : "This button is not for you";
-        this.client.on("interactionCreate", (interaction) => {
-            if (!interaction.isButton()) return;
-            const buttonObj = this.interactions.buttons[interaction.customId];
+        this.client.on(
+            "interactionCreate",
+            (interaction: ButtonInteraction) => {
+                if (!interaction.isButton()) return;
+                const buttonObj =
+                    this.interactions.buttons[interaction.customId];
 
-            try {
-                if (buttonObj == undefined) return; // for buttons that don't need this package to respond to them.
+                try {
+                    if (buttonObj == undefined) return; // for buttons that don't need this package to respond to them.
 
-                const author = interaction.message.interaction.user.id;
-                const buttonClicker = interaction.member.user.id;
+                    const author = interaction.message.interaction.user.id;
+                    const buttonClicker = interaction.member.user.id;
 
-                if (buttonObj.onlyAuthor == true && author !== buttonClicker) {
-                    interaction.reply({
-                        content: authorOnlyMsg,
-                        ephemeral: true,
-                    });
-                    return;
+                    if (
+                        buttonObj.onlyAuthor == true &&
+                        author !== buttonClicker
+                    ) {
+                        interaction.reply({
+                            content: authorOnlyMsg,
+                            ephemeral: true,
+                        });
+                        return;
+                    }
+
+                    for (const fn of middleWare) {
+                        let result = fn(interaction);
+                        if (result == 1) return; // test condition is true
+                    }
+                    buttonObj.callback(
+                        interaction,
+                        this.client,
+                        this.findVariable(interaction, buttonObj.customId)
+                    );
+                } catch (error) {
+                    let err = new errs.ButtonError(
+                        "Button $NAME$ failed with the error:\n\n" + error,
+                        buttonObj.filePath,
+                        interaction.customId
+                    );
+
+                    throw err;
                 }
-
-                for (const fn of middleWare) {
-                    let result = fn(interaction);
-                    if (result == 1) return; // test condition is true
-                }
-                buttonObj.callback(interaction, this.client);
-            } catch (error) {
-                let err = new errs.ButtonError(
-                    "Button $NAME$ failed with the error:\n\n" + error,
-                    buttonObj.filePath,
-                    interaction.customId
-                );
-
-                throw err;
             }
-        });
+        );
     }
 
     /**
@@ -260,43 +296,50 @@ export class InteractionHandler extends CoreHandler {
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
                 : "This select menu is not for you";
-        this.client.on("interactionCreate", (interaction) => {
-            if (!interaction.isAnySelectMenu()) return;
-            const selectObj =
-                this.interactions.selectMenus[interaction.customId];
+        this.client.on(
+            "interactionCreate",
+            (interaction: AnySelectMenuInteraction) => {
+                if (!interaction.isAnySelectMenu()) return;
+                const selectObj =
+                    this.interactions.selectMenus[interaction.customId];
 
-            try {
-                if (selectObj == undefined) return; // for selects that don't need this package to respond to them.
+                try {
+                    if (selectObj == undefined) return; // for selects that don't need this package to respond to them.
 
-                const author = interaction.message.interaction.user.id;
-                const selectMenuClicker = interaction.member.user.id;
+                    const author = interaction.message.interaction.user.id;
+                    const selectMenuClicker = interaction.member.user.id;
 
-                if (
-                    selectObj.onlyAuthor == true &&
-                    author !== selectMenuClicker
-                ) {
-                    interaction.reply({
-                        content: authorOnlyMsg,
-                        ephemeral: true,
-                    });
-                    return;
+                    if (
+                        selectObj.onlyAuthor == true &&
+                        author !== selectMenuClicker
+                    ) {
+                        interaction.reply({
+                            content: authorOnlyMsg,
+                            ephemeral: true,
+                        });
+                        return;
+                    }
+
+                    for (const fn of middleWare) {
+                        let result = fn(interaction);
+                        if (result == 1) return; // test condition is true
+                    }
+                    selectObj.callback(
+                        interaction,
+                        this.client,
+                        this.findVariable(interaction, selectObj.customId)
+                    );
+                } catch (error) {
+                    let err = new errs.ButtonError(
+                        "Select Menu $NAME$ failed with the error:\n\n" + error,
+                        selectObj.filePath,
+                        interaction.customId
+                    );
+
+                    throw err;
                 }
-
-                for (const fn of middleWare) {
-                    let result = fn(interaction);
-                    if (result == 1) return; // test condition is true
-                }
-                selectObj.callback(interaction, this.client);
-            } catch (error) {
-                let err = new errs.ButtonError(
-                    "Select Menu $NAME$ failed with the error:\n\n" + error,
-                    selectObj.filePath,
-                    interaction.customId
-                );
-
-                throw err;
             }
-        });
+        );
     }
 
     /**
@@ -355,7 +398,11 @@ export class InteractionHandler extends CoreHandler {
                         let result = fn(interaction);
                         if (result == 1) return; // test condition is true
                     }
-                    modalObj.callback(interaction, this.client);
+                    modalObj.callback(
+                        interaction,
+                        this.client,
+                        this.findVariable(interaction, modalObj.customId)
+                    );
                 } catch (error) {
                     let err = new errs.ModalError(
                         "Modal $NAME$ failed with the error:\n\n" + error,
