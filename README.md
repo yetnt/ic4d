@@ -509,9 +509,11 @@ module.exports = command;
     data: [SlashCommandBuilder](https://discord.js.org/docs/packages/builders/1.8.2/SlashCommandBuilder:Class);
     execute: (
     interaction: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class),
-    client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
+    client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class),
+    addInteractionVariables?: (k: { [key: string]: any }) => void
     ) => void | Promise\<void>**
     -   Command's data, Only takes in 2 properties: `data` property which contains the command's data from the discord.js provided class `SlashCommandBuilder` and the `execute` property which takes in a function with the `interaction` and `client` parameter.
+    -   `addInteractionVaribles` is a function that can be used in the execute method to pass variables to buttons, modals and select menus (See [here](#addinteractionvariables-method-3))
 
 Example:
 
@@ -676,6 +678,8 @@ Function to be called when the interaction is called. (Is that how you say it?)
     client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
     ) => void | Promise\<void>**
     -   The function to be called (Parameters: `(interaction, client)`)
+-   `variables`**: { [key:string]: any }**
+    -   **(optional)** Variables passed from the [SlashCommandManager](#slashcommandmanager) via the [addInteractionVariables()](#constructor-3) (See [here](#addinteractionvariables-method-3))
 
 **_`returns`: [self](#interactionbuilder)_**
 
@@ -709,6 +713,8 @@ Sets the interaction to have a timeout.
     -   Function to call when the interaction time expires.
 -   `timeout`**: number**
     -   How long to wait for the interaction to timeout. (in ms)
+-   `variables`**: { [key:string]: any }**
+    -   **(optional)** Variables passed from the [SlashCommandManager](#slashcommandmanager) via the [addInteractionVariables()](#constructor-3) (See [here](#addinteractionvariables-method-3))
 
 **_`returns`: [self](#interactionbuilder)_**
 
@@ -996,9 +1002,148 @@ export type InteractionTypeStringsMap<U extends string> = U extends "modal"
 
 # Common Problems
 
-1.  _Files in the `commands` directory trying to be read as slash commmands by the `CommandHandler` class._
+## Sharing variables between slash and interactions
 
-    -   Example: This function is in the `commands` direcotory as it is used by multiple commands, but is not a commands itself.
+-   Example: You have where a variable needs to be shared from the slash command callback to the interaction callback. Here there are 3 methods (1 being the recommended approach)
+
+### Method 1 & 2 (Not recommended)
+
+Method 1 involves:
+
+> Setting and retrieving an outside variable which the slash and interaction callback can receive
+
+Method 2 involves:
+
+> Adding a property to the slash command object itself and retrieving that property later in the interaction callback.
+
+```js
+// method 1
+let variable = ""
+
+const test = new SlashCommandManager({
+    data: new SlashCommandBuilder()
+        .setName("test")
+        .setDescription("Just a test")
+        .addStringOption((option) =>
+            option
+                .setName("string")
+                .setDescription("some input")
+                .setRequired(true)
+        )
+
+    async execute(interaction, client) {
+        try {
+            await interaction.deferReply();
+            const itemName = interaction.options.get("string").value;
+
+            // method 1 (global variable)
+            variable = itemName
+
+            // method 2 (adding a property)
+            test.variable = itemName
+
+            await interaction.editReply({
+                content:"Huh?",
+                components: [
+                    new ActionRowBuilder().addComponents(
+                        new ButtonBuilder()
+                            .setCustomId("hello")
+                            .setLabel("click now")
+                            .setStyle(ButtonStyle.Primary)
+                    ),
+                ],
+            });
+        } catch (e) {
+            errorHandler(e, client, interaction, EmbedBuilder);
+        }
+    },
+}).addInteractions(
+    button
+);
+
+
+const button = new InteractionBuilder()
+    .setType("button")
+    .setCustomId("hello")
+
+    .setCallback(async (i, c, v) => {
+        // method 1
+        const itemName = variable
+
+        //method 2
+        const itemName = test.variable
+        await i.update({ content: itemName, components: [] });
+    })
+
+module.exports = test;
+```
+
+Both methods are flawed with the fact that you may have a variable which should be unique to the user, using both these methods exposes the variable to anyone running the command. (If 2 users run a command, the last user will set the variable)
+
+### addInteractionVariables() (method 3)
+
+This uses a new function passed into [SlashCommandManager execute function (in the constructor object)](#constructor-3), which you can use to pass anything to the interactions associated with this command.
+(Returns void);
+
+-   `k`**: { [key: string]: any }**
+    -   Object of variables to save and be referenced later in interactions associated with this command.
+
+Then to use these variables, in either the [setCallback](#setcallback) or [setTimeout](#settimeout) method of the [InteractionBuilder](#interactionbuilder), add the optional parameter `variables` which returns the object you passed (hopefully)
+
+Example:
+
+```js
+const test = new SlashCommandManager({
+    data: new SlashCommandBuilder()
+        .setName("test")
+        .setDescription("Just a test")
+        .addStringOption((option) =>
+            option
+                .setName("string")
+                .setDescription("some input")
+                .setRequired(true)
+        )
+// here we add the function in the parameter list
+    async execute(interaction, client, addInteractionVariables) {
+        try {
+            await interaction.deferReply();
+            const itemName = interaction.options.get("string").value;
+            await interaction.editReply({
+                content:"Huh?",
+                components: [
+                    new ActionRowBuilder().addComponents(
+                        new ButtonBuilder()
+                            .setCustomId("hello")
+                            .setLabel("click now")
+                            .setStyle(ButtonStyle.Primary)
+                    ),
+                ],
+            });
+
+            // using the function
+            addInteractionVariables({ itemName });
+        } catch (e) {
+            errorHandler(e, client, interaction, EmbedBuilder);
+        }
+    },
+}).addInteractions(
+    button
+);
+
+const button = new InteractionBuilder()
+    .setType("button")
+    .setCustomId("hello")
+
+    // add the variables to the parameter list
+    .setCallback(async (i, c, variables) => {
+        // using the variable in the callback
+        await i.update({ content: variables.itemName,components: [] });
+    })
+```
+
+## CommandHandler Reading the wrong files
+
+-   Example: This function is in the `commands` direcotory as it is used by multiple commands, but is not a commands itself.
 
     ```js
     const function a(userBalance) {
