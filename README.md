@@ -663,11 +663,11 @@ Function to be called when the interaction is called. (Is that how you say it?)
 
 -   `fn`**: (
     interaction: [InteractionTypeStringsMap<this["type"]>](#interactiontypestringsmap),
-    client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
+    client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class),
+    variables?: { [key:string]: any }
     ) => void | Promise\<void>**
-    -   The function to be called (Parameters: `(interaction, client)`)
--   `variables`**: { [key:string]: any }**
-    -   **(optional)** Variables passed from the [SlashCommandManager](#slashcommandmanager) via the [addInteractionVariables()](#constructor-3) (See [here](#addinteractionvariables-method-3))
+    -   The function to be called (Parameters: `(interaction, client, variables)`)
+    -   (See [here](#addinteractionvariables-method-3) for variables param)
 
 **_`returns`: [self](#interactionbuilder)_**
 
@@ -696,13 +696,13 @@ Sets the interaction to have a timeout.
 
 -   `fn`**:(
     interaction: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class),
-    client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)
+    client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class),
+    variables?: { [key:string]: any }
     ) => void | Promise\<void>**
     -   Function to call when the interaction time expires.
+    -   (See [here](#addinteractionvariables-method-3) for variables param)
 -   `timeout`**: number**
     -   How long to wait for the interaction to timeout. (in ms)
--   `variables`**: { [key:string]: any }**
-    -   **(optional)** Variables passed from the [SlashCommandManager](#slashcommandmanager) via the [addInteractionVariables()](#constructor-3) (See [here](#addinteractionvariables-method-3))
 
 **_`returns`: [self](#interactionbuilder)_**
 
