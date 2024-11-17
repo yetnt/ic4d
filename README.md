@@ -1078,7 +1078,15 @@ const button = new InteractionBuilder()
 module.exports = test;
 ```
 
-Both methods are flawed with the fact that you may have a variable which should be unique to the user, using both these methods exposes the variable to anyone running the command. (If 2 users run a command, the last user will set the variable)
+Method 1 issue:
+
+> **Concurrency issues:** The main problem with this method is that if multiple users run the command simultaneously, the variable is overwritten by the most recent execution. This means that data intended for one user could be exposed or altered by another user’s command, leading to unexpected behavior and security issues.
+
+Method 2 issue(s):
+
+> **Shared State:** Although this method keeps the variable associated with the specific command object, it still doesn't address the issue of multiple users running the command. If two users execute the command, the stored value will change to reflect the most recent one, causing similar issues to the global variable method.
+>
+> **Not Scoped Per Interaction:** This approach doesn’t effectively isolate variables for individual interactions, which can lead to data being inadvertently shared between users.
 
 ### addInteractionVariables() (method 3)
 
@@ -1140,6 +1148,12 @@ const button = new InteractionBuilder()
         await i.update({ content: variables.itemName,components: [] });
     })
 ```
+
+This method will always find the variables associated with the message sent by the bot. (This method may not work if you have something like a modal before a bot response as it uses the messageId as a unique identifier.)
+
+> **(Better explanation)** `addInteractionVariables()` function ties variables to unique message Ids AND the custom IDs of the slash command, ensuring that data remains scoped to specific interactions and is not shared or overwritten between users. This approach enhances data safety by preventing concurrency issues and ensuring only the relevant interaction can access its data. It also sorta simplifies the process of passing data between commands and interactions
+
+If any of the approaches don't help your use case. It's always best to just use [Message collectors](https://discordjs.guide/popular-topics/collectors)
 
 ## CommandHandler Reading the wrong files
 
