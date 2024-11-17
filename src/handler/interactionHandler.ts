@@ -277,7 +277,6 @@ export class InteractionHandler extends CoreHandler {
                         let result = fn(interaction);
                         if (result == 1) return; // test condition is true
                     }
-                    console.log(this.variables);
                     buttonObj.callback(
                         interaction,
                         this.client,
@@ -285,11 +284,11 @@ export class InteractionHandler extends CoreHandler {
                     );
                 } catch (error) {
                     let err = new errs.ButtonError(
-                        "Button $NAME$ failed with the error:\n\n" + error,
+                        "Button $NAME$ failed with the error:\n\n",
                         buttonObj.filePath,
                         interaction.customId
                     );
-
+                    console.error(error);
                     throw err;
                 }
             }
@@ -345,11 +344,11 @@ export class InteractionHandler extends CoreHandler {
                     );
                 } catch (error) {
                     let err = new errs.ButtonError(
-                        "Select Menu $NAME$ failed with the error:\n\n" + error,
+                        "Select Menu $NAME$ failed with the error:\n\n",
                         selectObj.filePath,
                         interaction.customId
                     );
-
+                    console.error(error);
                     throw err;
                 }
             }
@@ -382,12 +381,11 @@ export class InteractionHandler extends CoreHandler {
                     contextObj.callback(interaction, this.client);
                 } catch (error) {
                     let err = new errs.ContextHandlerError(
-                        "Context Menu $NAME$ failed with the error:\n\n" +
-                            error,
+                        "Context Menu $NAME$ failed with the error:\n\n",
                         contextObj.filePath,
                         interaction.commandName
                     );
-
+                    console.error(error);
                     throw err;
                 }
             }
@@ -419,11 +417,11 @@ export class InteractionHandler extends CoreHandler {
                     );
                 } catch (error) {
                     let err = new errs.ModalError(
-                        "Modal $NAME$ failed with the error:\n\n" + error,
+                        "Modal $NAME$ failed with the error:\n\n",
                         modalObj.filePath,
                         interaction.customId
                     );
-
+                    console.error(error);
                     throw err;
                 }
             }
