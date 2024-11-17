@@ -33,7 +33,7 @@ export class InteractionHandler extends CoreHandler {
         contextMenus: Record<string, ContextMenuObject>;
         modals: Record<string, InteractionObject>;
     };
-    variables: HandlerVariables.Type;
+    variables: HandlerVariables.Type = {};
     options: LoaderOptions = {
         loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
@@ -97,25 +97,38 @@ export class InteractionHandler extends CoreHandler {
                 commandObject: CommandObject,
                 k: { [key: string]: any }
             ) => {
-                console.log("ON!!!!!!!!!!!!!!!!!!!!!!!");
-                const messageId = await interaction
-                    .fetchReply()
-                    .then((d) => d.id);
-                const interactionIds: string = Object.values(
-                    commandObject.interactions
-                )
-                    .filter((interactionType) => interactionType) // Ensure interactionType is not undefined
-                    .flatMap((interactionType) =>
-                        Object.values(interactionType)
-                    ) // Get all InteractionBuilder objects
-                    .map((builder) => builder.customId) // Extract ids from the InteractionBuilder object's ID
-                    .join(HandlerVariables.Separators.INTERACTION_IDS);
+                this.debug.commonBlue(`interaction variable(s) received:`);
+                this.debug.commonBlue(k.toString());
+                try {
+                    const messageId = await interaction
+                        .fetchReply()
+                        .then((d) => d.id);
+                    const interactionIds: string = Object.values(
+                        commandObject.interactions
+                    )
+                        .filter((interactionType) => interactionType) // Ensure interactionType is not undefined
+                        .flatMap((interactionType) =>
+                            Object.values(interactionType)
+                        ) // Get all InteractionBuilder objects
+                        .map((builder) => builder.customId) // Extract ids from the InteractionBuilder object's ID
+                        .join(HandlerVariables.Separators.INTERACTION_IDS);
 
-                const id = [interactionIds, messageId].join(
-                    HandlerVariables.Separators.DEFAULT
-                );
+                    const id = [interactionIds, messageId].join(
+                        HandlerVariables.Separators.DEFAULT
+                    );
 
-                this.variables[id] = k;
+                    this.variables[id] = k;
+                } catch (error) {
+                    let err = new errs.InteractionHandler(
+                        undefined,
+                        "Loading interactions variables sent from $NAME$ failed with the error:\n\n",
+                        undefined,
+                        interaction.commandName
+                    );
+                    console.error(error);
+
+                    throw err;
+                }
             }
         );
     }
@@ -238,7 +251,7 @@ export class InteractionHandler extends CoreHandler {
                 : "This button is not for you";
         this.client.on(
             "interactionCreate",
-            (interaction: ButtonInteraction) => {
+            async (interaction: ButtonInteraction) => {
                 if (!interaction.isButton()) return;
                 const buttonObj =
                     this.interactions.buttons[interaction.customId];
@@ -264,10 +277,11 @@ export class InteractionHandler extends CoreHandler {
                         let result = fn(interaction);
                         if (result == 1) return; // test condition is true
                     }
+                    console.log(this.variables);
                     buttonObj.callback(
                         interaction,
                         this.client,
-                        this.findVariable(interaction, buttonObj.customId)
+                        await this.findVariable(interaction, buttonObj.customId)
                     );
                 } catch (error) {
                     let err = new errs.ButtonError(
@@ -298,7 +312,7 @@ export class InteractionHandler extends CoreHandler {
                 : "This select menu is not for you";
         this.client.on(
             "interactionCreate",
-            (interaction: AnySelectMenuInteraction) => {
+            async (interaction: AnySelectMenuInteraction) => {
                 if (!interaction.isAnySelectMenu()) return;
                 const selectObj =
                     this.interactions.selectMenus[interaction.customId];
@@ -327,7 +341,7 @@ export class InteractionHandler extends CoreHandler {
                     selectObj.callback(
                         interaction,
                         this.client,
-                        this.findVariable(interaction, selectObj.customId)
+                        await this.findVariable(interaction, selectObj.customId)
                     );
                 } catch (error) {
                     let err = new errs.ButtonError(
@@ -350,7 +364,7 @@ export class InteractionHandler extends CoreHandler {
         if (this.flags.debugger) this.debug.topMsg("contextMenus()");
         this.client.on(
             "interactionCreate",
-            (
+            async (
                 interaction:
                     | UserContextMenuCommandInteraction
                     | MessageContextMenuCommandInteraction
@@ -388,7 +402,7 @@ export class InteractionHandler extends CoreHandler {
         if (this.flags.debugger) this.debug.topMsg("modals()");
         this.client.on(
             "interactionCreate",
-            (interaction: ModalSubmitInteraction) => {
+            async (interaction: ModalSubmitInteraction) => {
                 if (!interaction.isModalSubmit()) return;
                 const modalObj = this.interactions.modals[interaction.customId];
 
@@ -401,7 +415,7 @@ export class InteractionHandler extends CoreHandler {
                     modalObj.callback(
                         interaction,
                         this.client,
-                        this.findVariable(interaction, modalObj.customId)
+                        await this.findVariable(interaction, modalObj.customId)
                     );
                 } catch (error) {
                     let err = new errs.ModalError(

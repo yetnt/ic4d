@@ -28,38 +28,54 @@ export class LoaderError extends ic4dError {
     }
 }
 
-export class ContextLoaderError extends ic4dError {
-    constructor(message: string, file?: string, commandName?: string) {
-        super("ContextMenuLoaderError", message, file, commandName);
+export class InteractionHandler extends ic4dError {
+    constructor(
+        errorName: string,
+        message: string,
+        file: string,
+        interactionCustomId?: string
+    ) {
+        super(
+            errorName || "InteractionHandlerError",
+            message,
+            file,
+            interactionCustomId
+        );
     }
 }
 
-export class ContextHandlerError extends ic4dError {
-    constructor(message: string, file?: string, commandName?: string) {
-        super("ContextMenuHandlerError", message, file, commandName);
+export class ContextLoaderError extends InteractionHandler {
+    constructor(message: string, file?: string, interactionCustomId?: string) {
+        super("ContextMenuLoaderError", message, file, interactionCustomId);
     }
 }
 
-export class HandlerError extends ic4dError {
-    constructor(message: string, file?: string, commandName?: string) {
-        super("CommandHandlerError", message, file, commandName);
+export class ContextHandlerError extends InteractionHandler {
+    constructor(message: string, file?: string, interactionCustomId?: string) {
+        super("ContextMenuHandlerError", message, file, interactionCustomId);
     }
 }
 
-export class ButtonError extends ic4dError {
-    constructor(message: string, file?: string, commandName?: string) {
-        super("InteractionButtonError", message, file, commandName);
+export class HandlerError extends InteractionHandler {
+    constructor(message: string, file?: string, interactionCustomId?: string) {
+        super("CommandHandlerError", message, file, interactionCustomId);
     }
 }
 
-export class ModalError extends ic4dError {
-    constructor(message: string, file?: string, commandName?: string) {
-        super("InteractionModalError", message, file, commandName);
+export class ButtonError extends InteractionHandler {
+    constructor(message: string, file?: string, interactionCustomId?: string) {
+        super("InteractionButtonError", message, file, interactionCustomId);
     }
 }
 
-export class SelectMenuError extends ic4dError {
-    constructor(message: string, file?: string, commandName?: string) {
-        super("InteractionSelectMenuError", message, file, commandName);
+export class ModalError extends InteractionHandler {
+    constructor(message: string, file?: string, interactionCustomId?: string) {
+        super("InteractionModalError", message, file, interactionCustomId);
+    }
+}
+
+export class SelectMenuError extends InteractionHandler {
+    constructor(message: string, file?: string, interactionCustomId?: string) {
+        super("InteractionSelectMenuError", message, file, interactionCustomId);
     }
 }

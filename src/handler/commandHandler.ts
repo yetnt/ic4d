@@ -420,7 +420,9 @@ export class CommandHandler extends CoreHandler {
                     const addInteractionVariables: addInteractionVariables = (
                         k
                     ): void => {
-                        console.log("fweah");
+                        this.debug.commonBlue(
+                            `addInteractionVaribles() has been called in the **${commandObject.name}** command`
+                        );
                         this.client.emit(
                             HandlerVariables.Events.ADD_VARIABLE,
                             interaction,
@@ -507,7 +509,7 @@ export class CommandHandler extends CoreHandler {
                     }
                 } catch (error) {
                     let err = new errs.HandlerError(
-                        `Failed to run command $NAME$ \n\n` + error,
+                        `Failed to run command $NAME$ \n\n`,
                         commandObject.filePath,
                         commandObject.name
                     );
