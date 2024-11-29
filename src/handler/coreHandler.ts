@@ -194,7 +194,7 @@ export class CoreHandler extends EventEmitter {
         extender: Handlers,
         client: Client,
         debugMode = false,
-        logToFolder?: string | false
+        logToFolder: string | false = false
     ) {
         super();
         this.subClassName = extender;
