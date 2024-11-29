@@ -2,8 +2,8 @@ import { CoreHandler } from "./coreHandler";
 import { Client } from "discord.js";
 import clc = require("cli-color");
 
-export class ReadyHandler extends CoreHandler {
-    client: Client;
+export class ReadyHandler {
+    private core: CoreHandler;
     private emitErr: boolean = false;
     private functionsToRun: ((client?: Client) => Promise<void> | void)[] = [];
 
@@ -13,10 +13,10 @@ export class ReadyHandler extends CoreHandler {
      * @param functions Functions to be run when the bot is ready.
      */
     constructor(
-        client: Client,
+        core: CoreHandler,
         ...functions: ((client?: Client) => Promise<void> | void)[]
     ) {
-        super("rHandler", client);
+        this.core = core;
         this.functionsToRun = functions;
     }
 
@@ -32,10 +32,10 @@ export class ReadyHandler extends CoreHandler {
      * Run functions when the bot starts.
      */
     async execute() {
-        this.client.on("ready", async () => {
+        this.core.client.on("ready", async () => {
             for (const fn of this.functionsToRun) {
                 try {
-                    await fn(this.client);
+                    await fn(this.core.client);
                 } catch (error) {
                     let str = fn
                         .toString()

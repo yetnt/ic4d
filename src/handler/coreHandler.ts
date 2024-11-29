@@ -76,9 +76,8 @@ export class CoreHandler extends EventEmitter {
         debugger: false,
         logToFolder: false,
     };
-    private subClassName: Handlers;
 
-    protected currentTime() {
+    currentTime() {
         const date = new Date(Date.now());
         const arr = [
             "[ ",
@@ -99,7 +98,12 @@ export class CoreHandler extends EventEmitter {
      * @param clc clc colouring.
      * @param stdout Print via procress.stdout
      */
-    protected logOrWrite(x: string, col?: bare.Format, stdout?: boolean): void {
+    logOrWrite(
+        subClassName: Handlers,
+        x: string,
+        col?: bare.Format,
+        stdout?: boolean
+    ): void {
         if (this.coreFlags.logToFolder) {
             x = x.replace(/\x1b\[([0-9;]*)m/g, "");
             try {
@@ -112,7 +116,7 @@ export class CoreHandler extends EventEmitter {
                         "-" +
                         date.getFullYear() +
                         "_" +
-                        this.subClassName +
+                        subClassName +
                         ".log.txt"
                 );
                 // If `logToFile` is a valid file path, append the message with a newline
@@ -135,36 +139,37 @@ export class CoreHandler extends EventEmitter {
      * Object of debuger helper function which take in a string and use clc to colour it and ouput whatever debug message to the console.
      * Only used by the InteractionHandler and CommandHandler, That's why it's protected, the user doesn't need this.
      */
-    protected debug = {
+    debug = {
         /**
          * Custom string that already has clc colouring.
          * @param x String to log to the console.
          */
-        custom: (x: string): void => {
-            this.logOrWrite(x); // this is red and red has any type???
+        custom: (handler: Handlers, x: string): void => {
+            this.logOrWrite(handler, x); // this is red and red has any type???
         },
 
         /**
          * Common Text.
          * @param x String tot log to the console.
          */
-        common: (x: string): void => {
-            this.logOrWrite(x, clc.underline);
+        common: (handler: Handlers, x: string): void => {
+            this.logOrWrite(handler, x, clc.underline);
         },
 
         /**
          * Common Blue Text
          */
-        commonBlue: (x: string): void => {
-            this.logOrWrite(x, clc.blue.bold);
+        commonBlue: (handler: Handlers, x: string): void => {
+            this.logOrWrite(handler, x, clc.blue.bold);
         },
 
         /**
          * Top Level Message for the debugger. Used to tell the user which function has started running
          * @param x String to log to the console.
          */
-        topMsg: (x: string): void => {
+        topMsg: (handler: Handlers, x: string): void => {
             this.logOrWrite(
+                handler,
                 "\n" + x + " has been called and has started executing.\n",
                 clc.underline.blue
             );
@@ -178,32 +183,34 @@ export class CoreHandler extends EventEmitter {
              * An item in a list of multiple items that have been deleted. Used by the ComandHandler and InteractionHandler when refreshing application commands.
              * @param x String to log to the console
              */
-            sMsg: (x: string): void => {
-                this.logOrWrite(x + ", ", clc.red.underline);
+            sMsg: (handler: Handlers, x: string): void => {
+                this.logOrWrite(handler, x + ", ", clc.red.underline);
             },
             /**
              * Final Message to log to the console. (Logs the string "have been deleted.")
              */
-            lMsg: (): void => {
-                this.logOrWrite("have been deleted.", clc.red.underline);
+            lMsg: (handler: Handlers): void => {
+                this.logOrWrite(
+                    handler,
+                    "have been deleted.",
+                    clc.red.underline
+                );
             },
         },
     };
 
     constructor(
-        extender: Handlers,
         client: Client,
         debugMode = false,
         logToFolder: string | false = false
     ) {
         super();
-        this.subClassName = extender;
         this.client = client;
         this.coreFlags.debugger = debugMode || false;
         this.coreFlags.logToFolder = logToFolder || false;
     }
 
-    protected getInteractions(
+    getInteractions(
         path: string,
         getContextMenusOnly: boolean = false
     ): (ContextMenuObject | InteractionObject)[] | ContextMenuObject[] {
@@ -262,10 +269,7 @@ export class CoreHandler extends EventEmitter {
         return scanDirectory(path);
     }
 
-    protected getLocalCommands(
-        path: string,
-        exceptions: string[] = []
-    ): CommandObject[] {
+    getLocalCommands(path: string, exceptions: string[] = []): CommandObject[] {
         const scanDirectory = (directory: string): SlashCommandManager[] => {
             return fs.readdirSync(directory).flatMap((item) => {
                 const itemPath = path2.join(directory, item);
@@ -306,10 +310,7 @@ export class CoreHandler extends EventEmitter {
         return scanDirectory(path);
     }
 
-    protected getAllFiles(
-        directory: string,
-        foldersOnly: boolean = false
-    ): string[] {
+    getAllFiles(directory: string, foldersOnly: boolean = false): string[] {
         return fs
             .readdirSync(directory, { withFileTypes: true })
             .filter((file) =>
@@ -318,7 +319,7 @@ export class CoreHandler extends EventEmitter {
             .map((file) => path2.join(directory, file.name));
     }
 
-    protected areCommandsDifferent(
+    areCommandsDifferent(
         existingCommand: ApplicationCommand,
         localCommand: CommandObject
     ): boolean {
@@ -379,23 +380,23 @@ export class CoreHandler extends EventEmitter {
         );
     }
 
-    protected areContextMenusDifferent(
+    areContextMenusDifferent(
         existing: ApplicationCommand,
         local: ContextMenuObject
     ): boolean {
         return existing.type !== local.type;
     }
 
-    protected async getApplicationCommands(client: Client, guildId?: string) {
+    async getApplicationCommands(guildId?: string) {
         let applicationCommands:
             | ApplicationCommandManager
             | GuildApplicationCommandManager;
 
         if (guildId) {
-            const guild = await client.guilds.fetch(guildId);
+            const guild = await this.client.guilds.fetch(guildId);
             applicationCommands = guild.commands;
         } else {
-            applicationCommands = await client.application.commands;
+            applicationCommands = await this.client.application.commands;
         }
 
         //@ts-ignore

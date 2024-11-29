@@ -30,9 +30,9 @@ function attachDev(name: string, isDev: boolean) {
  * @class
  * Command Handler which loads, edits and deletes slash commands for you.
  */
-export class CommandHandler extends CoreHandler {
-    client: Client;
+export class CommandHandler {
     commandPath: string;
+    private core: CoreHandler;
     options: LoaderOptions = {
         loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
@@ -64,18 +64,13 @@ export class CommandHandler extends CoreHandler {
      * @param handlerFlags Injection Options.
      */
     constructor(
-        client: Client,
+        core: CoreHandler,
         path: string,
         runFlags?: RunFlags,
         loaderOptions?: LoaderOptions,
         handlerFlags?: HandlerFlags
     ) {
-        super(
-            "cHandler",
-            client,
-            handlerFlags?.debugger,
-            handlerFlags.logToFile
-        );
+        this.core = core;
 
         this.flags = {
             debugger: handlerFlags?.debugger || this.flags.debugger,
@@ -122,12 +117,12 @@ export class CommandHandler extends CoreHandler {
      * @param serverId Server Id, Makes loaded commands guild wide.
      */
     async registerCommands(logNoChanges?: boolean, serverId?: string) {
-        if (this.flags.debugger) this.debug.topMsg("registerCommands()");
+        if (this.flags.debugger)
+            this.core.debug.topMsg("cHandler", "registerCommands()");
         logNoChanges = logNoChanges !== undefined ? logNoChanges : true;
         try {
-            const localCommands = this.getLocalCommands(this.commandPath);
-            const applicationCommands = await this.getApplicationCommands(
-                this.client,
+            const localCommands = this.core.getLocalCommands(this.commandPath);
+            const applicationCommands = await this.core.getApplicationCommands(
                 serverId
             );
 
@@ -135,11 +130,13 @@ export class CommandHandler extends CoreHandler {
                 let count = 0;
                 applicationCommands.cache.forEach((v) => {
                     if (v.type !== ApplicationCommandType.ChatInput) return;
-                    if (this.flags.debugger) this.debug.refresh.sMsg(v.name);
+                    if (this.flags.debugger)
+                        this.core.debug.refresh.sMsg("cHandler", v.name);
                     applicationCommands.delete(v.id);
                     count++;
                 });
-                if (this.flags.debugger) this.debug.refresh.lMsg();
+                if (this.flags.debugger)
+                    this.core.debug.refresh.lMsg("cHandler");
 
                 console.log(
                     clc.yellow.underline.italic(
@@ -201,7 +198,7 @@ export class CommandHandler extends CoreHandler {
                         }
 
                         if (
-                            this.areCommandsDifferent(
+                            this.core.areCommandsDifferent(
                                 existingCommand,
                                 localCommand
                             )
@@ -294,18 +291,22 @@ export class CommandHandler extends CoreHandler {
             interaction?: ChatInputCommandInteraction
         ) => any)[]
     ) {
-        if (this.flags.debugger) this.debug.topMsg("handleCommands()");
-        this.client.on(
+        if (this.flags.debugger)
+            this.core.debug.topMsg("cHandler", "handleCommands()");
+        this.core.client.on(
             "interactionCreate",
             async (interaction: ChatInputCommandInteraction) => {
                 if (!interaction.isChatInputCommand()) return;
 
                 if (this.flags.debugger)
-                    this.debug.common(
+                    this.core.debug.common(
+                        "cHandler",
                         "'" + interaction.commandName + "' has been called."
                     );
 
-                const localCommands = this.getLocalCommands(this.commandPath);
+                const localCommands = this.core.getLocalCommands(
+                    this.commandPath
+                );
 
                 const commandObject: CommandObject = localCommands.find(
                     (cmd: CommandObject) => cmd.name === interaction.commandName
@@ -317,7 +318,8 @@ export class CommandHandler extends CoreHandler {
                     if (commandObject.devOnly) {
                         if (!this.runFlags.devs.includes(interaction.user.id)) {
                             if (this.flags.debugger)
-                                this.debug.commonBlue(
+                                this.core.debug.commonBlue(
+                                    "cHandler",
                                     "\tUser tried running " +
                                         interaction.commandName +
                                         " which is a dev command."
@@ -340,7 +342,8 @@ export class CommandHandler extends CoreHandler {
                                     )
                                 ) {
                                     if (this.flags.debugger)
-                                        this.debug.commonBlue(
+                                        this.core.debug.commonBlue(
+                                            "cHandler",
                                             "\tUser did not have enough permissions to run " +
                                                 interaction.commandName
                                         );
@@ -360,7 +363,8 @@ export class CommandHandler extends CoreHandler {
                             //@ts-ignore
                             if (!bot.permissions.has(permission)) {
                                 if (this.flags.debugger)
-                                    this.debug.commonBlue(
+                                    this.core.debug.commonBlue(
+                                        "cHandler",
                                         "\tBot did not have the required permissions to run " +
                                             interaction.commandName
                                     );
@@ -375,7 +379,10 @@ export class CommandHandler extends CoreHandler {
 
                     if (middleWare) {
                         if (this.flags.debugger)
-                            this.debug.common("\tMiddlewares Called:");
+                            this.core.debug.common(
+                                "cHandler",
+                                "\tMiddlewares Called:"
+                            );
 
                         middleWare.forEach(async (fn) => {
                             let result = await fn(commandObject, interaction);
@@ -384,7 +391,8 @@ export class CommandHandler extends CoreHandler {
                                 // Means the function has (function a(){}) syntax, otherwise it's (()=>{}) syntax
                                 const labeled =
                                     arr[0] == "function" ? true : false;
-                                this.debug.common(
+                                this.core.debug.common(
+                                    "cHandler",
                                     "\t\t" +
                                         clc.bold.italic.red("fn") +
                                         " " +
@@ -400,7 +408,8 @@ export class CommandHandler extends CoreHandler {
                         });
 
                         if (this.flags.debugger)
-                            this.debug.common(
+                            this.core.debug.common(
+                                "cHandler",
                                 "Middlewares called, Callback to be called."
                             );
                     }
@@ -408,10 +417,11 @@ export class CommandHandler extends CoreHandler {
                     const addInteractionVariables: addInteractionVariables = (
                         k
                     ): void => {
-                        this.debug.commonBlue(
+                        this.core.debug.commonBlue(
+                            "cHandler",
                             `addInteractionVaribles() has been called in the **${commandObject.name}** command`
                         );
-                        this.client.emit(
+                        this.core.client.emit(
                             HandlerVariables.Events.ADD_VARIABLE,
                             interaction,
                             commandObject,
@@ -421,7 +431,7 @@ export class CommandHandler extends CoreHandler {
                     };
 
                     await commandObject.callback(
-                        this.client,
+                        this.core.client,
                         interaction,
                         addInteractionVariables
                     );
@@ -439,7 +449,7 @@ export class CommandHandler extends CoreHandler {
                             )
                             .forEach(async ([, value]) => {
                                 await setupCollector(
-                                    this.client,
+                                    this.core.client,
                                     interaction,
                                     value
                                 );
@@ -459,7 +469,7 @@ export class CommandHandler extends CoreHandler {
                             )
                             .forEach(async ([, value]) => {
                                 await setupCollector(
-                                    this.client,
+                                    this.core.client,
                                     interaction,
                                     value
                                 );
@@ -468,7 +478,10 @@ export class CommandHandler extends CoreHandler {
 
                     if (postWare) {
                         if (this.flags.debugger)
-                            this.debug.common("\tPostwares Called:");
+                            this.core.debug.common(
+                                "cHandler",
+                                "\tPostwares Called:"
+                            );
 
                         postWare.forEach(async (fn) => {
                             let result = await fn(commandObject, interaction);
@@ -477,7 +490,8 @@ export class CommandHandler extends CoreHandler {
                                 // Means the function has (function a(){}) syntax, otherwise it's (()=>{}) syntax
                                 const labeled =
                                     arr[0] == "function" ? true : false;
-                                this.debug.common(
+                                this.core.debug.common(
+                                    "cHandler",
                                     "\t\t" +
                                         clc.bold.italic.blue("fn") +
                                         " " +
@@ -493,7 +507,10 @@ export class CommandHandler extends CoreHandler {
                         });
 
                         if (this.flags.debugger)
-                            this.debug.common("Postwares have been called.");
+                            this.core.debug.common(
+                                "cHandler",
+                                "Postwares have been called."
+                            );
                     }
                 } catch (error) {
                     let err = new errs.HandlerError(

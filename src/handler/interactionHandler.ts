@@ -25,7 +25,7 @@ import {
  * @class
  * Handle Interactions. (Slash commands not included. Use CommandHandler() for slash).
  */
-export class InteractionHandler extends CoreHandler {
+export class InteractionHandler {
     interactionsPath: string;
     interactions: {
         buttons: Record<string, InteractionObject>;
@@ -34,6 +34,7 @@ export class InteractionHandler extends CoreHandler {
         modals: Record<string, InteractionObject>;
     };
     variables: HandlerVariables.Type = {};
+    private core: CoreHandler;
     options: LoaderOptions = {
         loadedNoChanges: "NAME was loaded. No changes were made.",
         loaded: "NAME has been registered successfully.",
@@ -54,14 +55,14 @@ export class InteractionHandler extends CoreHandler {
      * @param loaderOptions Loader options (for context menus)
      */
     constructor(
-        client: Client,
+        core: CoreHandler,
         path: string,
         loaderOptions?: LoaderOptions,
         flags?: InteractionHandlerFlags
     ) {
-        super("iHandler", client, flags.debugger, flags.logToFile);
+        this.core = core;
         this.interactionsPath = path;
-        const interactions = this.getInteractions(this.interactionsPath);
+        const interactions = this.core.getInteractions(this.interactionsPath);
         this.interactions = this.sortInteractionObjects(interactions);
 
         this.options = {
@@ -90,15 +91,18 @@ export class InteractionHandler extends CoreHandler {
                 flags?.refreshContextMenus || this.flags.refreshContextMenus,
         };
 
-        client.on(
+        this.core.client.on(
             HandlerVariables.Events.ADD_VARIABLE,
             async (
                 interaction: ChatInputCommandInteraction,
                 commandObject: CommandObject,
                 k: { [key: string]: any }
             ) => {
-                this.debug.commonBlue(`interaction variable(s) received:`);
-                this.debug.commonBlue(k.toString());
+                this.core.debug.commonBlue(
+                    "iHandler",
+                    `interaction variable(s) received:`
+                );
+                this.core.debug.commonBlue("iHandler", k.toString());
                 try {
                     const messageId = await interaction
                         .fetchReply()
@@ -202,7 +206,8 @@ export class InteractionHandler extends CoreHandler {
                 {}
             );
 
-        const contextMenus = this.getInteractions(this.interactionsPath, true)
+        const contextMenus = this.core
+            .getInteractions(this.interactionsPath, true)
             .filter((obj) => typeof obj.type === "number") // if the type property is a number, then we know damn well it's a context menu. If not you're fucking yourself over.
             .reduce<Record<string, ContextMenuObject>>(
                 (acc, obj: ContextMenuObject) => {
@@ -244,12 +249,13 @@ export class InteractionHandler extends CoreHandler {
         authorOnlyMsg: string,
         ...middleWare: ((interaction?: Interaction) => number)[]
     ) {
-        if (this.flags.debugger) this.debug.topMsg("buttons()");
+        if (this.flags.debugger)
+            this.core.debug.topMsg("iHandler", "buttons()");
         authorOnlyMsg =
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
                 : "This button is not for you";
-        this.client.on(
+        this.core.client.on(
             "interactionCreate",
             async (interaction: ButtonInteraction) => {
                 if (!interaction.isButton()) return;
@@ -279,7 +285,7 @@ export class InteractionHandler extends CoreHandler {
                     }
                     buttonObj.callback(
                         interaction,
-                        this.client,
+                        this.core.client,
                         await this.findVariable(interaction, buttonObj.customId)
                     );
                 } catch (error) {
@@ -304,12 +310,13 @@ export class InteractionHandler extends CoreHandler {
         authorOnlyMsg?: string,
         ...middleWare: ((interaction?: Interaction) => number)[]
     ) {
-        if (this.flags.debugger) this.debug.topMsg("selectMenus()");
+        if (this.flags.debugger)
+            this.core.debug.topMsg("iHandler", "selectMenus()");
         authorOnlyMsg =
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
                 : "This select menu is not for you";
-        this.client.on(
+        this.core.client.on(
             "interactionCreate",
             async (interaction: AnySelectMenuInteraction) => {
                 if (!interaction.isAnySelectMenu()) return;
@@ -339,7 +346,7 @@ export class InteractionHandler extends CoreHandler {
                     }
                     selectObj.callback(
                         interaction,
-                        this.client,
+                        this.core.client,
                         await this.findVariable(interaction, selectObj.customId)
                     );
                 } catch (error) {
@@ -360,8 +367,9 @@ export class InteractionHandler extends CoreHandler {
      * @param middleWare Functions to run before the buttons contextMenus execute.
      */
     contextMenus(...middleWare: ((interaction?: Interaction) => number)[]) {
-        if (this.flags.debugger) this.debug.topMsg("contextMenus()");
-        this.client.on(
+        if (this.flags.debugger)
+            this.core.debug.topMsg("iHandler", "contextMenus()");
+        this.core.client.on(
             "interactionCreate",
             async (
                 interaction:
@@ -378,7 +386,7 @@ export class InteractionHandler extends CoreHandler {
                         let result = fn(interaction);
                         if (result == 1) return; // test condition is true
                     }
-                    contextObj.callback(interaction, this.client);
+                    contextObj.callback(interaction, this.core.client);
                 } catch (error) {
                     let err = new errs.ContextHandlerError(
                         "Context Menu $NAME$ failed with the error:\n\n",
@@ -397,8 +405,8 @@ export class InteractionHandler extends CoreHandler {
      * @param middleWare Functions to run before the modals execute.
      */
     modals(...middleWare: ((interaction?: Interaction) => number)[]) {
-        if (this.flags.debugger) this.debug.topMsg("modals()");
-        this.client.on(
+        if (this.flags.debugger) this.core.debug.topMsg("iHandler", "modals()");
+        this.core.client.on(
             "interactionCreate",
             async (interaction: ModalSubmitInteraction) => {
                 if (!interaction.isModalSubmit()) return;
@@ -412,7 +420,7 @@ export class InteractionHandler extends CoreHandler {
                     }
                     modalObj.callback(
                         interaction,
-                        this.client,
+                        this.core.client,
                         await this.findVariable(interaction, modalObj.customId)
                     );
                 } catch (error) {
@@ -451,12 +459,11 @@ export class InteractionHandler extends CoreHandler {
     async registerContextMenus(logAll?: boolean, serverId?: string) {
         logAll = logAll !== undefined ? logAll : true;
         try {
-            const localContexts = this.getInteractions(
+            const localContexts = this.core.getInteractions(
                 this.interactionsPath,
                 true
             );
-            const applicationCommands = await this.getApplicationCommands(
-                this.client,
+            const applicationCommands = await this.core.getApplicationCommands(
                 serverId
             );
 
@@ -505,7 +512,7 @@ export class InteractionHandler extends CoreHandler {
                         }
 
                         if (
-                            this.areContextMenusDifferent(
+                            this.core.areContextMenusDifferent(
                                 //@ts-ignore
                                 existingContext,
                                 localContext
