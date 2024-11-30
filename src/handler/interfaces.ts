@@ -18,15 +18,9 @@ import { Interactions } from "./builders/SlashCommandManager";
 export type addInteractionVariables = (k: { [key: string]: any }) => void;
 
 export namespace HandlerVariables {
-    export type Type = Record<string, any>;
-
     export enum Separators {
         INTERACTION_IDS = "~=~",
         DEFAULT = "~_~",
-    }
-
-    export enum Events {
-        ADD_VARIABLE = "interactionHandlerAddVariable",
     }
 }
 

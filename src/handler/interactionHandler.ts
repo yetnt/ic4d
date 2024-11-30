@@ -17,8 +17,6 @@ import {
     ContextMenuObject,
     LoaderOptions,
     InteractionHandlerFlags,
-    CommandObject,
-    HandlerVariables,
 } from "./interfaces";
 
 /**
@@ -33,7 +31,6 @@ export class InteractionHandler {
         contextMenus: Record<string, ContextMenuObject>;
         modals: Record<string, InteractionObject>;
     };
-    variables: HandlerVariables.Type = {};
     private core: CoreHandler;
     options: LoaderOptions = {
         loadedNoChanges: "NAME was loaded. No changes were made.",
@@ -91,77 +88,50 @@ export class InteractionHandler {
                 flags?.refreshContextMenus || this.flags.refreshContextMenus,
         };
 
-        this.core.client.on(
-            HandlerVariables.Events.ADD_VARIABLE,
-            async (
-                interaction: ChatInputCommandInteraction,
-                commandObject: CommandObject,
-                k: { [key: string]: any }
-            ) => {
-                this.core.debug.commonBlue(
-                    "iHandler",
-                    `interaction variable(s) received:`
-                );
-                this.core.debug.commonBlue("iHandler", k.toString());
-                try {
-                    const messageId = await interaction
-                        .fetchReply()
-                        .then((d) => d.id);
-                    const interactionIds: string = Object.values(
-                        commandObject.interactions
-                    )
-                        .filter((interactionType) => interactionType) // Ensure interactionType is not undefined
-                        .flatMap((interactionType) =>
-                            Object.values(interactionType)
-                        ) // Get all InteractionBuilder objects
-                        .map((builder) => builder.customId) // Extract ids from the InteractionBuilder object's ID
-                        .join(HandlerVariables.Separators.INTERACTION_IDS);
+        // this.core.client.on(
+        //     HandlerVariables.Events.ADD_VARIABLE,
+        //     async (
+        //         interaction: ChatInputCommandInteraction,
+        //         commandObject: CommandObject,
+        //         k: { [key: string]: any }
+        //     ) => {
+        //         this.core.debug.commonBlue(
+        //             "iHandler",
+        //             `interaction variable(s) received:`
+        //         );
+        //         this.core.debug.commonBlue("iHandler", k.toString());
+        //         try {
+        //             const messageId = await interaction
+        //                 .fetchReply()
+        //                 .then((d) => d.id);
+        //             const interactionIds: string = Object.values(
+        //                 commandObject.interactions
+        //             )
+        //                 .filter((interactionType) => interactionType) // Ensure interactionType is not undefined
+        //                 .flatMap((interactionType) =>
+        //                     Object.values(interactionType)
+        //                 ) // Get all InteractionBuilder objects
+        //                 .map((builder) => builder.customId) // Extract ids from the InteractionBuilder object's ID
+        //                 .join(HandlerVariables.Separators.INTERACTION_IDS);
 
-                    const id = [interactionIds, messageId].join(
-                        HandlerVariables.Separators.DEFAULT
-                    );
+        //             const id = [interactionIds, messageId].join(
+        //                 HandlerVariables.Separators.DEFAULT
+        //             );
 
-                    this.variables[id] = k;
-                } catch (error) {
-                    let err = new errs.InteractionHandler(
-                        undefined,
-                        "Loading interactions variables sent from $NAME$ failed with the error:\n\n",
-                        undefined,
-                        interaction.commandName
-                    );
-                    console.error(error);
+        //             this.variables[id] = k;
+        //         } catch (error) {
+        //             let err = new errs.InteractionHandler(
+        //                 undefined,
+        //                 "Loading interactions variables sent from $NAME$ failed with the error:\n\n",
+        //                 undefined,
+        //                 interaction.commandName
+        //             );
+        //             console.error(error);
 
-                    throw err;
-                }
-            }
-        );
-    }
-
-    private async findVariable(
-        interaction:
-            | ButtonInteraction
-            | AnySelectMenuInteraction
-            | ModalSubmitInteraction,
-        customId: string
-    ) {
-        // Use `find` instead of `filter`
-        const varEntry = Object.entries(this.variables).find(async ([key]) => {
-            const [interactionIds, messageId] = key.split(
-                HandlerVariables.Separators.DEFAULT
-            );
-            const interactionMessageId = await interaction
-                .fetchReply()
-                .then((d) => d.id);
-
-            return (
-                interactionIds
-                    .split(HandlerVariables.Separators.INTERACTION_IDS)
-                    .includes(customId) && messageId === interactionMessageId
-            );
-        });
-
-        // Return the variable if found, otherwise undefined
-        return varEntry ? varEntry[1] : undefined;
+        //             throw err;
+        //         }
+        //     }
+        // );
     }
 
     private sortInteractionObjects(
@@ -286,7 +256,10 @@ export class InteractionHandler {
                     buttonObj.callback(
                         interaction,
                         this.core.client,
-                        await this.findVariable(interaction, buttonObj.customId)
+                        await this.core.variables.get(
+                            interaction,
+                            buttonObj.customId
+                        )
                     );
                 } catch (error) {
                     let err = new errs.ButtonError(
@@ -347,7 +320,10 @@ export class InteractionHandler {
                     selectObj.callback(
                         interaction,
                         this.core.client,
-                        await this.findVariable(interaction, selectObj.customId)
+                        await this.core.variables.get(
+                            interaction,
+                            selectObj.customId
+                        )
                     );
                 } catch (error) {
                     let err = new errs.ButtonError(
@@ -421,7 +397,10 @@ export class InteractionHandler {
                     modalObj.callback(
                         interaction,
                         this.core.client,
-                        await this.findVariable(interaction, modalObj.customId)
+                        await this.core.variables.get(
+                            interaction,
+                            modalObj.customId
+                        )
                     );
                 } catch (error) {
                     let err = new errs.ModalError(

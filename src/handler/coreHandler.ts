@@ -4,6 +4,10 @@ import {
     GuildApplicationCommandManager,
     ApplicationCommandOptionType,
     ApplicationCommand,
+    ChatInputCommandInteraction,
+    ButtonInteraction,
+    AnySelectMenuInteraction,
+    ModalSubmitInteraction,
 } from "discord.js";
 import * as path2 from "path";
 import * as fs from "fs";
@@ -13,6 +17,8 @@ import {
     CommandObject,
     ContextMenuObject,
     InteractionObject,
+    HandlerVariables,
+    addInteractionVariables,
 } from "./interfaces";
 import {
     Interactions,
@@ -24,6 +30,7 @@ import { EventEmitter } from "events";
 import * as clc from "cli-color";
 import bare = require("cli-color/bare");
 import { appendFileSync } from "fs";
+import { ic4dError } from "./Errors";
 
 function change(cI: InteractionBuilder): InteractionObject {
     return {
@@ -72,6 +79,72 @@ const isEmpty = (obj: Record<string, any>) => Object.keys(obj).length === 0;
 export type Handlers = "iHandler" | "cHandler" | "rHandler";
 export class CoreHandler extends EventEmitter {
     client: Client;
+    v: Record<string, any> = {};
+    variables = {
+        add: async (
+            interaction: ChatInputCommandInteraction,
+            commandObject: CommandObject,
+            k: any
+        ) => {
+            try {
+                const messageId = await interaction
+                    .fetchReply()
+                    .then((d) => d.id);
+                const interactionIds: string = Object.values(
+                    commandObject.interactions
+                )
+                    .filter((interactionType) => interactionType) // Ensure interactionType is not undefined
+                    .flatMap((interactionType) =>
+                        Object.values(interactionType)
+                    ) // Get all InteractionBuilder objects
+                    .map((builder) => builder.customId) // Extract ids from the InteractionBuilder object's ID
+                    .join(HandlerVariables.Separators.INTERACTION_IDS);
+
+                const id = [interactionIds, messageId].join(
+                    HandlerVariables.Separators.DEFAULT
+                );
+
+                this.v[id] = k;
+            } catch (error) {
+                let err = new ic4dError(
+                    undefined,
+                    "Loading interactions variables sent from $NAME$ failed with the error:\n\n",
+                    undefined,
+                    interaction.commandName
+                );
+
+                throw err;
+            }
+        },
+        get: (
+            interaction:
+                | ButtonInteraction
+                | AnySelectMenuInteraction
+                | ModalSubmitInteraction
+                | ChatInputCommandInteraction,
+            customId: string
+        ) => {
+            // Use `find` instead of `filter`
+            const varEntry = Object.entries(this.v).find(async ([key]) => {
+                const [interactionIds, messageId] = key.split(
+                    HandlerVariables.Separators.DEFAULT
+                );
+                const interactionMessageId = await interaction
+                    .fetchReply()
+                    .then((d) => d.id);
+
+                return (
+                    interactionIds
+                        .split(HandlerVariables.Separators.INTERACTION_IDS)
+                        .includes(customId) &&
+                    messageId === interactionMessageId
+                );
+            });
+
+            // Return the variable if found, otherwise undefined
+            return varEntry ? varEntry[1] : undefined;
+        },
+    };
     coreFlags: { debugger: boolean; logToFolder: string | false } = {
         debugger: false,
         logToFolder: false,
@@ -402,5 +475,41 @@ export class CoreHandler extends EventEmitter {
         //@ts-ignore
         await applicationCommands.fetch({ locale: "en-GB" });
         return applicationCommands;
+    }
+
+    /**
+     * Sets up a collector for message components with a specified timeout.
+     *
+     * @param client - The Discord client instance.
+     * @param initInteraction - The initial interaction that triggered the setup.
+     * @param interaction - An object containing the interaction details, including the onTimeout function, timeout duration, and customId.
+     */
+    setupCollector(
+        client: Client,
+        initInteraction: ChatInputCommandInteraction,
+        interaction: InteractionBuilder
+    ) {
+        const { onTimeout, timeout, customId } = interaction;
+
+        const collector =
+            initInteraction.channel.createMessageComponentCollector({
+                time: timeout,
+                filter: (i) => i.customId === customId,
+            });
+
+        collector.once("collect", (i) => {
+            // Handle the button click here or simply notify that it was clicked
+            // i.reply({ content: "Button was clicked!", ephemeral: true });
+            collector.stop("respondedInTime"); // Stop the collector after a click is detected. This is in a comment because when it's run it emits the "end" event.
+        });
+
+        collector.once("end", async (collected, reason) => {
+            if (reason !== "respondedInTime")
+                await onTimeout(
+                    initInteraction,
+                    client,
+                    this.variables.get(initInteraction, interaction.customId)
+                );
+        });
     }
 }

@@ -14,7 +14,6 @@ import {
     LoaderOptions,
     RunFlags,
 } from "./interfaces";
-import { setupCollector } from "../funcs";
 
 /**
  * Helper function to just attach [DEV] to a command that is of developer.
@@ -421,12 +420,13 @@ export class CommandHandler {
                             "cHandler",
                             `addInteractionVaribles() has been called in the **${commandObject.name}** command`
                         );
-                        this.core.client.emit(
-                            HandlerVariables.Events.ADD_VARIABLE,
-                            interaction,
-                            commandObject,
-                            k
-                        );
+                        // this.core.client.emit(
+                        //     HandlerVariables.Events.ADD_VARIABLE,
+                        //     interaction,
+                        //     commandObject,
+                        //     k
+                        // );
+                        this.core.variables.add(interaction, commandObject, k);
                         return;
                     };
 
@@ -448,7 +448,7 @@ export class CommandHandler {
                                     value.timeout !== undefined
                             )
                             .forEach(async ([, value]) => {
-                                await setupCollector(
+                                await this.core.setupCollector(
                                     this.core.client,
                                     interaction,
                                     value
@@ -468,7 +468,7 @@ export class CommandHandler {
                                     value.timeout !== undefined
                             )
                             .forEach(async ([, value]) => {
-                                await setupCollector(
+                                await this.core.setupCollector(
                                     this.core.client,
                                     interaction,
                                     value
