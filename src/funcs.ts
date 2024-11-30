@@ -47,34 +47,3 @@ export function getLocalCommands(
 
     return scanDirectory(path);
 }
-
-/**
- * Sets up a collector for message components with a specified timeout.
- *
- * @param client - The Discord client instance.
- * @param initInteraction - The initial interaction that triggered the setup.
- * @param interaction - An object containing the interaction details, including the onTimeout function, timeout duration, and customId.
- */
-export async function setupCollector(
-    client: Client,
-    initInteraction: ChatInputCommandInteraction,
-    interaction: InteractionBuilder
-) {
-    const { onTimeout, timeout, customId } = interaction;
-
-    const collector = initInteraction.channel.createMessageComponentCollector({
-        time: timeout,
-        filter: (i) => i.customId === customId,
-    });
-
-    collector.once("collect", (i) => {
-        // Handle the button click here or simply notify that it was clicked
-        // i.reply({ content: "Button was clicked!", ephemeral: true });
-        collector.stop("respondedInTime"); // Stop the collector after a click is detected. This is in a comment because when it's run it emits the "end" event.
-    });
-
-    collector.once("end", async (collected, reason) => {
-        if (reason !== "respondedInTime")
-            await onTimeout(initInteraction, client);
-    });
-}

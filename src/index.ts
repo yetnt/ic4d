@@ -9,3 +9,4 @@ export {
 } from "./handler/builders/builders";
 export { getLocalCommands } from "./funcs";
 export { RunFlags, HandlerFlags, LoaderOptions } from "./handler/interfaces";
+export { CoreHandler } from "./handler/coreHandler";
