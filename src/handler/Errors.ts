@@ -1,6 +1,6 @@
 import * as clc from "cli-color";
 
-class ic4dError extends Error {
+export class ic4dError extends Error {
     // throw new ic4dError("something", "msg", "file")
     fileName: string;
     constructor(
