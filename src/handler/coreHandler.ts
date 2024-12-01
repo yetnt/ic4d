@@ -2,7 +2,6 @@ import {
     Client,
     ApplicationCommandManager,
     GuildApplicationCommandManager,
-    ApplicationCommandOptionType,
     ApplicationCommand,
     ChatInputCommandInteraction,
     ButtonInteraction,
@@ -18,7 +17,6 @@ import {
     ContextMenuObject,
     InteractionObject,
     HandlerVariables,
-    addInteractionVariables,
 } from "./interfaces";
 import {
     Interactions,
@@ -77,6 +75,11 @@ type cmd = {
 
 const isEmpty = (obj: Record<string, any>) => Object.keys(obj).length === 0;
 export type Handlers = "iHandler" | "cHandler" | "rHandler";
+
+/**
+ * Core handler class which is responsible for making every other handler class work
+ * Do not use any property in this class.
+ */
 export class CoreHandler extends EventEmitter {
     client: Client;
     v: Record<string, any> = {};
@@ -272,14 +275,14 @@ export class CoreHandler extends EventEmitter {
         },
     };
 
-    constructor(
-        client: Client,
-        debugMode = false,
-        logToFolder: string | false = false
-    ) {
+    /**
+     *
+     * @param client Discord.js Client Instance. (If you are sharding, rather enter the client instance into the other classes into the `shardClient` parameter and leave this undefined)
+     * @param logToFolder Default folder to log to.
+     */
+    constructor(client?: Client, logToFolder: string | false = false) {
         super();
         this.client = client;
-        this.coreFlags.debugger = debugMode || false;
         this.coreFlags.logToFolder = logToFolder || false;
     }
 

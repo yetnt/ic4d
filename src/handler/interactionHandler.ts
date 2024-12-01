@@ -6,7 +6,6 @@ import {
     Interaction,
     ModalSubmitInteraction,
     ApplicationCommandType,
-    ChatInputCommandInteraction,
     ButtonInteraction,
     AnySelectMenuInteraction,
 } from "discord.js";
@@ -39,6 +38,7 @@ export class InteractionHandler {
         deleted: "NAME has been deleted.",
         skipped: "NAME was skipped. (Command deleted or set to delete.)",
     };
+    client: Client = undefined;
     flags: InteractionHandlerFlags = {
         debugger: false,
         disableLogs: false,
@@ -46,17 +46,28 @@ export class InteractionHandler {
     };
 
     /**
-     *
-     * @param client Discord.js Client
+     * @param core CoreHandler instance
      * @param path Path to where the interaction objects are stored
      * @param loaderOptions Loader options (for context menus)
+     * @param flags Injection Options.
+     * @param shardClient The Discord.js Client instance to use. If provided, it should be a shard-specific client.
+     * If left undefined, the `client` instance from the coreHandler will be used by default.
      */
     constructor(
         core: CoreHandler,
         path: string,
         loaderOptions?: LoaderOptions,
-        flags?: InteractionHandlerFlags
+        flags?: InteractionHandlerFlags,
+        shardClient: Client = undefined
     ) {
+        this.client = shardClient || this.core.client;
+        if (!this.client)
+            throw new errs.ic4dError(
+                undefined,
+                "received client of undefined",
+                undefined,
+                undefined
+            );
         this.core = core;
         this.interactionsPath = path;
         const interactions = this.core.getInteractions(this.interactionsPath);
@@ -83,55 +94,13 @@ export class InteractionHandler {
         this.flags = {
             debugger: flags?.debugger || this.flags.debugger,
             disableLogs: flags?.disableLogs || this.flags.disableLogs,
-            logToFile: flags?.logToFile || this.flags.logToFile,
+            logToFolder:
+                flags?.logToFolder ||
+                this.flags.logToFolder ||
+                this.core.coreFlags.logToFolder,
             refreshContextMenus:
                 flags?.refreshContextMenus || this.flags.refreshContextMenus,
         };
-
-        // this.core.client.on(
-        //     HandlerVariables.Events.ADD_VARIABLE,
-        //     async (
-        //         interaction: ChatInputCommandInteraction,
-        //         commandObject: CommandObject,
-        //         k: { [key: string]: any }
-        //     ) => {
-        //         this.core.debug.commonBlue(
-        //             "iHandler",
-        //             `interaction variable(s) received:`
-        //         );
-        //         this.core.debug.commonBlue("iHandler", k.toString());
-        //         try {
-        //             const messageId = await interaction
-        //                 .fetchReply()
-        //                 .then((d) => d.id);
-        //             const interactionIds: string = Object.values(
-        //                 commandObject.interactions
-        //             )
-        //                 .filter((interactionType) => interactionType) // Ensure interactionType is not undefined
-        //                 .flatMap((interactionType) =>
-        //                     Object.values(interactionType)
-        //                 ) // Get all InteractionBuilder objects
-        //                 .map((builder) => builder.customId) // Extract ids from the InteractionBuilder object's ID
-        //                 .join(HandlerVariables.Separators.INTERACTION_IDS);
-
-        //             const id = [interactionIds, messageId].join(
-        //                 HandlerVariables.Separators.DEFAULT
-        //             );
-
-        //             this.variables[id] = k;
-        //         } catch (error) {
-        //             let err = new errs.InteractionHandler(
-        //                 undefined,
-        //                 "Loading interactions variables sent from $NAME$ failed with the error:\n\n",
-        //                 undefined,
-        //                 interaction.commandName
-        //             );
-        //             console.error(error);
-
-        //             throw err;
-        //         }
-        //     }
-        // );
     }
 
     private sortInteractionObjects(
@@ -225,7 +194,7 @@ export class InteractionHandler {
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
                 : "This button is not for you";
-        this.core.client.on(
+        this.client.on(
             "interactionCreate",
             async (interaction: ButtonInteraction) => {
                 if (!interaction.isButton()) return;
@@ -255,7 +224,7 @@ export class InteractionHandler {
                     }
                     buttonObj.callback(
                         interaction,
-                        this.core.client,
+                        this.client,
                         await this.core.variables.get(
                             interaction,
                             buttonObj.customId
@@ -289,7 +258,7 @@ export class InteractionHandler {
             authorOnlyMsg !== undefined
                 ? authorOnlyMsg
                 : "This select menu is not for you";
-        this.core.client.on(
+        this.client.on(
             "interactionCreate",
             async (interaction: AnySelectMenuInteraction) => {
                 if (!interaction.isAnySelectMenu()) return;
@@ -319,7 +288,7 @@ export class InteractionHandler {
                     }
                     selectObj.callback(
                         interaction,
-                        this.core.client,
+                        this.client,
                         await this.core.variables.get(
                             interaction,
                             selectObj.customId
@@ -345,7 +314,7 @@ export class InteractionHandler {
     contextMenus(...middleWare: ((interaction?: Interaction) => number)[]) {
         if (this.flags.debugger)
             this.core.debug.topMsg("iHandler", "contextMenus()");
-        this.core.client.on(
+        this.client.on(
             "interactionCreate",
             async (
                 interaction:
@@ -362,7 +331,7 @@ export class InteractionHandler {
                         let result = fn(interaction);
                         if (result == 1) return; // test condition is true
                     }
-                    contextObj.callback(interaction, this.core.client);
+                    contextObj.callback(interaction, this.client);
                 } catch (error) {
                     let err = new errs.ContextHandlerError(
                         "Context Menu $NAME$ failed with the error:\n\n",
@@ -382,7 +351,7 @@ export class InteractionHandler {
      */
     modals(...middleWare: ((interaction?: Interaction) => number)[]) {
         if (this.flags.debugger) this.core.debug.topMsg("iHandler", "modals()");
-        this.core.client.on(
+        this.client.on(
             "interactionCreate",
             async (interaction: ModalSubmitInteraction) => {
                 if (!interaction.isModalSubmit()) return;
@@ -396,7 +365,7 @@ export class InteractionHandler {
                     }
                     modalObj.callback(
                         interaction,
-                        this.core.client,
+                        this.client,
                         await this.core.variables.get(
                             interaction,
                             modalObj.customId

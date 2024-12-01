@@ -1,38 +1,44 @@
 import { CoreHandler } from "./coreHandler";
 import { Client } from "discord.js";
 import clc = require("cli-color");
+import * as errs from "./Errors";
 
 export class ReadyHandler {
     private core: CoreHandler;
-    private emitErr: boolean = false;
+    private client: Client;
     private functionsToRun: ((client?: Client) => Promise<void> | void)[] = [];
 
     /**
-     * Call the ReadyHandler.execute() method to run functions.
-     * @param client Discord.js Client
+     * @param core CoreHandler instance
+     * @param shardClient The Discord.js Client instance to use. If provided, it should be a shard-specific client.
+     * If left undefined, the `client` instance from the coreHandler will be used by default.
      * @param functions Functions to be run when the bot is ready.
+     *
+     * @remarks
+     * Call the ReadyHandler.execute() method to run functions.
      */
     constructor(
         core: CoreHandler,
+        shardClient: Client = undefined,
         ...functions: ((client?: Client) => Promise<void> | void)[]
     ) {
         this.core = core;
+        this.client = shardClient || core.client;
+        if (!this.client)
+            throw new errs.ic4dError(
+                undefined,
+                "received client of undefined",
+                undefined,
+                undefined
+            );
         this.functionsToRun = functions;
-    }
-
-    /**
-     * Set whether the ready handler should throw or emit errors. Defaults to false.
-     * @param bool Boolean value
-     */
-    emitErrors(bool: boolean): void {
-        this.emitErr = bool == true ? true : false;
     }
 
     /**
      * Run functions when the bot starts.
      */
     async execute() {
-        this.core.client.on("ready", async () => {
+        this.client.on("ready", async () => {
             for (const fn of this.functionsToRun) {
                 try {
                     await fn(this.core.client);

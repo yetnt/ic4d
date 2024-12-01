@@ -39,6 +39,7 @@ export class CommandHandler {
         deleted: "NAME has been deleted.",
         skipped: "NAME was skipped. (Command deleted or set to delete.)",
     };
+    client: Client = undefined;
     runFlags: RunFlags = {
         testGuildId: undefined,
         devs: [],
@@ -51,31 +52,46 @@ export class CommandHandler {
         disableLogs: false,
         production: false,
         refreshApplicationCommands: false,
-        logToFile: false,
+        logToFolder: false,
     };
 
     /**
      *
-     * @param client Discord.js Client
+     * @param core CoreHandler instance
      * @param path Path to Slash Commands
      * @param runFlags Command Reader Options
      * @param loaderOptions Command Loader Options
-     * @param handlerFlags Injection Options.
+     * @param handlerFlags Injection Options. (flags to set which do something while commandHandler is running)
+     * @param shardClient The Discord.js Client instance to use. If provided, it should be a shard-specific client.
+     * If left undefined, the `client` instance from the coreHandler will be used by default.
      */
     constructor(
         core: CoreHandler,
         path: string,
         runFlags?: RunFlags,
         loaderOptions?: LoaderOptions,
-        handlerFlags?: HandlerFlags
+        handlerFlags?: HandlerFlags,
+        shardClient: Client = undefined
     ) {
         this.core = core;
+        this.client = shardClient || this.core.client;
+
+        if (!this.client)
+            throw new errs.ic4dError(
+                undefined,
+                "received client of undefined",
+                undefined,
+                undefined
+            );
 
         this.flags = {
             debugger: handlerFlags?.debugger || this.flags.debugger,
             disableLogs: handlerFlags?.disableLogs || this.flags.disableLogs,
             production: handlerFlags?.production || this.flags.production,
-            logToFile: handlerFlags?.logToFile || this.flags.logToFile,
+            logToFolder:
+                handlerFlags?.logToFolder ||
+                this.flags.logToFolder ||
+                this.core.coreFlags.logToFolder,
             refreshApplicationCommands:
                 handlerFlags?.refreshApplicationCommands ||
                 this.flags.refreshApplicationCommands,
@@ -277,7 +293,7 @@ export class CommandHandler {
 
     /**
      * Handle Slash Commands
-     * @param middleWare Functions to be run before running a command.
+     * @param middleWare Functions to be run BEFORE running a command.
      * @param postWare Functions to be run AFTER the callback has been called.
      */
     async handleCommands(
@@ -292,7 +308,7 @@ export class CommandHandler {
     ) {
         if (this.flags.debugger)
             this.core.debug.topMsg("cHandler", "handleCommands()");
-        this.core.client.on(
+        this.client.on(
             "interactionCreate",
             async (interaction: ChatInputCommandInteraction) => {
                 if (!interaction.isChatInputCommand()) return;
@@ -420,7 +436,7 @@ export class CommandHandler {
                             "cHandler",
                             `addInteractionVaribles() has been called in the **${commandObject.name}** command`
                         );
-                        // this.core.client.emit(
+                        // this.client.emit(
                         //     HandlerVariables.Events.ADD_VARIABLE,
                         //     interaction,
                         //     commandObject,
@@ -431,7 +447,7 @@ export class CommandHandler {
                     };
 
                     await commandObject.callback(
-                        this.core.client,
+                        this.client,
                         interaction,
                         addInteractionVariables
                     );
@@ -449,7 +465,7 @@ export class CommandHandler {
                             )
                             .forEach(async ([, value]) => {
                                 await this.core.setupCollector(
-                                    this.core.client,
+                                    this.client,
                                     interaction,
                                     value
                                 );
@@ -469,7 +485,7 @@ export class CommandHandler {
                             )
                             .forEach(async ([, value]) => {
                                 await this.core.setupCollector(
-                                    this.core.client,
+                                    this.client,
                                     interaction,
                                     value
                                 );

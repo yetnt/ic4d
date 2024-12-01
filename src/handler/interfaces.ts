@@ -148,10 +148,9 @@ export interface HandlerFlags {
     debugger?: boolean;
     /**
      * When debugger mode is enabled, Either log to console or a file.
-     *
-     * When log to file specify a FOLDER path
+     * If this is not false, it will default to the folder in the CoreHandler instance.
      */
-    logToFile?: string | false;
+    logToFolder?: string | false;
     /**
      * Disabling Logging of the Command Loader. Not advised but hey it's your bot. Default is false.
      */
@@ -177,10 +176,9 @@ export interface InteractionHandlerFlags {
     debugger?: boolean;
     /**
      * When debugger mode is enabled, Either log to console or a file.
-     *
-     * When log to file specify a FOLDER path
+     * If this is not false, it will default to the folder in the CoreHandler instance.
      */
-    logToFile?: string | false;
+    logToFolder?: string | false;
     /**
      * Disabling Logging of the Context Menu Loader. Not advised but hey it's your bot. Default is false.
      */
