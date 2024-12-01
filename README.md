@@ -36,8 +36,12 @@ import /* Classes and/or Interfaces you need separated by a comma */ "ic4d";
 
 If any method/function has no return documentation, it returns void.
 
+-   [ic4d](#ic4d)
+-   [Installation](#installation)
+-   [Contents](#contents) _You are here_
 -   [Quick Example](#quick-example)
 -   Classes
+    -   [CoreHandler](#corehandler)
     -   [ReadyHandler](#readyhandler)
     -   [CommandHandler](#commandhandler)
     -   [InteractionHandler](#interactionhandler)
@@ -64,14 +68,18 @@ For TS Lovers:
 
 this is what you're index.js should look something like.
 
+Refer [here](#sharding) for the sharding version of index.js
+
 ```js
 require("dotenv").config();
 const { Client, IntentsBitField } = require("discord.js");
 const path = require("path");
 
-const { CommandHandler, ReadyHandler } = require("ic4d");
+const { CommandHandler, ReadyHandler, CoreHandler } = require("ic4d");
 
-const commandsPath = "commands";
+const commandsPath = path.join(__dirname, "..", "commands");
+const logpath = path.join(__dirname, "..", "logs");
+
 const runFlags = {
     devs: ["671549251024584725"],
     testGuildId: "808701451399725116",
@@ -84,13 +92,12 @@ const client = new Client({
     ],
 });
 
-const handler = new CommandHandler(
-    client,
-    path.join(__dirname, commandsPath),
-    runFlags
-);
+const core = new CoreHandler(client, logPath);
+
+const handler = new CommandHandler(core, commandsPath, runFlags);
 const ready = new ReadyHandler(
-    client,
+    core,
+    undefined,
     async (client) => {
         console.log(`${client.user.tag} is ready!`);
     },
@@ -156,22 +163,51 @@ module.exports = ping;
 module.exports = { ping };
 ```
 
+# CoreHandler
+
+This is a class which is needed as the first parameter of the `ReadyHandler`, `CommandHandler` and `InteractionHandler` constructors.
+
+You don't need to use or touch any of the methods and properties in this class. Do that and your bot may not work lol
+
+## Constructor
+
+-   `client`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
+    -   **(optional)** Discord.js Client Instance.
+    -   (If you are sharding, rather enter the client instance into the other classes into the `shardClient` parameter and leave this undefined)
+-   `logToFolder`**: string | false**
+    -   **(optional)** Default folder to log to.
+
+```js
+const { CoreHandler } = require("ic4d");
+const { Client } = require("discord.js");
+
+const client = new Client();
+
+const core = new CoreHandler(client, "./logs");
+```
+
 # ReadyHandler
 
 Ready handler is a handler that runs a set of functions when the bot starts.
 
 ## Constructor
 
--   `client`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
-    -   Discord.js Client Instance
+-   `core`**:[CoreHandler](#corehandler)**
+    -   CoreHandler instance.
+-   `shardClient`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
+    -   **(optional)** The Discord.js Client instance to use. If provided, it should be a shard-specific client.
+    -   If left undefined, the `client` instance from the coreHandler will be used by default.
 -   `...functions`**: ((client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)) => Promise\<void> | void )[] = []**
     -   Functions to run when the `execute()` method is called, and the ready event has been emitted. Functions may take one parameter (client) or none.
 
 ```js
-const { ReadyHandler } = require("ic4d");
+const { ReadyHandler, CoreHandler } = require("ic4d");
+
+const core = new CoreHandler(client, "./logs");
 
 const ready = new ReadyHandler(
-    client,
+    core,
+    undefined, // we're not sharding for shit so leave it undefined.
     (client) => {
         console.log(`${client.user.tag} is ready!`);
     },
@@ -201,20 +237,27 @@ Command Handler, which handles slash command creation, deletion, editing and run
 
 ### Parameters
 
--   `client`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
-    -   Discord.js Client Instance
+-   `core`**:[CoreHandler](#corehandler)**
+    -   CoreHandler instance.
 -   `path`**: string**
     -   Path in which your exported command objects are stored. The handler will **not** work if you do not use path.
 -   `runFlags`**: [RunFlags](#runflags)**
     -   **(optional)** Command Reader Options
 -   `loaderOptions`**: [LoaderOptions](#loaderoptions)**
     -   **(optional)** Command Loader Options
+-   `handlerFlags`**: [HandlerFlags](#handlerflags)**
+    -   **(optional)** Injection Options. (flags to set which do something while commandHandler is running)
+-   `shardClient`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
+    -   **(optional)** The Discord.js Client instance to use. If provided, it should be a shard-specific client.
+    -   If left undefined, the `client` instance from the coreHandler will be used by default.
 
 ```js
-const { CommandHandler } = require("ic4d");
+const { CommandHandler, CoreHandler } = require("ic4d");
 const path = require("path");
 
-const handler = new CommandHandler(client, path.join(__dirname, "commands"));
+const core = new CoreHandler(client, "./logs");
+
+const handler = new CommandHandler(core, path.join(__dirname, "commands"));
 ```
 
 ## Methods
@@ -223,8 +266,8 @@ const handler = new CommandHandler(client, path.join(__dirname, "commands"));
 
 **(asynchronous function)**
 
--   `logAll`**: boolean**
-    -   **(optional)** Log command even if no change was performed.
+-   `logNoChanges`**: boolean**
+    -   **(optional)** Log when loading a command and no changes are made
 -   `serverId`**: string**
     -   **(optional)** Register all commands in a specific server. if not provided it will be application wide
 
@@ -241,18 +284,18 @@ async () => {
 **(asynchronous function)**
 
 -   `middleWare`**: ( ( commandObject: Object, interaction?: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class) ) => number | Promise<number> )[]**
-    -   Functions to run before a command is run.
+    -   Functions to run BEFORE a command is run.
 -   `postWare`**: ( ( commandObject: Object, interaction?: [ChatInputCommandInteraction](https://discord.js.org/docs/packages/discord.js/main/ChatInputCommandInteraction:Class) ) => any )[]**
     -   Functions to run AFTER the command's callback has been called.
 
 ```js
-const handler = new CommandHandler(client, path.join(__dirname, "commands"));
+const handler = new CommandHandler(core, path.join(__dirname, "commands"));
 
 const blacklisted = ["302983482377931"];
 const blacklist = (commandObject, interaction) => {
     if (commandObject.blacklist && blacklisted.includes(interaction.user.id)) {
         interaction.reply({
-            content: this.readerOptions.onlyDev,
+            content: "Daang you blacklisted my guy.",
             ephemeral: true,
         });
         return 1;
@@ -261,8 +304,12 @@ const blacklist = (commandObject, interaction) => {
 };
 
 const addXp = (commandObject, interaction) => {
-    if (commandObject.category != "Economy") return;
-    // Xp stuff
+    if (commandObject.category != "economy") return;
+
+    interaction.reply({
+        content: "Ayo! Free Xp +2",
+        ephemeral: true,
+    });
 };
 
 await handler.handleCommands([blacklist], [addXp]);
@@ -272,6 +319,7 @@ await handler.handleCommands([blacklist], [addXp]);
 
 > [!NOTE]  
 > This is ONLY for `middleWare` and does NOT apply to `postWare` functions.
+> It does not matter what `postWare` functions return as ic4d does not use that value at all.
 
 Middleware is to define your own custom functions you want to run when a command is run by anyone. This can be a function to check for cooldown or function to add XP to a user.
 
@@ -346,28 +394,26 @@ Context Menus work a bit differently then the other interactions, please refer t
 
 ## Constructor
 
--   `client`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
-
-    -   Discord.js client
-
+-   `core`**:[CoreHandler](#corehandler)**
+    -   CoreHandler instance.
 -   `path`**: string**
-
     -   Path to where interactions are stored.
-
 -   `loaderOptions`**: [LoaderOptions](#loaderoptions)**
-
     -   **(optional)** Context Menu Loader Options
-
 -   `flags`**: [InteractionHandlerFlags](#interactionhandlerflags)**
-
     -   **(optional)** Interaction Handler Flags
+-   `shardClient`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
+    -   **(optional)** The Discord.js Client instance to use. If provided, it should be a shard-specific client.
+    -   If left undefined, the `client` instance from the coreHandler will be used by default.
 
 ```js
-const { InteractionHandler } = require("ic4d");
+const { InteractionHandler, CoreHandler } = require("ic4d");
 const path = require("path");
 
+const core = new CoreHandler(client, "./logs");
+
 const interactions = new InteractionHandler(
-    client,
+    core,
     path.join(__dirname, "commands")
 );
 ```
@@ -867,10 +913,10 @@ Default value: false
 
 Clears ALL application commands on startup. (Slash commands, User commands, and Message commands.)
 
-### **_logToFile: string | false_**
+### **_logToFolder: string | false_**
 
 ```
-Default value: false
+Default value: (CoreHandler value) or false
 ```
 
 When debugger mode is enabled, Either log to console or a file.
@@ -915,10 +961,10 @@ Default value: false
 
 Clears Context Menus
 
-### **_logToFile: string | false_**
+### **_logToFolder: string | false_**
 
 ```
-Default value: false
+Default value: (CoreHandler value) or false
 ```
 
 When debugger mode is enabled, Either log to console or a file.
@@ -990,6 +1036,80 @@ export type InteractionTypeStringsMap<U extends string> = U extends "modal"
 
 # Common Problems
 
+## Sharding
+
+This is the exact same code from [Quick Example](#quick-example) except it's sharding compatible
+
+```js
+require("dotenv").config();
+const { Client, IntentsBitField, ShardingManager } = require("discord.js");
+const path = require("path");
+
+const { CommandHandler, ReadyHandler, CoreHandler } = require("ic4d");
+
+const commandsPath = path.join(__dirname, "..", "commands");
+const logPath = path.join(__dirname, "..", "logs");
+
+const runFlags = {
+    devs: ["671549251024584725"],
+    testGuildId: "808701451399725116",
+};
+
+// Use ShardingManager to manage shards
+const manager = new ShardingManager(__filename, {
+    token: process.env.TOKEN,
+    totalShards: "auto", // Discord.js will automatically decide shard count
+});
+
+manager.on("shardCreate", (shard) => {
+    console.log(`Shard ${shard.id} launched.`);
+});
+
+// Core bot logic for each shard
+if (!process.env.SHARDING_MANAGER) {
+    const client = new Client({
+        intents: [
+            IntentsBitField.Flags.Guilds,
+            IntentsBitField.Flags.GuildMessages,
+        ],
+    });
+
+    // (1) Pass `undefined` to the CoreHandler constructor
+    const core = new CoreHandler(undefined, logPath);
+
+    // (2) Provide the shard client in ReadyHandler
+    const ready = new ReadyHandler(
+        core,
+        client, // Shard-specific client
+        async (shardClient) => {
+            console.log(`${shardClient.user.tag} is ready!`);
+        },
+        async () => {
+            await handler.registerCommands();
+        }
+    );
+
+    // (3) Pass the shard client to CommandHandler
+    const handler = new CommandHandler(
+        core,
+        commandsPath,
+        runFlags,
+        undefined,
+        undefined,
+        client
+    );
+
+    (async () => {
+        await client.login(process.env.TOKEN);
+        ready.execute();
+        await handler.handleCommands();
+    })();
+}
+
+// Launch all shards
+manager.spawn();
+```
+
 ## Sharing variables between slash and interactions
 
 -   Example: You have where a variable needs to be shared from the slash command callback to the interaction callback. Here there are 3 methods (1 being the recommended approach)
@@ -1051,7 +1171,7 @@ const button = new InteractionBuilder()
     .setType("button")
     .setCustomId("hello")
 
-    .setCallback(async (i, c, v) => {
+    .setCallback(async (i, c) => {
         // method 1
         const itemName = variable;
 
