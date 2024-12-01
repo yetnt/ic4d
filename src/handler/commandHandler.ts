@@ -74,7 +74,7 @@ export class CommandHandler {
         shardClient: Client = undefined
     ) {
         this.core = core;
-        this.client = shardClient || this.core.client;
+        this.client = shardClient || core.client;
 
         if (!this.client)
             throw new errs.ic4dError(

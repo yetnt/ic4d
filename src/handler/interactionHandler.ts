@@ -60,7 +60,7 @@ export class InteractionHandler {
         flags?: InteractionHandlerFlags,
         shardClient: Client = undefined
     ) {
-        this.client = shardClient || this.core.client;
+        this.client = shardClient || core.client;
         if (!this.client)
             throw new errs.ic4dError(
                 undefined,
