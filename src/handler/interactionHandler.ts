@@ -61,6 +61,10 @@ export class InteractionHandler {
         shardClient: Client = undefined
     ) {
         this.client = shardClient || core.client;
+        core.debug.newLogs(
+            "iHandler",
+            "InteractionHandler constructor called."
+        );
         if (!this.client)
             throw new errs.ic4dError(
                 undefined,

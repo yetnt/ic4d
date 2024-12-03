@@ -74,6 +74,7 @@ export class CommandHandler {
         shardClient: Client = undefined
     ) {
         this.core = core;
+        core.debug.newLogs("cHandler", "CommandHandler constructor called.")
         this.client = shardClient || core.client;
 
         if (!this.client)

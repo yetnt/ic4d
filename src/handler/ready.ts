@@ -24,6 +24,7 @@ export class ReadyHandler {
     ) {
         this.core = core;
         this.client = shardClient || core.client;
+        core.debug.newLogs("rHandler", "ReadyHandler constructor called.");
         if (!this.client)
             throw new errs.ic4dError(
                 undefined,

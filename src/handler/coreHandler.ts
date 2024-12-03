@@ -216,6 +216,9 @@ export class CoreHandler extends EventEmitter {
      * Only used by the InteractionHandler and CommandHandler, That's why it's protected, the user doesn't need this.
      */
     debug = {
+        newLogs: (handler: Handlers, x: string): void => {
+            this.logOrWrite(handler, "\n\n\n" + x);
+        },
         /**
          * Custom string that already has clc colouring.
          * @param x String to log to the console.
