@@ -97,7 +97,6 @@ const core = new CoreHandler(client, logPath);
 const handler = new CommandHandler(core, commandsPath, runFlags);
 const ready = new ReadyHandler(
     core,
-    undefined,
     async (client) => {
         console.log(`${client.user.tag} is ready!`);
     },
@@ -173,7 +172,6 @@ You don't need to use or touch any of the methods and properties in this class. 
 
 -   `client`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
     -   **(optional)** Discord.js Client Instance.
-    -   (If you are sharding, rather enter the client instance into the other classes into the `shardClient` parameter and leave this undefined)
 -   `logToFolder`**: string | false**
     -   **(optional)** Default folder to log to.
 
@@ -194,9 +192,6 @@ Ready handler is a handler that runs a set of functions when the bot starts.
 
 -   `core`**:[CoreHandler](#corehandler)**
     -   CoreHandler instance.
--   `shardClient`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
-    -   **(optional)** The Discord.js Client instance to use. If provided, it should be a shard-specific client.
-    -   If left undefined, the `client` instance from the coreHandler will be used by default.
 -   `...functions`**: ((client?: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)) => Promise\<void> | void )[] = []**
     -   Functions to run when the `execute()` method is called, and the ready event has been emitted. Functions may take one parameter (client) or none.
 
@@ -206,8 +201,7 @@ const { ReadyHandler, CoreHandler } = require("ic4d");
 const core = new CoreHandler(client, "./logs");
 
 const ready = new ReadyHandler(
-    core,
-    undefined, // we're not sharding for shit so leave it undefined.
+    core
     (client) => {
         console.log(`${client.user.tag} is ready!`);
     },
@@ -247,9 +241,6 @@ Command Handler, which handles slash command creation, deletion, editing and run
     -   **(optional)** Command Loader Options
 -   `handlerFlags`**: [HandlerFlags](#handlerflags)**
     -   **(optional)** Injection Options. (flags to set which do something while commandHandler is running)
--   `shardClient`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
-    -   **(optional)** The Discord.js Client instance to use. If provided, it should be a shard-specific client.
-    -   If left undefined, the `client` instance from the coreHandler will be used by default.
 
 ```js
 const { CommandHandler, CoreHandler } = require("ic4d");
@@ -402,9 +393,6 @@ Context Menus work a bit differently then the other interactions, please refer t
     -   **(optional)** Context Menu Loader Options
 -   `flags`**: [InteractionHandlerFlags](#interactionhandlerflags)**
     -   **(optional)** Interaction Handler Flags
--   `shardClient`**: [Client](https://discord.js.org/docs/packages/discord.js/main/Client:Class)**
-    -   **(optional)** The Discord.js Client instance to use. If provided, it should be a shard-specific client.
-    -   If left undefined, the `client` instance from the coreHandler will be used by default.
 
 ```js
 const { InteractionHandler, CoreHandler } = require("ic4d");
@@ -1074,13 +1062,10 @@ if (!process.env.SHARDING_MANAGER) {
         ],
     });
 
-    // (1) Pass `undefined` to the CoreHandler constructor
-    const core = new CoreHandler(undefined, logPath);
+    const core = new CoreHandler(client, logPath);
 
-    // (2) Provide the shard client in ReadyHandler
     const ready = new ReadyHandler(
-        core,
-        client, // Shard-specific client
+        core
         async (shardClient) => {
             console.log(`${shardClient.user.tag} is ready!`);
         },
@@ -1089,14 +1074,10 @@ if (!process.env.SHARDING_MANAGER) {
         }
     );
 
-    // (3) Pass the shard client to CommandHandler
     const handler = new CommandHandler(
         core,
         commandsPath,
-        runFlags,
-        undefined,
-        undefined,
-        client
+        runFlags
     );
 
     (async () => {
@@ -1280,7 +1261,7 @@ If any of the approaches don't help your use case. It's always best to just use 
     module.exports = {a, isCommand = false};
     ```
 
-    -   Usually, the reader should skip over anything it can read, but if needed, this will immediately make it skip.
+    -   Usually, the reader should skip over anything it can't read, but if needed, this will immediately make it skip.
 
 # Credits
 

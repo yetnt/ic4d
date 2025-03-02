@@ -70,12 +70,11 @@ export class CommandHandler {
         path: string,
         runFlags?: RunFlags,
         loaderOptions?: LoaderOptions,
-        handlerFlags?: HandlerFlags,
-        shardClient: Client = undefined
+        handlerFlags?: HandlerFlags
     ) {
         this.core = core;
-        core.debug.newLogs("cHandler", "CommandHandler constructor called.")
-        this.client = shardClient || core.client;
+        core.debug.newLogs("cHandler", "CommandHandler constructor called.");
+        this.client = core.client;
 
         if (!this.client)
             throw new errs.ic4dError(

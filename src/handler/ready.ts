@@ -19,11 +19,10 @@ export class ReadyHandler {
      */
     constructor(
         core: CoreHandler,
-        shardClient: Client = undefined,
         ...functions: ((client?: Client) => Promise<void> | void)[]
     ) {
         this.core = core;
-        this.client = shardClient || core.client;
+        this.client = core.client;
         core.debug.newLogs("rHandler", "ReadyHandler constructor called.");
         if (!this.client)
             throw new errs.ic4dError(

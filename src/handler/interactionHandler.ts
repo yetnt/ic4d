@@ -57,10 +57,9 @@ export class InteractionHandler {
         core: CoreHandler,
         path: string,
         loaderOptions?: LoaderOptions,
-        flags?: InteractionHandlerFlags,
-        shardClient: Client = undefined
+        flags?: InteractionHandlerFlags
     ) {
-        this.client = shardClient || core.client;
+        this.client = core.client;
         core.debug.newLogs(
             "iHandler",
             "InteractionHandler constructor called."
